@@ -1,0 +1,49 @@
+name: Publish VESH materials
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/sync-materialy.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out GitHub Pages repository
+        uses: actions/checkout@v4
+
+      - name: Download the current materials site
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p materialy/assets
+          mkdir -p materialy/portal-rolei
+          mkdir -p materialy/diagnostika-fedkina/assets
+          base_url="https://materialy-veshk.rita-bell.chatgpt.site"
+          curl --fail --location --retry 3 "$base_url/" --output materialy/index.html
+          curl --fail --location --retry 3 "$base_url/materialy/portal-rolei" --output materialy/portal-rolei/index.html
+          curl --fail --location --retry 3 "$base_url/materialy/diagnostika-fedkina" --output materialy/diagnostika-fedkina/index.html
+          curl --fail --location --retry 3 "$base_url/assets/vesh-logo.png" --output materialy/assets/vesh-logo.png
+          curl --fail --location --retry 3 "$base_url/materialy/diagnostika-fedkina/assets/vesh-logo.png" --output materialy/diagnostika-fedkina/assets/vesh-logo.png
+          curl --fail --location --retry 3 "$base_url/materialy/diagnostika-fedkina/assets/pdfmake.min.js" --output materialy/diagnostika-fedkina/assets/pdfmake.min.js
+          curl --fail --location --retry 3 "$base_url/materialy/diagnostika-fedkina/assets/vfs_fonts.js" --output materialy/diagnostika-fedkina/assets/vfs_fonts.js
+          touch materialy/.nojekyll
+
+      - name: Commit published files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add materialy
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Publish VESH materials"
+          git push
