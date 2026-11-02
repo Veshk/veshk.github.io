@@ -2,21 +2,30 @@
 
 namespace App\Support;
 
+use App\Filament\Resources\StudyGroups\StudyGroupResource;
 use App\Models\StudyGroup;
+use App\Models\User;
 use Carbon\Carbon;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Text;
+use Filament\Schemas\Components\Utilities\Get;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class CoursePage
 {
     public const TEMPLATES = ['mba' => 'MBA / длительная программа', 'short' => 'Короткая программа', 'corporate' => 'Корпоративная программа'];
 
-    public const BLOCKS = ['contacts' => 'Контакты и чаты', 'schedule' => 'Расписание', 'join' => 'Подключиться к занятию', 'recordings' => 'Записи занятий', 'materials' => 'Материалы для обучения', 'info' => 'Информационный блок', 'video' => 'Видео о школе', 'introductions' => 'Практика «Знакомство»'];
+    public const BLOCKS = ['contacts' => 'Контакты и чаты', 'schedule' => 'Расписание', 'join' => 'Подключиться к занятию', 'recordings' => 'Записи занятий', 'materials' => 'Материалы для обучения', 'info' => 'Информационный блок', 'video' => 'Видео о школе', 'introductions' => 'Практика «Знакомство»', 'alias' => 'Общий блок из другого ЛК'];
 
     public static function defaults(string $template = 'mba'): array
     {
@@ -40,7 +49,7 @@ class CoursePage
     public static function forGroup(StudyGroup $group): array
     {
         if ($group->page_blocks !== null) {
-            return $group->page_blocks;
+            return self::withIds($group->page_blocks);
         }
         $blocks = self::defaults('short');
         if ($group->chat_url) {
@@ -55,7 +64,59 @@ class CoursePage
             return array_replace($lesson, ['date' => $date, 'module' => $lesson['module'] ?? $lesson['subtitle'] ?? '']);
         }, $group->schedule ?? []);
 
+        return self::withIds($blocks);
+    }
+
+    public static function withIds(array $blocks): array
+    {
+        foreach ($blocks as $i => &$block) {
+            $block['data']['block_id'] ??= 'legacy-'.$i;
+        }
+
         return $blocks;
+    }
+
+    public static function display(StudyGroup $group): array
+    {
+        return array_map(function (array $block) use ($group): array {
+            if (($block['type'] ?? '') !== 'alias') {
+                return $block;
+            }
+            $source = StudyGroup::find($block['data']['source_group'] ?? null);
+            $original = $source && $source->id !== $group->id ? collect(self::forGroup($source))->first(fn ($b) => ($b['data']['block_id'] ?? '') === ($block['data']['source_block'] ?? '') && $b['type'] !== 'alias' && ($b['data']['visible'] ?? true)) : null;
+            if (! $original) {
+                return ['type' => 'info', 'data' => ['title' => $block['data']['title'] ?? 'Общий блок', 'visible' => $block['data']['visible'] ?? true, 'text' => 'Содержимое временно недоступно. Администратор проверит подключение блока.']];
+            }
+            $original['data']['title'] = $block['data']['title'] ?? $original['data']['title'];
+            $original['data']['visible'] = $block['data']['visible'] ?? true;
+            $original['source_group_model'] = $source;
+
+            return $original;
+        }, self::forGroup($group));
+    }
+
+    public static function validateAliases(array $blocks, ?StudyGroup $target, ?User $user): void
+    {
+        foreach ($blocks as $block) {
+            if (($block['type'] ?? '') !== 'alias') {
+                continue;
+            }
+            $data = $block['data'];
+            $unchanged = $target && collect($target->getOriginal('page_blocks') ?? [])->contains(fn ($old) => ($old['type'] ?? '') === 'alias' && (string) ($old['data']['source_group'] ?? '') === (string) ($data['source_group'] ?? '') && ($old['data']['source_block'] ?? '') === ($data['source_block'] ?? ''));
+            if ($unchanged) {
+                continue;
+            }
+            $source = StudyGroup::find($data['source_group'] ?? null);
+            $exists = $source && collect(self::forGroup($source))->contains(fn ($b) => $b['type'] !== 'alias' && $b['data']['block_id'] === ($data['source_block'] ?? ''));
+            if (! $source || ! $exists || $source->id === $target?->id || ($user && ! $user->can('update', $source))) {
+                throw ValidationException::withMessages(['data.page_blocks' => 'Выберите исходный блок группы, которой вы управляете. Ссылка на другой общий блок или на эту же группу недопустима.']);
+            }
+        }
+    }
+
+    public static function references(int $sourceId, string $blockId): array
+    {
+        return StudyGroup::whereNotNull('page_blocks')->get()->filter(fn ($g) => collect($g->page_blocks)->contains(fn ($b) => ($b['type'] ?? '') === 'alias' && (string) ($b['data']['source_group'] ?? '') === (string) $sourceId && ($b['data']['source_block'] ?? '') === $blockId))->all();
     }
 
     public static function safeUrl(?string $value): ?string
@@ -77,9 +138,25 @@ class CoursePage
     {
         $blocks = [];
         foreach (self::BLOCKS as $type => $label) {
-            $fields = [TextInput::make('title')->label('Заголовок блока')->required()->maxLength(180), Toggle::make('visible')->label('Показывать блок')->default(true)];
+            $fields = [Hidden::make('block_id')->default(fn (): string => (string) Str::uuid()), TextInput::make('title')->label('Заголовок блока')->required()->maxLength(180), Toggle::make('visible')->label('Показывать блок')->default(true), Text::make(function (Get $get, $record): HtmlString {
+                if (! $record instanceof StudyGroup) {
+                    return new HtmlString('');
+                }
+                $links = array_map(fn ($g) => '<a href="'.e(StudyGroupResource::getUrl('page', ['record' => $g])).'">'.e($g->title.' / '.$g->code).'</a>', self::references($record->id, $get('block_id') ?? ''));
+
+                return new HtmlString($links ? '<div>Этот блок используется в других ЛК: '.implode(', ', $links).'. Изменение, скрытие или удаление повлияет на подключённые блоки.</div>' : '');
+            })];
             $fields = array_merge($fields, match ($type) {
-                'contacts' => [Textarea::make('text')->label('Описание')->maxLength(5000), self::url('contact_url', 'Ссылка для связи с администратором'), Repeater::make('chats')->label('Чаты группы')->schema([TextInput::make('label')->label('Название чата')->required()->maxLength(180), self::url('url', 'Ссылка')->required()])->defaultItems(0)->addActionLabel('Добавить чат')],
+                'contacts' => [Text::make('Фото и общие контакты: Панель администратора → Администраторы и фото.'), Textarea::make('text')->label('Описание')->maxLength(5000), self::url('contact_url', 'Ссылка для связи с администратором'), Repeater::make('chats')->label('Чаты группы')->schema([TextInput::make('label')->label('Название чата')->required()->maxLength(180), self::url('url', 'Ссылка')->required()])->defaultItems(0)->addActionLabel('Добавить чат')],
+                'alias' => [
+                    Select::make('source_group')->label('ЛК-источник')->options(fn (): array => StudyGroup::query()->when(! auth()->user()?->isSenior(), fn ($q) => $q->where('administrator_id', auth()->id()))->get()->mapWithKeys(fn ($g) => [$g->id => $g->title.' — '.$g->code])->all())->required()->live()->afterStateUpdated(fn ($set) => $set('source_block', null)),
+                    Select::make('source_block')->label('Исходный блок')->options(fn (Get $get): array => ($source = StudyGroup::find($get('source_group'))) ? collect(self::forGroup($source))->filter(fn ($b) => $b['type'] !== 'alias')->mapWithKeys(fn ($b) => [$b['data']['block_id'] => $b['data']['title'] ?? self::BLOCKS[$b['type']]])->all() : [])->required(),
+                    Text::make(function (Get $get): HtmlString {
+                        $source = StudyGroup::find($get('source_group'));
+
+                        return new HtmlString($source ? 'Источник: <a href="'.e(StudyGroupResource::getUrl('page', ['record' => $source])).'">'.e($source->title.' / '.$source->code).'</a>. Содержимое обновляется из этого ЛК.' : 'Выберите источник. Здесь меняются только заголовок, порядок и видимость подключения.');
+                    }),
+                ],
                 'schedule' => [Toggle::make('show_moscow')->label('Показывать время Москвы рядом с Екатеринбургом'), Toggle::make('collapse_past')->label('Сворачивать полностью прошедшие месяцы')->default(true), self::url('source_url', 'Ссылка на исходное расписание')->helperText('Открывает Google Таблицу или файл. Занятия ниже заполняются отдельно; автоматический импорт будет следующим этапом.'), Repeater::make('lessons')->label('Занятия')->schema([
                     DatePicker::make('date')->label('Дата')->required(), TextInput::make('time')->label('Время ЕКБ')->placeholder('17:00–21:00')->required()->regex('/^([01]?\d|2[0-3])[:.][0-5]\d\s*[-–—]\s*([01]?\d|2[0-3])[:.][0-5]\d$/'), TextInput::make('title')->label('Занятие')->required()->maxLength(300), TextInput::make('teacher')->label('Преподаватель')->maxLength(180), TextInput::make('module')->label('Модуль')->maxLength(180), TextInput::make('format')->label('Формат занятия')->helperText('Можно указать онлайн для очной группы.')->maxLength(60), self::url('url', 'Ссылка для подключения'),
                 ])->columns(2)->defaultItems(0)->addActionLabel('Добавить занятие')->collapsible()],

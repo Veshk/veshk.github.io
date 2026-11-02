@@ -24,6 +24,9 @@ class StudyGroup extends Model
     protected static function booted(): void
     {
         static::saving(function (StudyGroup $group): void {
+            if ($group->isDirty('page_blocks')) {
+                CoursePage::validateAliases($group->page_blocks ?? [], $group, auth()->user());
+            }
             if ((! $group->exists || $group->isDirty(['program_id', 'number'])) && $group->program_id && filled($group->number)) {
                 $program = Program::findOrFail($group->program_id);
                 $group->number = trim($group->number);

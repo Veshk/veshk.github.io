@@ -26,7 +26,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(fn () => redirect()->route('login'))
             ->brandName('ВЭШ — Управление обучением')
             ->font('Inter', url: asset('brand/fonts.css'))
             ->darkMode(false)

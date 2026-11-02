@@ -28,6 +28,8 @@ class EditGroupPage extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
+        CoursePage::validateAliases($data['page_blocks'] ?? [], $this->getRecord(), auth()->user());
+
         return ['page_blocks' => $data['page_blocks'] ?? []];
     }
 
