@@ -1,0 +1,3 @@
+@extends('layouts.portal')
+@section('title','Добавить обучение')
+@section('content')<main class="shell application-wrap"><a class="text-link" href="{{ route('student.home',['list'=>1]) }}">← Моё обучение</a><div class="page-heading" style="margin-top:24px"><div><h1>Добавить обучение</h1><p>Новая группа появится в этом же аккаунте после одобрения.</p></div></div>@include('partials.errors')<form class="card" method="post" action="{{ route('student.apply.store') }}">@csrf<div class="form-grid">@include('partials.group-choice')<button class="btn red full">Отправить заявку ↗</button></div></form></main>@endsection
