@@ -7,5 +7,7 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateStudyGroup extends CreateRecord
 {
+    protected static ?string $title = 'Добавить курс';
+
     protected static string $resource = StudyGroupResource::class;
 }

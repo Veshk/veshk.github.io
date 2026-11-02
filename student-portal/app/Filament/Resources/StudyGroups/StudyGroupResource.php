@@ -30,11 +30,11 @@ class StudyGroupResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
 
-    protected static ?string $navigationLabel = 'Учебные группы';
+    protected static ?string $navigationLabel = 'Курсы и группы';
 
     protected static ?string $modelLabel = 'группа';
 
-    protected static ?string $pluralModelLabel = 'Учебные группы';
+    protected static ?string $pluralModelLabel = 'Курсы и группы';
 
     protected static ?string $recordTitleAttribute = 'title';
 
