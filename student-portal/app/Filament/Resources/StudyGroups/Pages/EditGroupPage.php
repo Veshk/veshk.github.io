@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\StudyGroups\Pages;
 
+use App\Filament\Pages\ImportSchedule;
 use App\Filament\Resources\StudyGroups\StudyGroupResource;
 use App\Support\CoursePage;
 use Filament\Actions\Action;
@@ -35,6 +36,6 @@ class EditGroupPage extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [Action::make('preview')->label('Посмотреть страницу')->url(fn (): string => route('student.group', $this->getRecord()))->openUrlInNewTab(), Action::make('settings')->label('Настройки группы')->url(fn (): string => StudyGroupResource::getUrl('edit', ['record' => $this->getRecord()]))];
+        return [Action::make('schedule')->label('Обновить расписание из таблицы')->url(fn (): string => ImportSchedule::getUrl(['group' => $this->getRecord()->id]))->openUrlInNewTab(), Action::make('preview')->label('Посмотреть страницу')->url(fn (): string => route('student.group', $this->getRecord()))->openUrlInNewTab(), Action::make('settings')->label('Настройки группы')->url(fn (): string => StudyGroupResource::getUrl('edit', ['record' => $this->getRecord()]))];
     }
 }
