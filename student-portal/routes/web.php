@@ -25,7 +25,7 @@ Route::middleware('auth')->group(function (): void {
         abort_unless($request->user()->isStaff() || $group->availableTo($request->user()), 403);
         $material = $group->materials[$index] ?? null;
         abort_if(! $material, 404);
-        $contents = $material['title']."\n".$group->title.' · '.$group->code."\n\nДемонстрационный материал. Здесь будет учебный файл вашей группы.\n";
+        $contents = $material['title']."\n".$group->title.' — '.$group->code."\n\nДемонстрационный материал. Здесь будет учебный файл вашей группы.\n";
 
         return response()->streamDownload(function () use ($contents): void {
             echo $contents;
@@ -34,8 +34,8 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/mail-preview/{preview}', [StudentController::class, 'email'])->name('mail.preview');
 });
 $roles = [
-    'student' => ['email' => 'student@vesh.test', 'name' => 'Анна Петрова', 'label' => 'Слушатель · доступ открыт', 'description' => 'Страница программы, расписание и защищённые материалы'],
-    'waiting' => ['email' => 'waiting@vesh.test', 'name' => 'Илья Морозов', 'label' => 'Слушатель · ожидает одобрения', 'description' => 'Кабинет после регистрации, пока группа недоступна'],
+    'student' => ['email' => 'student@vesh.test', 'name' => 'Анна Петрова', 'label' => 'Слушатель — доступ открыт', 'description' => 'Страница программы, расписание и защищённые материалы'],
+    'waiting' => ['email' => 'waiting@vesh.test', 'name' => 'Илья Морозов', 'label' => 'Слушатель — ожидает одобрения', 'description' => 'Кабинет после регистрации, пока группа недоступна'],
     'admin' => ['email' => 'admin@vesh.test', 'name' => 'Мария Белова', 'label' => 'Администратор', 'description' => 'Свои группы, очередь заявок и обращения без группы'],
     'senior' => ['email' => 'senior@vesh.test', 'name' => 'Елена Волкова', 'label' => 'Старший администратор', 'description' => 'Все группы и назначение ответственных сотрудников'],
 ];

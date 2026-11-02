@@ -16,7 +16,16 @@ class StudyGroup extends Model
 
     protected function casts(): array
     {
-        return ['registration_open' => 'boolean', 'starts_at' => 'date', 'graduates_at' => 'date', 'access_days' => 'integer', 'schedule' => 'array', 'materials' => 'array'];
+        return ['registration_open' => 'boolean', 'setup_completed' => 'boolean', 'starts_at' => 'date', 'graduates_at' => 'date', 'extended_until' => 'date', 'access_days' => 'integer', 'schedule' => 'array', 'materials' => 'array'];
+    }
+
+    public const STATUSES = ['Тех. группа', 'Запускается', 'Идет обучение', 'На закрытии', 'Архив', 'обучение отложено', 'Экскурсия', 'Продление доступа'];
+
+    public const TYPES = ['ИНД, Личный кабинет', 'Сборное ОЧНО', 'Сборное ОНЛАЙН', 'Гибридный формат', 'Корп. обучение', 'Тех. параметр', 'КУРС В ЗАПИСИ', 'Экскурсия'];
+
+    public function program(): BelongsTo
+    {
+        return $this->belongsTo(Program::class);
     }
 
     public function administrator(): BelongsTo
@@ -36,7 +45,11 @@ class StudyGroup extends Model
 
     public function closesAt(): Carbon
     {
-        return $this->graduates_at->copy()->addDays($this->access_days)->endOfDay();
+        $until = $this->graduates_at->copy()->addDays($this->access_days)->endOfDay();
+
+        return $this->extended_until && $this->extended_until->copy()->endOfDay()->gt($until)
+            ? $this->extended_until->copy()->endOfDay()
+            : $until;
     }
 
     public function availableTo(User $user): bool

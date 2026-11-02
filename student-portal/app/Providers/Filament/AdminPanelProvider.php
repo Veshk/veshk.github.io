@@ -27,7 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName('ВЭШ · Управление обучением')
+            ->brandName('ВЭШ — Управление обучением')
             ->font('Inter', url: asset('brand/fonts.css'))
             ->darkMode(false)
             ->sidebarCollapsibleOnDesktop()

@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'ВЭШ · Личный кабинет'),
+    'name' => env('APP_NAME', 'ВЭШ — Личный кабинет'),
     'demo_mode' => env('DEMO_MODE', false),
 
     /*

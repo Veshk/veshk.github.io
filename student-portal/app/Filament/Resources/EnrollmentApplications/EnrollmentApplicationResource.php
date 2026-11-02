@@ -63,7 +63,7 @@ class EnrollmentApplicationResource extends Resource
                     Notification::make()->title('Заявка одобрена. Доступ открыт.')->success()->send();
                 }),
             Action::make('assign')->label('Указать группу')->icon('heroicon-o-arrow-right')->visible(fn (EnrollmentApplication $record) => $record->status === 'pending' && auth()->user()->can('review', $record))
-                ->modalSubmitActionLabel('Направить в группу')->schema([Select::make('study_group_id')->label('Нужная группа')->options(fn () => StudyGroup::get()->mapWithKeys(fn ($group) => [$group->id => $group->title.' · '.$group->code])->all())->searchable()->required()])
+                ->modalSubmitActionLabel('Направить в группу')->schema([Select::make('study_group_id')->label('Нужная группа')->options(fn () => StudyGroup::get()->mapWithKeys(fn ($group) => [$group->id => $group->title.' — '.$group->code])->all())->searchable()->required()])
                 ->action(function (EnrollmentApplication $record, array $data): void {
                     app(Admissions::class)->assign(auth()->user(), $record, (int) $data['study_group_id']);
                     Notification::make()->title('Заявка направлена администратору группы')->success()->send();

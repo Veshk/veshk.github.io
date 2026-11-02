@@ -13,7 +13,7 @@ class ListStudyGroups extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->label('Добавить курс'),
+            CreateAction::make()->label('Добавить группу'),
         ];
     }
 }
