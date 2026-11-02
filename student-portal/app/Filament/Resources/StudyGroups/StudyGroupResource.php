@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\StudyGroups;
 
 use App\Filament\Resources\StudyGroups\Pages\CreateStudyGroup;
+use App\Filament\Resources\StudyGroups\Pages\EditGroupPage;
 use App\Filament\Resources\StudyGroups\Pages\EditStudyGroup;
 use App\Filament\Resources\StudyGroups\Pages\ListStudyGroups;
 use App\Filament\Resources\StudyGroups\Pages\ViewStudyGroup;
@@ -56,10 +57,11 @@ class StudyGroupResource extends Resource
                         if (! filled($get('title')) && $state) {
                             $set('title', Program::find($state)?->title);
                         }
+                        $set('code', $state ? Program::find($state)?->tag.'-'.trim($get('number') ?? '') : '');
                     })->helperText('Название можно уточнить для группы. Расписание и материалы у каждой группы свои.'),
                 TextInput::make('title')->trim()->label('Название программы для группы')->required()->maxLength(180),
-                TextInput::make('code')->trim()->label('ТЕГ группы')->required()->unique(ignoreRecord: true)->maxLength(60),
-                TextInput::make('number')->trim()->label('№ группы')->maxLength(60),
+                TextInput::make('code')->label('ТЕГ группы — автоматически')->readOnly()->dehydrated(false)->helperText('ТЕГ программы + дефис + номер группы. Существующий ТЕГ меняется при изменении программы или номера.'),
+                TextInput::make('number')->trim()->label('№ группы')->required()->maxLength(60)->live(onBlur: true)->afterStateUpdated(fn (Get $get, Set $set, ?string $state) => $set('code', (Program::find($get('program_id'))?->tag ?? '').'-'.trim($state ?? ''))),
                 Select::make('group_type')->label('Тип группы')->options(array_combine(StudyGroup::TYPES, StudyGroup::TYPES)),
                 Select::make('status')->label('Статус группы')->options(array_combine(StudyGroup::STATUSES, StudyGroup::STATUSES))->default('Запускается')->required()
                     ->helperText('Срок доступа определяется датами ниже. Статус используется для учёта.'),
@@ -126,13 +128,14 @@ class StudyGroupResource extends Resource
             SelectFilter::make('program_id')->label('Программа')->relationship('program', 'tag')->searchable()->preload(),
         ])->recordActions([
             Action::make('view')->label('Карточка')->url(fn (StudyGroup $record): string => static::getUrl('view', ['record' => $record])),
-            EditAction::make()->label('Редактировать'),
+            EditAction::make()->label('Настройки группы'),
+            Action::make('page')->label('Редактировать страницу ЛК')->visible(fn (StudyGroup $record): bool => auth()->user()->can('update', $record))->url(fn (StudyGroup $record): string => static::getUrl('page', ['record' => $record])),
             Action::make('student')->label('Зайти в ЛК')->url(fn (StudyGroup $record): string => route('student.group', $record))->openUrlInNewTab(),
         ]);
     }
 
     public static function getPages(): array
     {
-        return ['index' => ListStudyGroups::route('/'), 'create' => CreateStudyGroup::route('/create'), 'view' => ViewStudyGroup::route('/{record}'), 'edit' => EditStudyGroup::route('/{record}/edit')];
+        return ['index' => ListStudyGroups::route('/'), 'create' => CreateStudyGroup::route('/create'), 'view' => ViewStudyGroup::route('/{record}'), 'edit' => EditStudyGroup::route('/{record}/edit'), 'page' => EditGroupPage::route('/{record}/page')];
     }
 }

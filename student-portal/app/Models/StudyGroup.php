@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Support\CoursePage;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Validation\ValidationException;
 
 class StudyGroup extends Model
 {
@@ -16,7 +18,28 @@ class StudyGroup extends Model
 
     protected function casts(): array
     {
-        return ['registration_open' => 'boolean', 'setup_completed' => 'boolean', 'starts_at' => 'date', 'graduates_at' => 'date', 'extended_until' => 'date', 'access_days' => 'integer', 'schedule' => 'array', 'materials' => 'array'];
+        return ['registration_open' => 'boolean', 'setup_completed' => 'boolean', 'starts_at' => 'date', 'graduates_at' => 'date', 'extended_until' => 'date', 'access_days' => 'integer', 'schedule' => 'array', 'materials' => 'array', 'page_blocks' => 'array'];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (StudyGroup $group): void {
+            if ((! $group->exists || $group->isDirty(['program_id', 'number'])) && $group->program_id && filled($group->number)) {
+                $program = Program::findOrFail($group->program_id);
+                $group->number = trim($group->number);
+                $group->code = $program->tag.'-'.$group->number;
+                if (static::where('code', $group->code)->when($group->exists, fn ($query) => $query->whereKeyNot($group->id))->exists()) {
+                    throw ValidationException::withMessages(['data.number' => 'Группа с таким ТЕГом уже существует.']);
+                }
+            }
+        });
+        static::creating(function (StudyGroup $group): void {
+            if ($group->program_id && $group->page_blocks === null) {
+                $program = Program::findOrFail($group->program_id);
+                $group->page_template = $program->template_key ?? 'mba';
+                $group->page_blocks = $program->page_blocks ?? CoursePage::defaults($group->page_template);
+            }
+        });
     }
 
     public const STATUSES = ['Тех. группа', 'Запускается', 'Идет обучение', 'На закрытии', 'Архив', 'обучение отложено', 'Экскурсия', 'Продление доступа'];

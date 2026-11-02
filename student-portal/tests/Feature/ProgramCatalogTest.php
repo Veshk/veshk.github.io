@@ -58,7 +58,7 @@ class ProgramCatalogTest extends TestCase
 
     public function test_group_form_saves_program_and_separate_airtable_fields_without_sharing_content(): void
     {
-        $program = Program::factory()->create(['title' => 'Общая программа']);
+        $program = Program::factory()->create(['title' => 'Общая программа', 'tag' => 'Корп']);
         $senior = User::factory()->create(['role' => 'senior']);
         $other = StudyGroup::factory()->for($program)->create(['schedule' => [['title' => 'Чужое занятие']], 'materials' => [['title' => 'Чужой файл']]]);
         $this->actingAs($senior);
@@ -71,7 +71,7 @@ class ProgramCatalogTest extends TestCase
             'admin_notes' => 'Служебное условие', 'setup_completed' => true, 'description' => 'Приветствие группы',
         ])->call('create')->assertHasNoFormErrors();
 
-        $group = StudyGroup::where('code', 'Корп/001-2')->sole();
+        $group = StudyGroup::where('code', 'Корп-001-2')->sole();
         $this->assertDatabaseHas('study_groups', ['id' => $group->id, 'program_id' => $program->id, 'number' => '001-2', 'group_type' => 'Корп. обучение', 'status' => 'Запускается', 'chat_url' => 'https://example.com/chat', 'setup_completed' => true, 'admin_notes' => 'Служебное условие']);
         $this->assertNull($group->schedule);
         $this->assertNull($group->materials);

@@ -8,6 +8,7 @@ use App\Filament\Resources\Programs\Pages\ListPrograms;
 use App\Filament\Resources\Programs\Pages\ViewProgram;
 use App\Filament\Resources\StudyGroups\StudyGroupResource;
 use App\Models\Program;
+use App\Support\CoursePage;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -15,6 +16,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -45,6 +47,12 @@ class ProgramResource extends Resource
             TextInput::make('title')->trim()->label('Название программы')->required()->maxLength(180)
                 ->helperText('При создании группы название можно уточнить. Изменение программы не переименовывает существующие группы.'),
             Select::make('section')->label('Раздел')->options(array_combine(Program::SECTIONS, Program::SECTIONS)),
+            Select::make('template_key')->label('Базовый шаблон ЛК')->options(CoursePage::TEMPLATES)->default('mba')->required()->live()->afterStateUpdated(fn (Set $set, ?string $state) => $set('page_blocks', CoursePage::defaults($state ?? 'mba')))->helperText('Смена шаблона заменит базовые блоки программы для следующих групп. Созданные группы сохранят своё наполнение.'),
+            CoursePage::builder()->default(CoursePage::defaults())->afterStateHydrated(function ($component, $state, ?Program $record): void {
+                if ($state === null) {
+                    $component->state(CoursePage::defaults($record?->template_key ?? 'mba'));
+                }
+            }),
         ]);
     }
 
@@ -54,6 +62,7 @@ class ProgramResource extends Resource
             TextEntry::make('tag')->label('ТЕГ программы'),
             TextEntry::make('title')->label('Название программы'),
             TextEntry::make('section')->label('Раздел')->placeholder('Не указан'),
+            TextEntry::make('template_key')->label('Шаблон ЛК')->formatStateUsing(fn (?string $state): string => CoursePage::TEMPLATES[$state] ?? 'MBA / длительная программа'),
             TextEntry::make('groups_count')->label('Количество групп')->state(fn (Program $record): int => $record->studyGroups()->count()),
             TextEntry::make('studyGroups.code')->label('ТЕГи групп')->listWithLineBreaks()->placeholder('Групп пока нет'),
         ]);

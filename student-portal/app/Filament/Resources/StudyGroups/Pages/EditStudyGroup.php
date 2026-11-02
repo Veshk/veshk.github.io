@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\StudyGroups\Pages;
 
 use App\Filament\Resources\StudyGroups\StudyGroupResource;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
 
 class EditStudyGroup extends EditRecord
@@ -11,7 +12,7 @@ class EditStudyGroup extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [Action::make('page')->label('Редактировать страницу ЛК')->visible(fn (): bool => auth()->user()->can('update', $this->getRecord()))->url(fn (): string => StudyGroupResource::getUrl('page', ['record' => $this->getRecord()]))];
     }
 
     protected function mutateFormDataBeforeSave(array $data): array

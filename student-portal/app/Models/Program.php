@@ -12,6 +12,11 @@ class Program extends Model
 
     protected $guarded = ['id'];
 
+    protected function casts(): array
+    {
+        return ['page_blocks' => 'array'];
+    }
+
     public const SECTIONS = ['HR', 'Аналитика', 'КОРП', 'Маркетинг', 'Менеджмент', 'Продажи', 'Производство', 'Упр. навыки', 'Финансы', 'Центр', 'НЕДОСТУПНО'];
 
     public function studyGroups(): HasMany
