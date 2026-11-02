@@ -16,6 +16,8 @@
     excel:{title:'Excel для эффективной работы',tag:'ДЕМО_EXCEL',section:'Аналитика'},
     management:{title:'Профессиональные навыки управления людьми',tag:'ДЕМО_МЕН',section:'Упр. навыки'}
   };
+  state.programs.spo??={title:'Специалист по оценке персонала',tag:'ДЕМО_СПО',section:'HR',template_key:'short'};
+  state.programs.competencies??={title:'Оценка компетенций',tag:'ДЕМО_ОК',section:'HR',template_key:'short'};
   const programs = state.programs;
   for(const [id,p] of Object.entries(programs)){p.template_key??=(id==='excel'?'short':'mba');}
   const groups = {
@@ -25,7 +27,8 @@
   state.customGroups = state.customGroups && typeof state.customGroups==='object' ? state.customGroups : {};
   state.groupOverrides = state.groupOverrides && typeof state.groupOverrides==='object' ? state.groupOverrides : {};
   for(const group of Object.values(state.customGroups)){if(!group.program_id)group.code=String(group.code||'').replace(/ \u00b7 /g,' ');}
-  Object.assign(groups,state.customGroups,state.groupOverrides);
+  Object.assign(groups,PortalSamples.related(),state.customGroups,state.groupOverrides);
+  if(!groups.excel.page_blocks)Object.assign(groups.excel,PortalSamples.excel());
   const options = (values,selected='') => values.map(value=>`<option value="${escape(value)}"${value===selected?' selected':''}>${escape(value)}</option>`).join('');
   const programOptions = selected => Object.entries(programs).map(([id,p])=>`<option value="${escape(id)}"${id===selected?' selected':''}>${escape(p.tag)} — ${escape(p.title)}</option>`).join('');
   const safeUrl = value => { try { const url=new URL(value);return ['http:','https:'].includes(url.protocol)?url.href:''; } catch { return ''; } };
@@ -38,15 +41,15 @@
   const groupLink = (id,waiting=false) => (id==='excel'?'excel.html':'course.html') + '?group='+encodeURIComponent(id)+(waiting?'&student=waiting':'');
   const dateLabel = value => value ? value.split('-').reverse().join('.') : 'Не указана';
   const senior = new URLSearchParams(location.search).get('role')==='senior';
-  const role = senior?'senior':'admin';
+  const role = ['admin','colleague','senior'].includes(new URLSearchParams(location.search).get('role'))?new URLSearchParams(location.search).get('role'):'admin';
   const canReview = row => row.group ? senior || groups[row.group]?.id===role : state.reviewers.includes(role);
   const labels={pending:'На проверке',approved:'Доступ открыт',rejected:'Отклонена'};
   const badges={pending:'wait',approved:'',rejected:'rejected'};
   document.querySelector('[data-reset]')?.addEventListener('click',()=>{state=initial();save();notice('Демонстрация сброшена. Все три заявки снова ожидают проверки.');});
   document.querySelectorAll('[data-demo-form]').forEach(form=>{
-    form.querySelectorAll('textarea').forEach(el=>{el.value='Демонстрационная заявка. Нужна помощь с зачислением.';el.readOnly=true;});
-    const select=form.querySelector('select'); if(select){ select.innerHTML='<option value="">Не знаю свою группу / нужна помощь</option>'+Object.entries(groups).filter(([,g])=>g.registration_open!==false).map(([id,g])=>`<option value="${escape(id)}">${escape(g.name)} — ${escape(g.code)}</option>`).join(''); if(form.dataset.demoForm==='register.html')select.value='mba'; }
-    form.addEventListener('submit',event=>{event.preventDefault(); const id=form.querySelector('select')?.value;const row=state.requests[0];row.group=groups[id]?id:'';row.status='pending';row.mail=false;save();location.href='waiting.html';});
+    form.querySelectorAll('textarea').forEach(el=>{el.value='';el.readOnly=false;});
+    const select=form.querySelector('select'); if(select){ select.innerHTML='<option value="">Не знаю свою группу / нужна помощь</option>'+Object.entries(groups).filter(([,g])=>g.registration_open!==false).map(([id,g])=>`<option value="${escape(id)}">${escape(g.name)} — старт ${dateLabel(g.starts_at)}</option>`).join(''); if(form.dataset.demoForm==='register.html')select.value='mba'; }
+    form.addEventListener('submit',event=>{event.preventDefault(); const id=form.querySelector('select')?.value;const row=state.requests[0];row.group=groups[id]?id:'';row.message=form.querySelector('textarea')?.value||'';row.status='pending';row.mail=false;save();location.href='waiting.html';});
   });
   if(location.pathname.endsWith('waiting.html')){
     const row=state.requests[0];
@@ -61,6 +64,7 @@
   const customId=new URLSearchParams(location.search).get('group');
   const pageGroup=groups[customId || (location.pathname.endsWith('excel.html')?'excel':'mba')];
   if(pageGroup&&(location.pathname.endsWith('course.html')||location.pathname.endsWith('excel.html'))){
+    document.title=pageGroup.name+' — ВЭШ';
     document.querySelector('.hero-layout h1').textContent=pageGroup.name;
     document.querySelector('.breadcrumb span:last-child').textContent=pageGroup.code;
     document.querySelector('.course-hero .eyebrow').textContent='Пространство обучения — '+pageGroup.code;
@@ -85,6 +89,7 @@
   }
     if(!groups.mba.page_blocks && !groups.mba.schedule)groups.mba.schedule=[{date:'2026-11-06',time:'10:00–18:00',title:'Бизнес и организация как система',teacher:'Алексей Миронов',module:'Модуль 1 — Стратегия и управление'},{date:'2026-11-07',time:'10:00–18:00',title:'Модель устойчивой организации',teacher:'Алексей Миронов',module:'Модуль 1 — Стратегия и управление'},{date:'2026-12-04',time:'17:00–21:00',title:'Команда и управленческое взаимодействие',teacher:'Ирина Лебедева',module:'Модуль 2 — Управление людьми'}];
   const pageContext={state,programs,groups,senior,role,canEditGroup,save,groupLink,closes,groupId:customId||(location.pathname.endsWith('excel.html')?'excel':'mba')};
+  AdminTools.init(pageContext);
   if(location.pathname.endsWith('editor.html')){CoursePages.initEditor(pageContext);return;}
   if(pageGroup&&(location.pathname.endsWith('course.html')||location.pathname.endsWith('excel.html'))){
 
@@ -195,7 +200,7 @@
     save();close();render();
   });
   document.getElementById('search').addEventListener('input',render);document.getElementById('filter').addEventListener('change',render);
-  const showPanel = panel => {if(!['requests','groups','programs','reviewers'].includes(panel)||(panel==='reviewers'&&!senior))return;document.querySelector('.page-heading h1').textContent={requests:'Заявки на обучение',groups:'Группы',programs:'Программы',reviewers:'Ответственные сотрудники'}[panel];document.querySelectorAll('[data-panel]').forEach(x=>x.classList.toggle('active',x.dataset.panel===panel));['requests','groups','programs','reviewers'].forEach(p=>document.getElementById(p+'-panel').hidden=p!==panel);document.querySelector('.page-heading p').textContent={requests:'Проверьте группу слушателя и откройте доступ к материалам.',groups:'Учебные группы со своими слушателями, датами и материалами.',programs:'Справочник программ школы и их базовых характеристик.',reviewers:'Сотрудники, которые помогают определить группу слушателя.'}[panel];};
+  const showPanel = panel => {if(!['requests','groups','programs','reviewers','profiles'].includes(panel)||(panel==='reviewers'&&!senior))return;document.querySelector('.page-heading h1').textContent={requests:'Заявки на обучение',groups:'Группы',programs:'Программы',reviewers:'Ответственные сотрудники',profiles:'Администраторы и фото'}[panel];document.querySelectorAll('[data-panel]').forEach(x=>x.classList.toggle('active',x.dataset.panel===panel));['requests','groups','programs','reviewers','profiles'].forEach(p=>document.getElementById(p+'-panel').hidden=p!==panel);document.querySelector('.page-heading p').textContent={requests:'Проверьте группу слушателя и откройте доступ к материалам.',groups:'Учебные группы со своими слушателями, датами и материалами.',programs:'Справочник программ школы и их базовых характеристик.',reviewers:'Сотрудники, которые помогают определить группу слушателя.',profiles:'Фотографии и контакты сотрудников во всех их группах.'}[panel];};
   document.querySelectorAll('[data-panel]').forEach(b=>b.addEventListener('click',()=>showPanel(b.dataset.panel)));
   document.getElementById('create-course').addEventListener('click',()=>open('create',null));
   document.querySelectorAll('[name=reviewer]').forEach(input=>input.checked=state.reviewers.includes(input.value));
