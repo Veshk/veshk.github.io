@@ -66,10 +66,19 @@
     return {lessons,errors,warnings,header:header+1,skipped,columns:Object.keys(map)};
   }
   const key=row=>row.source_id?'id:'+row.source_id:JSON.stringify([row.date,row.time?.replace(/\s/g,'').replace(/[-—]/g,'–').replace(/\./g,':'),row.title,row.teacher||'']);
-  function merge(parsed,current){
+  function merge(parsed,current,mode='replace'){
+    if(!['replace','append'].includes(mode))throw Error('Выберите способ обновления расписания.');
+    if(mode==='append'){
+      const identity=r=>JSON.stringify([r.date,r.time?.replace(/\s/g,'').replace(/[-—]/g,'–').replace(/\./g,':'),r.title,r.teacher||'']);
+      const keys=new Set(current.map(key)),identities=new Set(current.map(identity));
+      const added=parsed.lessons.filter(r=>!keys.has(key(r))&&!identities.has(identity(r)));
+      const lessons=[...current,...added].sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.time||'').localeCompare(b.time||''));
+      const errors=[...parsed.errors];if(lessons.length>MAX_ROWS)errors.push('В блоке может быть не более 2000 занятий.');
+      return {...parsed,errors,mode,lessons,counts:{added:added.length,changed:0,same:parsed.lessons.length-added.length,removed:0},removed:[]};
+    }
     const old=new Map(current.map(row=>[key(row),row]));let added=0,changed=0,same=0;
     const lessons=parsed.lessons.map(row=>{const match=old.get(key(row));old.delete(key(row));if(!match)added++;else if(Object.keys(row).some(k=>String(row[k]??'')!==String(match[k]??'')))changed++;else same++;return {...(match||{}),...row};});
-    return {...parsed,lessons,counts:{added,changed,same,removed:old.size},removed:[...old.values()]};
+    return {...parsed,mode,lessons,counts:{added,changed,same,removed:old.size},removed:[...old.values()]};
   }
   function sourceUrl(value){
     let u;try{u=new URL(value);}catch{throw Error('Вставьте ссылку на Google Таблицу.');}

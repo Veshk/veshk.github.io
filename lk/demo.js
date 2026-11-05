@@ -35,7 +35,19 @@
     state.directoryVersion=directory.version;save();
   }
   Object.assign(groups,state.customGroups,state.groupOverrides);
-  if(!groups.excel.page_blocks)groups.excel.page_blocks=PortalSamples.excel().page_blocks;
+  if(window.SchoolSchedules&&state.schoolScheduleVersion!==SchoolSchedules.version){
+    state.previousSchoolSchedules??={};
+    for(const [id,source] of Object.entries(SchoolSchedules.groups)){
+      const group=groups[id];if(!group)continue;
+      state.previousSchoolSchedules[id]=structuredClone(group.page_blocks||group.schedule||[]);
+      const blocks=CoursePages.getBlocks(group);let schedule=blocks.find(b=>b.type==='schedule');
+      if(!schedule){schedule=CoursePages.template('short').find(b=>b.type==='schedule');blocks.push(schedule);}
+      schedule.data.lessons=structuredClone(source.lessons);schedule.data.source_url='';
+      if(source.pending_lessons.length)blocks.push({type:'info',data:{block_id:'school-undated',title:'Занятия без даты',visible:true,text:'Дата и время будут уточнены администратором.\n\n'+source.pending_lessons.map(l=>l.title+' — '+l.teacher+' ('+l.hours+' ак. ч.)').join('\n')}});
+      group.page_blocks=blocks;state.groupOverrides[id]={...group};
+    }
+    state.schoolScheduleVersion=SchoolSchedules.version;save();
+  }
   const options = (values,selected='') => values.map(value=>`<option value="${escape(value)}"${value===selected?' selected':''}>${escape(value)}</option>`).join('');
   const programOptions = selected => Object.entries(programs).map(([id,p])=>`<option value="${escape(id)}"${id===selected?' selected':''}>${escape(p.tag)} — ${escape(p.title)}</option>`).join('');
   const safeUrl = value => { try { const url=new URL(value);return ['http:','https:'].includes(url.protocol)?url.href:''; } catch { return ''; } };
@@ -108,6 +120,7 @@
   const close=()=>dialog.close();
   dialog.querySelectorAll('[data-close],.dialog-close').forEach(b=>b.addEventListener('click',close));
   const groupTable = window.AdminGroups.init({...pageContext, names, statuses, escape, safeUrl, dateLabel, open:(type,id)=>open(type,id)});
+  const schedules=AdminSchedules.init({...pageContext,escape});
   const catalogs=AdminCatalog.init({...pageContext,escape,safeUrl,canReview,labels,open:(type,id)=>open(type,id),openGroups:(owner,program)=>navigateGroups(owner,program)});
   const renderCatalog=()=>{
     const groupFilter=document.getElementById('group-program-filter'),chosen=groupFilter.value;
@@ -115,6 +128,7 @@
     groupTable.render();
     catalogs.renderPrograms();
     staffDirectory?.render();
+    schedules.render();
   };
   const openProgram=(type,id,body,title,confirm)=>{
     const p=programs[id]||{title:'',tag:'',section:''};
@@ -206,15 +220,16 @@
   document.getElementById('search').addEventListener('input',render);document.getElementById('filter').addEventListener('change',render);
   const showPanel = panel => {
     if(panel==='reviewers')panel='profiles';
-    const titles={requests:'Заявки на обучение',students:'Слушатели',groups:'Группы',programs:'Программы',profiles:'Администраторы'};
+    const titles={requests:'Заявки на обучение',students:'Слушатели',groups:'Группы',programs:'Программы',profiles:'Администраторы',schedules:'Расписание'};
     if(!titles[panel])panel='requests';
     document.getElementById('create-course').hidden=!senior||panel!=='groups';
     const url=new URL(location.href);url.searchParams.set('panel',panel);history.replaceState(null,'',url);
     document.querySelector('.page-heading h1').textContent=titles[panel];
-    document.querySelector('.page-heading p').textContent={requests:'Проверка заявок и открытие доступа к обучению.',students:'Аккаунты слушателей, группы, доступ и история посещений кабинета.',groups:'Учебные группы со своими слушателями, датами и материалами.',programs:'Программы школы и связанные с ними группы.',profiles:'Аккаунт, контакты, группы и дополнительные права сотрудника.'}[panel];
+    document.querySelector('.page-heading p').textContent={requests:'Проверка заявок и открытие доступа к обучению.',students:'Аккаунты слушателей, группы, доступ и история посещений кабинета.',groups:'Учебные группы со своими слушателями, датами и материалами.',programs:'Программы школы и связанные с ними группы.',profiles:'Аккаунт, контакты, группы и дополнительные права сотрудника.',schedules:'Расписание всех групп: просмотр опубликованных занятий и массовая правка таблицей.'}[panel];
     document.querySelectorAll('[data-panel]').forEach(x=>x.classList.toggle('active',x.dataset.panel===panel));
     Object.keys(titles).forEach(p=>document.getElementById(p+'-panel').hidden=p!==panel);
     staffDirectory?.render();
+    schedules.render();
   };
   const navigateGroups=(owner='',program='')=>{
     groupTable.resetFilters();document.getElementById('group-owner-filter').value=owner;
