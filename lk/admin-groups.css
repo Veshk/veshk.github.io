@@ -1,8 +1,8 @@
-.admin-shell:has(#groups-panel:not([hidden])){max-width:1680px;padding:28px 28px 48px}
-.admin-shell:has(#groups-panel:not([hidden])) .page-heading{margin-bottom:18px}
-.admin-shell:has(#groups-panel:not([hidden])) .page-heading h1{font-size:34px;margin:8px 0}
-.admin-shell:has(#groups-panel:not([hidden])) .page-heading p{font-size:13px}
-.admin-shell:has(#groups-panel:not([hidden])) .admin-tabs{margin-bottom:20px}
+.admin-shell{max-width:1680px;padding:28px 28px 48px}
+.admin-shell .page-heading{margin-bottom:18px}
+.admin-shell .page-heading h1{font-size:34px;margin:8px 0}
+.admin-shell .page-heading p{font-size:13px}
+.admin-shell .admin-tabs{margin-bottom:20px}
 .group-workspace{background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .group-filters{display:grid;grid-template-columns:minmax(220px,1.4fr) minmax(150px,.8fr) minmax(170px,.9fr) minmax(200px,1.2fr);gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
 .group-filters .field{font-size:11px;color:#596b73}
@@ -53,4 +53,6 @@
 #dialog-confirm[hidden]{display:none}
 .group-grid button:focus-visible,.group-grid a:focus-visible{outline:2px solid #226d8d;outline-offset:2px}
 @media(max-width:1000px){.group-filters{grid-template-columns:1fr 1fr}.group-toolbar-right{width:100%;justify-content:space-between}.group-grid th:first-child,.group-grid td:first-child{min-width:225px;max-width:260px}.group-name{min-width:200px;max-width:230px}}
-@media(max-width:600px){.admin-shell:has(#groups-panel:not([hidden])){padding:20px 12px 32px}.group-filters{gap:10px;padding:12px}.group-filters .field:first-child,.group-filters .field:last-child{grid-column:1/-1}.group-toolbar{padding:10px 12px;gap:12px}.group-toolbar-left{gap:12px}.group-toolbar .check{font-size:11px}.group-grid th:first-child,.group-grid td:first-child{min-width:175px;max-width:175px}.group-name{min-width:150px;max-width:150px;font-size:12px}.group-divider-label{display:none}.group-grid-scroll{max-height:65vh}.group-grid td:nth-child(2){min-width:145px}.group-footnote span{display:block;margin:4px 0 0}}
+@media(max-width:600px){.admin-shell{padding:20px 12px 32px}.group-filters{gap:10px;padding:12px}.group-filters .field:first-child,.group-filters .field:last-child{grid-column:1/-1}.group-toolbar{padding:10px 12px;gap:12px}.group-toolbar-left{gap:12px}.group-toolbar .check{font-size:11px}.group-grid th:first-child,.group-grid td:first-child{min-width:175px;max-width:175px}.group-name{min-width:150px;max-width:150px;font-size:12px}.group-divider-label{display:none}.group-grid-scroll{max-height:65vh}.group-grid td:nth-child(2){min-width:145px}.group-footnote span{display:block;margin:4px 0 0}}
+
+.directory-filters{grid-template-columns:minmax(240px,1.4fr) repeat(2,minmax(180px,1fr))}.staff-cell{display:flex;gap:12px;align-items:center}.staff-cell .staff-photo{width:36px;height:36px;min-width:36px;font-size:16px}.staff-cell .group-name{min-width:180px}.staff-account{padding:16px;background:#f5f8fa;border-radius:6px;margin:20px 0}.staff-account p{margin:8px 0}.staff-account .group-action{margin-left:12px}.staff-permissions{margin-top:24px;padding:18px;background:#f5f8fa;border:1px solid var(--line);border-radius:6px}.staff-permissions h3{margin:0 0 14px}#staff-dialog,#student-dialog{width:min(740px,calc(100vw - 32px));max-height:90vh;overflow:auto;padding:30px;border:1px solid var(--line);border-radius:10px}#staff-dialog .field{margin-top:18px}#staff-dialog .profile-photo-row{grid-template-columns:90px 1fr;gap:20px;margin:20px 0}#staff-dialog .staff-photo.large{width:80px;height:80px}#staff-dialog h3,#student-dialog h3{margin:24px 0 12px}#student-dialog .group-grid th:first-child,#student-dialog .group-grid td:first-child{position:static}.admin-tabs{overflow:auto;white-space:nowrap}button[hidden],section[hidden]{display:none!important}@media(max-width:700px){.directory-filters{grid-template-columns:1fr}.staff-cell .group-name{min-width:115px}.staff-account .group-action{margin:12px 0 0}#staff-dialog,#student-dialog{padding:22px 16px}.profile-photo-row{display:block}#staff-dialog .staff-photo.large{width:64px;height:64px}}

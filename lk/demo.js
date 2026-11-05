@@ -10,7 +10,8 @@
   const sections = ['HR','Аналитика','КОРП','Маркетинг','Менеджмент','Продажи','Производство','Упр. навыки','Финансы','Центр','НЕДОСТУПНО'];
   const statuses = ['Тех. группа','Запускается','Идет обучение','На закрытии','Архив','обучение отложено','Экскурсия','Продление доступа'];
   const types = ['ИНД, Личный кабинет','Сборное ОЧНО','Сборное ОНЛАЙН','Гибридный формат','Корп. обучение','Тех. параметр','КУРС В ЗАПИСИ','Экскурсия'];
-  const names = {admin:'Мария Белова',colleague:'Ольга Орлова',senior:'Елена Волкова'};
+  const directory = window.PortalDirectorySamples;
+  const names = Object.fromEntries(Object.entries(directory.staff).map(([id,p])=>[id,p.name]));
   state.programs = state.programs && typeof state.programs==='object' ? state.programs : {
     commercial:{title:'MBA Коммерческий директор',tag:'ДЕМО_КД',section:'Продажи'},
     excel:{title:'Excel для эффективной работы',tag:'ДЕМО_EXCEL',section:'Аналитика'},
@@ -20,15 +21,21 @@
   state.programs.competencies??={title:'Оценка компетенций',tag:'ДЕМО_ОК',section:'HR',template_key:'short'};
   const programs = state.programs;
   for(const [id,p] of Object.entries(programs)){p.template_key??=(id==='excel'?'short':'mba');}
-  const groups = {
-    mba:{name:'MBA Коммерческий директор',code:'ДЕМО_КД-2026/11',number:'2026/11',program_id:'commercial',owner:names.admin,id:'admin',format:'Очно',group_type:'Сборное ОЧНО',status:'Запускается',starts_at:'2026-11-06',graduates_at:'2028-02-06',access_days:state.days??30,registration_open:true},
-    excel:{name:'Excel для эффективной работы',code:'ДЕМО_EXCEL-2026/11',number:'2026/11',program_id:'excel',owner:names.colleague,id:'colleague',format:'Онлайн',group_type:'Сборное ОНЛАЙН',status:'Запускается',starts_at:'2026-11-06',graduates_at:'2026-12-06',access_days:30,registration_open:true}
-  };
+  for(const [id,p] of Object.entries(directory.programs)) programs[id]??=structuredClone(p);
+  const groups = structuredClone(directory.groups);
   state.customGroups = state.customGroups && typeof state.customGroups==='object' ? state.customGroups : {};
   state.groupOverrides = state.groupOverrides && typeof state.groupOverrides==='object' ? state.groupOverrides : {};
   for(const group of Object.values(state.customGroups)){if(!group.program_id)group.code=String(group.code||'').replace(/ \u00b7 /g,' ');}
-  Object.assign(groups,PortalSamples.related(),state.customGroups,state.groupOverrides);
-  if(!groups.excel.page_blocks)Object.assign(groups.excel,PortalSamples.excel());
+  if(state.directoryVersion!==directory.version){
+    state.previousGroupOverrides=structuredClone(state.groupOverrides);
+    for(const id of Object.keys(directory.groups)){
+      const previous=state.groupOverrides[id];
+      if(previous){const content=Object.fromEntries(['page_blocks','page_template','schedule','materials'].filter(k=>previous[k]!==undefined).map(k=>[k,previous[k]]));state.groupOverrides[id]={...structuredClone(directory.groups[id]),...content};}
+    }
+    state.directoryVersion=directory.version;save();
+  }
+  Object.assign(groups,state.customGroups,state.groupOverrides);
+  if(!groups.excel.page_blocks)groups.excel.page_blocks=PortalSamples.excel().page_blocks;
   const options = (values,selected='') => values.map(value=>`<option value="${escape(value)}"${value===selected?' selected':''}>${escape(value)}</option>`).join('');
   const programOptions = selected => Object.entries(programs).map(([id,p])=>`<option value="${escape(id)}"${id===selected?' selected':''}>${escape(p.tag)} — ${escape(p.title)}</option>`).join('');
   const safeUrl = value => { try { const url=new URL(value);return ['http:','https:'].includes(url.protocol)?url.href:''; } catch { return ''; } };
@@ -41,7 +48,7 @@
   const groupLink = (id,waiting=false) => (id==='excel'?'excel.html':'course.html') + '?group='+encodeURIComponent(id)+(waiting?'&student=waiting':'');
   const dateLabel = value => value ? value.split('-').reverse().join('.') : 'Не указана';
   const senior = new URLSearchParams(location.search).get('role')==='senior';
-  const role = ['admin','colleague','senior'].includes(new URLSearchParams(location.search).get('role'))?new URLSearchParams(location.search).get('role'):'admin';
+  const role = Object.keys(directory.staff).includes(new URLSearchParams(location.search).get('role'))?new URLSearchParams(location.search).get('role'):'admin';
   const canReview = row => row.group ? senior || groups[row.group]?.id===role : state.reviewers.includes(role);
   const labels={pending:'На проверке',approved:'Доступ открыт',rejected:'Отклонена'};
   const badges={pending:'wait',approved:'',rejected:'rejected'};
@@ -88,27 +95,26 @@
     }
   }
     if(!groups.mba.page_blocks && !groups.mba.schedule)groups.mba.schedule=[{date:'2026-11-06',time:'10:00–18:00',title:'Бизнес и организация как система',teacher:'Алексей Миронов',module:'Модуль 1 — Стратегия и управление'},{date:'2026-11-07',time:'10:00–18:00',title:'Модель устойчивой организации',teacher:'Алексей Миронов',module:'Модуль 1 — Стратегия и управление'},{date:'2026-12-04',time:'17:00–21:00',title:'Команда и управленческое взаимодействие',teacher:'Ирина Лебедева',module:'Модуль 2 — Управление людьми'}];
-  const pageContext={state,programs,groups,senior,role,canEditGroup,save,groupLink,closes,groupId:customId||(location.pathname.endsWith('excel.html')?'excel':'mba')};
-  AdminTools.init(pageContext);
+  const pageContext={state,programs,groups,names,staff:directory.staff,senior,role,canEditGroup,save,groupLink,closes,groupId:customId||(location.pathname.endsWith('excel.html')?'excel':'mba')};
+  const staffDirectory=AdminTools.init(pageContext);
   if(location.pathname.endsWith('editor.html')){CoursePages.initEditor(pageContext);return;}
   if(pageGroup&&(location.pathname.endsWith('course.html')||location.pathname.endsWith('excel.html'))){
 
     CoursePages.render(pageContext,pageGroup);
   }
   if(!document.getElementById('requests-body')) return;
-  if(senior){ document.getElementById('admin-role').textContent='Старший администратор — Елена Волкова';document.getElementById('reviewers-tab').hidden=false;document.getElementById('create-course').hidden=false;document.getElementById('create-course-help').hidden=true;document.getElementById('create-program').hidden=false; }
+  if(senior){ document.getElementById('create-course').hidden=false;document.getElementById('create-course-help').hidden=true;document.getElementById('create-program').hidden=false; }
   const dialog=document.getElementById('action-dialog');let action=null;let active=null;let selectedId=null;
   const close=()=>dialog.close();
   dialog.querySelectorAll('[data-close],.dialog-close').forEach(b=>b.addEventListener('click',close));
   const groupTable = window.AdminGroups.init({...pageContext, names, statuses, escape, safeUrl, dateLabel, open:(type,id)=>open(type,id)});
+  const catalogs=AdminCatalog.init({...pageContext,escape,safeUrl,canReview,labels,open:(type,id)=>open(type,id),openGroups:(owner,program)=>navigateGroups(owner,program)});
   const renderCatalog=()=>{
     const groupFilter=document.getElementById('group-program-filter'),chosen=groupFilter.value;
     groupFilter.innerHTML='<option value="">Все программы</option>'+programOptions(chosen);
     groupTable.render();
-    const search=document.getElementById('program-search').value.toLocaleLowerCase(),section=document.getElementById('program-section-filter').value;
-    document.getElementById('programs-body').innerHTML=Object.entries(programs).filter(([,p])=>(p.title+' '+p.tag).toLocaleLowerCase().includes(search)&&(!section||p.section===section)).map(([id,p])=>`<tr><td><span class="program-tag">${escape(p.tag)}</span></td><td><strong>${escape(p.title)}</strong></td><td>${p.section?`<span class="section-tag">${escape(p.section)}</span>`:'Не указан'}</td><td><button class="text-button" data-program-groups="${escape(id)}">${Object.values(groups).filter(g=>g.program_id===id).length}</button></td><td><div class="row-actions"><button data-program-view="${escape(id)}">Карточка</button>${senior?`<button data-program-edit="${escape(id)}">Редактировать</button><a class="text-link" href="editor.html?program=${encodeURIComponent(id)}&role=${role}">Шаблон ЛК →</a>`:'<span class="read-only">Только просмотр</span>'}</div></td></tr>`).join('')||'<tr><td colspan="5">Программы не найдены.</td></tr>';
-    for(const type of ['program-view','program-edit'])document.querySelectorAll('[data-'+type+']').forEach(b=>b.addEventListener('click',()=>open(type,b.getAttribute('data-'+type))));
-    document.querySelectorAll('[data-program-groups]').forEach(b=>b.addEventListener('click',()=>{groupTable.resetFilters();groupFilter.value=b.dataset.programGroups;renderCatalog();showPanel('groups');}));
+    catalogs.renderPrograms();
+    staffDirectory?.render();
   };
   const openProgram=(type,id,body,title,confirm)=>{
     const p=programs[id]||{title:'',tag:'',section:''};
@@ -162,14 +168,12 @@
     body.innerHTML=`<p>${canEditGroup(id)?'Доступно редактирование':'Только просмотр'}</p><dl class="dialog-fields">${entries.map(([name,value])=>`<div><dt>${name}</dt><dd>${escape(value)}</dd></div>`).join('')}<div class="full"><dt>Чат группы</dt><dd>${safeUrl(g.chat_url)?`<a class="text-link" href="${escape(safeUrl(g.chat_url))}" target="_blank" rel="noopener">Открыть чат ↗</a>`:'Не указан'}</dd></div><div class="full"><dt>Комментарий администратора</dt><dd>${escape(g.admin_notes||'Нет комментария')}</dd></div></dl><a class="btn outline" href="${groupLink(id)}&preview=1&role=${role}">Зайти в ЛК ↗</a> ${canEditGroup(id)?`<a class="btn" href="editor.html?group=${encodeURIComponent(id)}&role=${role}">Редактировать страницу ЛК</a>`:''}`;
   };
   const render=()=>{
-    const search=document.getElementById('search').value.toLocaleLowerCase();const filter=document.getElementById('filter').value;
     document.getElementById('pending-count').textContent=state.requests.filter(r=>r.status==='pending').length;
-    const rows=state.requests.filter(r=>(r.name+' '+(groups[r.group]?.name||'')).toLocaleLowerCase().includes(search)&&(filter==='all'||r.status===filter));
-    document.getElementById('requests-body').innerHTML=rows.map(r=>`<tr><td><strong>${escape(r.name)}</strong><small>${escape(r.email)}</small></td><td><strong>${escape(groups[r.group]?.name||'Группа не указана')}</strong><small>${escape(groups[r.group]?.code||'Нужна помощь ответственного')}</small>${!canReview(r)?'<span class="read-only">Только просмотр</span>':''}</td><td><span class="badge ${badges[r.status]}">${labels[r.status]}</span></td><td><div class="row-actions"><button data-action="details" data-id="${r.id}">Подробнее</button>${r.status==='pending'&&canReview(r)?`${r.group?`<button data-action="approve" data-id="${r.id}">Открыть доступ</button>`:''}<button data-action="assign" data-id="${r.id}">Назначить группу</button><button class="danger" data-action="reject" data-id="${r.id}">Отклонить</button>`:''}${r.mail?`<button data-action="mail" data-id="${r.id}">Пример письма</button>`:''}</div></td></tr>`).join('')||'<tr><td colspan="4">Заявок с такими условиями нет.</td></tr>';
+    catalogs.renderRequests();
+    catalogs.renderStudents();
     renderCatalog();
-    document.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>open(b.dataset.action,Number(b.dataset.id))));
-
   };
+
   const open=(type,id)=>{
     if(['create','program-create','program-edit'].includes(type)&&!senior)return;
     if(type==='group-edit'&&!canEditGroup(id))return;
@@ -200,15 +204,30 @@
     save();close();render();
   });
   document.getElementById('search').addEventListener('input',render);document.getElementById('filter').addEventListener('change',render);
-  const showPanel = panel => {if(!['requests','groups','programs','reviewers','profiles'].includes(panel)||(panel==='reviewers'&&!senior))return;document.getElementById('create-course').hidden=!senior||panel!=='groups';const panelUrl=new URL(location.href);panelUrl.searchParams.set('panel',panel);history.replaceState(null,'',panelUrl);document.querySelector('.page-heading h1').textContent={requests:'Заявки на обучение',groups:'Группы',programs:'Программы',reviewers:'Ответственные сотрудники',profiles:'Администраторы и фото'}[panel];document.querySelectorAll('[data-panel]').forEach(x=>x.classList.toggle('active',x.dataset.panel===panel));['requests','groups','programs','reviewers','profiles'].forEach(p=>document.getElementById(p+'-panel').hidden=p!==panel);document.querySelector('.page-heading p').textContent={requests:'Проверьте группу слушателя и откройте доступ к материалам.',groups:'Учебные группы со своими слушателями, датами и материалами.',programs:'Справочник программ школы и их базовых характеристик.',reviewers:'Сотрудники, которые помогают определить группу слушателя.',profiles:'Фотографии и контакты сотрудников во всех их группах.'}[panel];};
+  const showPanel = panel => {
+    if(panel==='reviewers')panel='profiles';
+    const titles={requests:'Заявки на обучение',students:'Слушатели',groups:'Группы',programs:'Программы',profiles:'Администраторы'};
+    if(!titles[panel])panel='requests';
+    document.getElementById('create-course').hidden=!senior||panel!=='groups';
+    const url=new URL(location.href);url.searchParams.set('panel',panel);history.replaceState(null,'',url);
+    document.querySelector('.page-heading h1').textContent=titles[panel];
+    document.querySelector('.page-heading p').textContent={requests:'Проверка заявок и открытие доступа к обучению.',students:'Аккаунты слушателей, группы, доступ и история посещений кабинета.',groups:'Учебные группы со своими слушателями, датами и материалами.',programs:'Программы школы и связанные с ними группы.',profiles:'Аккаунт, контакты, группы и дополнительные права сотрудника.'}[panel];
+    document.querySelectorAll('[data-panel]').forEach(x=>x.classList.toggle('active',x.dataset.panel===panel));
+    Object.keys(titles).forEach(p=>document.getElementById(p+'-panel').hidden=p!==panel);
+    staffDirectory?.render();
+  };
+  const navigateGroups=(owner='',program='')=>{
+    groupTable.resetFilters();document.getElementById('group-owner-filter').value=owner;
+    document.getElementById('group-program-filter').value=program;renderCatalog();showPanel('groups');
+  };
+  pageContext.openGroups=navigateGroups;
+  document.addEventListener('staff-profile-saved',render);
   document.querySelectorAll('[data-panel]').forEach(b=>b.addEventListener('click',()=>showPanel(b.dataset.panel)));
   document.getElementById('create-course').addEventListener('click',()=>open('create',null));
-  document.querySelectorAll('[name=reviewer]').forEach(input=>input.checked=state.reviewers.includes(input.value));
-  document.getElementById('reviewers-form').addEventListener('submit',event=>{event.preventDefault();if(!senior)return;state.reviewers=Array.from(document.querySelectorAll('[name=reviewer]:checked')).map(x=>x.value);save();render();notice('Ответственные сотрудники выбраны для этой демонстрации.');});
   document.getElementById('create-program').addEventListener('click',()=>open('program-create',null));
   document.getElementById('program-section-filter').innerHTML='<option value="">Все разделы</option>'+options(sections);
   ['program-search','group-search'].forEach(id=>document.getElementById(id).addEventListener('input',renderCatalog));
   ['program-section-filter','group-program-filter'].forEach(id=>document.getElementById(id).addEventListener('change',renderCatalog));
   render();
-  const query=new URLSearchParams(location.search);showPanel(query.get('panel')||'requests');if(senior&&query.get('create')==='1')open('create',null);
+  const query=new URLSearchParams(location.search);showPanel(query.get('panel')||'requests');if(query.get('owner')&&names[query.get('owner')])navigateGroups(query.get('owner'));if(senior&&query.get('create')==='1')open('create',null);
 })();
