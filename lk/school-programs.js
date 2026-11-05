@@ -1,0 +1,588 @@
+'use strict';
+(function(root){
+  const data={
+  "version": "20261105-4",
+  "source_url": "https://buildin.ai/veshk/e9458189-c445-4322-95c9-b153509f89d8",
+  "fetched_at": "2026-11-05",
+  "records": [
+    {
+      "source_id": "cb20cf7a-9c47-4bc9-b47b-00a1d5dda2d8",
+      "title": "Школа эффективного маркетинга",
+      "tag": "ШЭМ",
+      "section": "Маркетинг",
+      "program_type": "Программа повышения квалификации",
+      "formats": [
+        "офлайн"
+      ],
+      "hours": 120,
+      "website_url": "https://veshk.ru/shkola-effektivnogo-marketinga",
+      "certificate": "удостоверение",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "9f81b235-6765-49da-ad36-77796147de36",
+      "title": "Карьерный консультант",
+      "tag": "КарьерКонсул",
+      "section": "HR",
+      "program_type": "Программа повышения квалификации",
+      "formats": [
+        "офлайн"
+      ],
+      "hours": 133,
+      "website_url": "https://veshk.ru/karernyj-konsultant",
+      "certificate": "удостоверение",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "dc859553-fa48-4d35-aabf-76af8f7f67c5",
+      "title": "Разработка базовых карьерных треков для внутренней мобильности сотрудников",
+      "tag": "ОНЛ_КарьерТрэк",
+      "section": "HR",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 8,
+      "website_url": "https://veshk.ru/razrabotka-karernyh-trekov",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "325f0e53-c231-47b3-bed7-d633fc625587",
+      "title": "Качественные исследования потребителей по методу JTBD",
+      "tag": "ОНЛ_КачественныеИсслед",
+      "section": "Маркетинг",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 32,
+      "website_url": "https://veshk.ru/kachestvennye-issledovaniya-potrebitelej",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "0bc8643e-a08b-4a64-805f-2be635aac3d6",
+      "title": "Разработка рыночной стратегии: как найти точки роста для бизнеса",
+      "tag": "ОНЛ_Маркетинг",
+      "section": "Маркетинг",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 40,
+      "website_url": "https://veshk.ru/marketing-kotoryj-nuzhen-biznesu",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "1d70a71f-99fe-4745-8ae3-92f68a132bc0",
+      "title": "Личная эффективность: навыки управления собой",
+      "tag": "ЛичнаяЭфф",
+      "section": "Упр. навыки",
+      "program_type": "Программа повышения квалификации",
+      "formats": [
+        "офлайн"
+      ],
+      "hours": 85,
+      "website_url": "https://veshk.ru/lichnaya-effektivnost",
+      "certificate": "удостоверение",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "d6267cfe-7948-490c-8d56-c5e15518789d",
+      "title": "Практики регулярного менеджмента",
+      "tag": "Практики",
+      "section": "Упр. навыки",
+      "program_type": "Программа повышения квалификации",
+      "formats": [
+        "офлайн"
+      ],
+      "hours": 60,
+      "website_url": "https://veshk.ru/praktiki-regulyarnogo-menedzhmenta",
+      "certificate": "удостоверение",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "14f59b67-9bcc-4e3c-9934-6275c5d40bf8",
+      "title": "Управление отделом продаж",
+      "tag": "УОП",
+      "section": "Продажи",
+      "program_type": "Программа повышения квалификации",
+      "formats": [
+        "офлайн"
+      ],
+      "hours": 90,
+      "website_url": "https://veshk.ru/upravlenie-otdelom-prodazh",
+      "certificate": "удостоверение",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "5fd398ab-826f-488b-a40b-574a40dba7e0",
+      "title": "Специалист по обучению и карьерному развитию",
+      "tag": "ОНЛ_СОРП",
+      "section": "HR",
+      "program_type": "Программа повышения квалификации",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 124,
+      "website_url": "https://veshk.ru/specialist-po-obucheniyu-i-razvitiyu-personala",
+      "certificate": "удостоверение",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "bb76f60c-f6c4-4e33-a267-300b99a796ff",
+      "title": "Специалист по оценке персонала",
+      "tag": "ОНЛ_СПО",
+      "section": "HR",
+      "program_type": "Программа повышения квалификации",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 124,
+      "website_url": "https://veshk.ru/specialist-po-ocenke-personala",
+      "certificate": "удостоверение",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "73f4d1fa-b6be-42f0-b22c-c3073260875d",
+      "title": "Эмоциональный интеллект в управлении: гибкие навыки руководителя",
+      "tag": "ПиплМен",
+      "section": "Упр. навыки",
+      "program_type": "Программа повышения квалификации",
+      "formats": [
+        "офлайн"
+      ],
+      "hours": 100,
+      "website_url": "https://veshk.ru/people-management",
+      "certificate": "удостоверение",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "296d6f40-0097-483c-b16d-d01318bd3bc1",
+      "title": "Управление производством",
+      "tag": "УПроизв",
+      "section": "Производство",
+      "program_type": "Программа повышения квалификации",
+      "formats": [
+        "офлайн"
+      ],
+      "hours": 125,
+      "website_url": "https://veshk.ru/upravlenie-proizvodstvom",
+      "certificate": "удостоверение",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "4961afb7-9495-4abf-8440-33d1bd29567f",
+      "title": "Mini-MBA: Бизнес-партнер по персоналу (HR BP)",
+      "tag": "ОНЛ_ЧРБП",
+      "section": "HR",
+      "program_type": "Программа повышения квалификации",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 135,
+      "website_url": "https://veshk.ru/mini-mba-hr-business-partner",
+      "certificate": "удостоверение",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "774a5feb-ceeb-4d80-be58-aec641e48ac1",
+      "title": "Профессиональные навыки управления людьми: психология управления",
+      "tag": "ПНУЛ",
+      "section": "Упр. навыки",
+      "program_type": "Программа повышения квалификации",
+      "formats": [
+        "офлайн"
+      ],
+      "hours": 167,
+      "website_url": "https://veshk.ru/psyhologiya-upravleniya",
+      "certificate": "удостоверение",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "81aae309-9a3b-49b5-808e-b171db31bd51",
+      "title": "Метод 360 градусов: оценка и развитие",
+      "tag": "ОНЛ_360",
+      "section": "HR",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 12,
+      "website_url": "https://veshk.ru/metod-360-gradusov",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "ab64fcf5-2e4e-4eaa-9483-9e13c6900c32",
+      "title": "Тесты для оценки профессиональных компетенций",
+      "tag": "ОНЛ_Тест",
+      "section": "HR",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 12,
+      "website_url": "https://veshk.ru/testy-dlya-ocenki-kompetencij",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "4228db4e-617e-4079-b698-6b360dee59de",
+      "title": "Разработка и внедрение модели компетенций",
+      "tag": "ОНЛ_МодельКомпетенций",
+      "section": "HR",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 16,
+      "website_url": "https://veshk.ru/razrabotka-i-vnedrenie-modeli-kompetenciy",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "7562a02a-f0f7-4ce2-a349-fa20c49225ef",
+      "title": "Мini-MBA Менеджмент. Старт",
+      "tag": "Менеджер",
+      "section": "Менеджмент",
+      "program_type": "Программа проф. переподготовки",
+      "formats": [
+        "офлайн"
+      ],
+      "hours": 250,
+      "website_url": "https://veshk.ru/mini-mba-manager",
+      "certificate": "диплом",
+      "cover_url": "https://veshk.ru/media/images/Var_1.max-1024x1024.jpg",
+      "template_key": "mba"
+    },
+    {
+      "source_id": "b00b6533-6d92-4fa4-924b-1b74c6e45387",
+      "title": "Руководитель проекта",
+      "tag": "РукПроект",
+      "section": "Менеджмент",
+      "program_type": "Программа повышения квалификации",
+      "formats": [
+        "офлайн"
+      ],
+      "hours": 164,
+      "website_url": "https://veshk.ru/rukovoditel-proekta",
+      "certificate": "удостоверение",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "ff6b6591-7e58-4969-87a1-c96fea0407db",
+      "title": "Система управления эффективностью деятельности сотрудников (Performance Management)",
+      "tag": "ОНЛ_УпрЭффектЧРБП",
+      "section": "HR",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 16,
+      "website_url": "https://veshk.ru/upravlenie-ehffektivnostyu",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "fc5bc7a8-c25e-449a-b39d-4c78a1f8d954",
+      "title": "От кадрового резерва к управлению талантами (talent-management)",
+      "tag": "ОНЛ_ТалантЧРБП",
+      "section": "HR",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 16,
+      "website_url": "https://veshk.ru/upravlenie-talantami-talent-management",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "87aab0b7-112c-42ff-be85-322ecd44cc59",
+      "title": "Практический курс «Разработка упражнений и дизайн Центра Оценки»",
+      "tag": "ОНЛ_ДизайнОценки",
+      "section": "HR",
+      "program_type": "Специализированный курс",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 50,
+      "website_url": "https://veshk.ru/razrabotka-uprazhnenij-i-dizajn-centra-ocenki",
+      "certificate": "удостоверение",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "a9e421d0-48d1-445a-a9ad-9c14dd053d5d",
+      "title": "Интервью по компетенциям",
+      "tag": "ОНЛ_ИнтервьюСПО",
+      "section": "HR",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 12,
+      "website_url": "https://veshk.ru/intervyu-po-kompetenciyam",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "ece10717-f040-499f-82bb-d75ade52c7bf",
+      "title": "Как работать с ИПР: планирование и сопровождение индивидуального развития сотрудников",
+      "tag": "ОНЛ_ИПР",
+      "section": "HR",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 16,
+      "website_url": "https://veshk.ru/individualnyi-plan-razvitiya",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "c5576bb5-6823-4803-886e-1cca855a6fdc",
+      "title": "Корпоративная культура и вовлечённость персонала как ключевые факторы успеха организации",
+      "tag": "ОНЛ_КорпКультур",
+      "section": "HR",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 16,
+      "website_url": "https://veshk.ru/upravlenie-korporativnoy-kulturoy",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "01b18698-f90a-4831-a3af-070cdd32a2f0",
+      "title": "Оценочная конференция: от разработки сценария до подведения итогов",
+      "tag": "ОНЛ_ОценочнаяКонф",
+      "section": "HR",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 16,
+      "website_url": "https://veshk.ru/ocenochnaya-konferenciya",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "216d3280-993f-44d5-8677-ddac6a3f08bb",
+      "title": "Тестирование персонала: основы психометрики",
+      "tag": "ОНЛ_СПО_Психометрика",
+      "section": "HR",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 12,
+      "website_url": "https://veshk.ru/testirovanie-personala",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "056d2e1d-eaf7-4f05-a3a5-43136966d0ef",
+      "title": "Организационный дизайн: цели, структура, процессы компании",
+      "tag": "ОНЛ_ОргДизайн",
+      "section": "HR",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 20,
+      "website_url": "https://veshk.ru/organizacionnyj-dizajn-celi-struktura-processy-kompanii",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "95362355-bba6-44ce-9195-32220bd0d9ef",
+      "title": "Ассессмент-центр: тонкие настройки в оценке персонала",
+      "tag": "ОНЛ_Ассессмент",
+      "section": "HR",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 32,
+      "website_url": "https://veshk.ru/trening-assessment-centr",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "ad37e717-1142-4a28-84cd-2ce2f4c8184d",
+      "title": "MBA Финансовый директор",
+      "tag": "ФД",
+      "section": "Финансы",
+      "program_type": "Программа проф. переподготовки",
+      "formats": [
+        "офлайн"
+      ],
+      "hours": 475,
+      "website_url": "https://veshk.ru/mini-mba-finance-director",
+      "certificate": "диплом",
+      "cover_url": "https://veshk.ru/media/images/oblozhka_FD_h4Amhgq.original.jpg",
+      "template_key": "mba"
+    },
+    {
+      "source_id": "a942070f-ef3d-40d9-919c-2c22cc8f4e24",
+      "title": "MBA Директор по маркетингу",
+      "tag": "ДМ",
+      "section": "Маркетинг",
+      "program_type": "Программа проф. переподготовки",
+      "formats": [
+        "офлайн"
+      ],
+      "hours": 480,
+      "website_url": "https://veshk.ru/mini-mba-marketing-director",
+      "certificate": "диплом",
+      "cover_url": "https://veshk.ru/media/images/oblozhka_DM_VrRi61H.original.png",
+      "template_key": "mba"
+    },
+    {
+      "source_id": "94dd6abb-e9c3-4134-b3db-c2c3de5040e5",
+      "title": "MBA Коммерческий директор",
+      "tag": "МБАКД",
+      "section": "Продажи",
+      "program_type": "Программа проф. переподготовки",
+      "formats": [
+        "офлайн"
+      ],
+      "hours": 485,
+      "website_url": "https://veshk.ru/mini-mba-commercial-director",
+      "certificate": "диплом",
+      "cover_url": "https://veshk.ru/media/images/oblozhka_KD_YpDaH8r.original.png",
+      "template_key": "mba"
+    },
+    {
+      "source_id": "868a32e3-9167-43b2-9b83-573a5e46b198",
+      "title": "Финансы для руководителей (финансы для нефинансистов)",
+      "tag": "ОНЛ_ФДРмини",
+      "section": "Финансы",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 30,
+      "website_url": "https://veshk.ru/finansy-dlya-rukovoditelej",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "05c66654-4c4e-4914-9807-095634bbf1dc",
+      "title": "Менеджер по персоналу",
+      "tag": "МенПерс",
+      "section": "HR",
+      "program_type": "Программа повышения квалификации",
+      "formats": [
+        "офлайн"
+      ],
+      "hours": 85,
+      "website_url": "https://veshk.ru/menedzher-po-personalu",
+      "certificate": "удостоверение",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "4895b3b5-9e93-4d51-8cf9-79f605d95a86",
+      "title": "Директор по качеству",
+      "tag": "ОНЛ_ДирКачество",
+      "section": "Производство",
+      "program_type": "Программа повышения квалификации",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 97,
+      "website_url": "https://veshk.ru/direktor-po-kachestvu",
+      "certificate": "удостоверение",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "91a652c8-0884-482b-bb50-fd44faa58f69",
+      "title": "Управленческий учёт. Бюджетирование и контроль",
+      "tag": "ОНЛ_УпрУчет",
+      "section": "Финансы",
+      "program_type": "Специализированный курс",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 40,
+      "website_url": "https://veshk.ru/upravlencheskiy-uchet-i-byudzhetirovanie",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    },
+    {
+      "source_id": "63010b15-6c6e-441a-922b-4cb23c409586",
+      "title": "Карьерный диалог с сотрудниками",
+      "tag": "ОНЛ_КарьерДиалог",
+      "section": "HR",
+      "program_type": "Семинар-практикум",
+      "formats": [
+        "онлайн"
+      ],
+      "hours": 16,
+      "website_url": "https://veshk.ru/karernyj-dialog-s-sotrudnikami",
+      "certificate": "сертификат",
+      "cover_url": null,
+      "template_key": "short"
+    }
+  ]
+};
+
+  const types=['Программа проф. переподготовки','Программа повышения квалификации','Семинар-практикум','Специализированный курс'];
+  const typeLabel=value=>({'Программа проф. переподготовки':'Профпереподготовка','Программа повышения квалификации':'Повышение квалификации'})[value]||value||'Не указан';
+  const safeCover=value=>{try{const u=new URL(value);return u.protocol==='https:'&&u.hostname==='veshk.ru'&&!u.username&&!u.password&&u.pathname.startsWith('/media/images/')?u.href:'';}catch{return '';}};
+  function apply(state){
+    if(state.programCatalogVersion===data.version)return {added:0,updated:0};
+    const programs=state.programs;
+    state.previousProgramCatalog=structuredClone(programs);
+    const counts={added:0,updated:0};
+    for(const source of data.records){
+      const entries=Object.entries(programs);
+      let match=entries.find(([,p])=>p.source_id===source.source_id)||entries.find(([,p])=>p.tag===source.tag);
+      if(!match){const titles=entries.filter(([,p])=>!p.source_id&&p.title?.trim()===source.title);if(titles.length===1)match=titles[0];}
+      const id=match?.[0]||'buildin-'+source.source_id,previous=programs[id];
+      programs[id]={...structuredClone(source),...previous,...structuredClone(source),template_key:previous?.template_key||source.template_key};
+      counts[previous?'updated':'added']++;
+    }
+    state.programCatalogVersion=data.version;
+    return counts;
+  }
+  const api={...data,apply,types,typeLabel,safeCover};
+  if(typeof module!=='undefined'&&module.exports)module.exports=api;
+  root.SchoolPrograms=api;
+})(typeof window!=='undefined'?window:globalThis);

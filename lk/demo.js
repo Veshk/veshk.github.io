@@ -22,6 +22,7 @@
   const programs = state.programs;
   for(const [id,p] of Object.entries(programs)){p.template_key??=(id==='excel'?'short':'mba');}
   for(const [id,p] of Object.entries(directory.programs)) programs[id]??=structuredClone(p);
+  if(state.programCatalogVersion!==SchoolPrograms.version){SchoolPrograms.apply(state);save();}
   const groups = structuredClone(directory.groups);
   state.customGroups = state.customGroups && typeof state.customGroups==='object' ? state.customGroups : {};
   state.groupOverrides = state.groupOverrides && typeof state.groupOverrides==='object' ? state.groupOverrides : {};
@@ -135,7 +136,8 @@
     if(type==='program-view'){
       title.textContent=p.title;
       const linked=Object.entries(groups).filter(([,g])=>g.program_id===id);
-      body.innerHTML=`<dl class="dialog-fields"><div><dt>ТЕГ программы</dt><dd>${escape(p.tag)}</dd></div><div><dt>Раздел</dt><dd>${escape(p.section||'Не указан')}</dd></div></dl><h3>Группы программы</h3>${linked.length?linked.map(([gid,g])=>`<p><a class="text-link" href="${groupLink(gid)}">${escape(g.code)} — ${escape(g.name)} ↗</a></p>`).join(''):'<p>У этой программы пока нет групп.</p>'}`;confirm.hidden=true;return;
+      const details=[['ТЕГ программы',p.tag],['Раздел',p.section],['Тип программы',p.program_type],['Формат',(p.formats||[]).map(f=>f==='онлайн'?'Онлайн':'Очно').join(', ')],['Академические часы',p.hours],['Документ',p.certificate]];
+      body.innerHTML=`${SchoolPrograms.safeCover(p.cover_url)?`<img class="program-cover" src="${escape(SchoolPrograms.safeCover(p.cover_url))}" alt="Обложка программы ${escape(p.title)}">`:''}<dl class="dialog-fields">${details.map(([label,v])=>`<div><dt>${label}</dt><dd>${escape(v??'Не указано')||'Не указано'}</dd></div>`).join('')}</dl>${safeUrl(p.website_url)?`<p><a class="text-link" href="${escape(safeUrl(p.website_url))}" target="_blank" rel="noopener">Программа на сайте школы ↗</a></p>`:''}<h3>Группы программы</h3>${linked.length?linked.map(([gid,g])=>`<p><a class="text-link" href="${groupLink(gid)}">${escape(g.code)} — ${escape(g.name)} ↗</a></p>`).join(''):'<p>У этой программы пока нет групп.</p>'}`;confirm.hidden=true;return;
     }
     title.textContent=type==='program-create'?'Добавить программу':'Редактировать программу';
     body.innerHTML=`<label class="field">Название программы<input name="program_title" required maxlength="180" value="${escape(p.title)}"></label><label class="field">ТЕГ программы<input name="program_tag" required maxlength="60" value="${escape(p.tag)}" autocapitalize="off" spellcheck="false"></label><p class="form-note">Обязательный уникальный ТЕГ по регламенту школы. Введите его точно, сохранив регистр и символы.</p><label class="field">Раздел<select name="program_section"><option value="">Не указан</option>${options(sections,p.section)}</select></label><label class="field">Базовый шаблон ЛК<select name="program_template">${Object.entries(CoursePages.templates).map(([k,v])=>`<option value="${k}"${(p.template_key||'mba')===k?' selected':''}>${v}</option>`).join('')}</select></label><p class="form-note">Смена шаблона заменит базовые блоки программы для следующих групп. Уже созданные группы сохранят своё наполнение.</p><p class="form-note">Изменение программы не заменяет названия, расписание и материалы уже созданных групп.</p>`;
@@ -148,7 +150,7 @@
     const data=new FormData(form),tag=String(data.get('program_tag')).trim();
     if(Object.entries(programs).some(([id,p])=>id!==selectedId&&p.tag===tag)){invalid(form,'program_tag','Программа с таким ТЕГом уже есть.');return;}
     const id=selectedId||'program-'+crypto.randomUUID();
-    programs[id]={...programs[id],page_blocks:programs[id]?.template_key===String(data.get('program_template'))?programs[id]?.page_blocks:null,template_key:String(data.get('program_template')),title:String(data.get('program_title')).trim(),tag,section:String(data.get('program_section'))};save();close();renderCatalog();showPanel('programs');notice('Программа сохранена. Её можно выбрать при создании группы.');
+    programs[id]={...programs[id],page_blocks:programs[id]?.template_key===String(data.get('program_template'))?programs[id]?.page_blocks:null,template_key:String(data.get('program_template')),title:String(data.get('program_title')).trim(),tag,section:String(data.get('program_section'))};save();close();if(action==='program-create')document.getElementById('program-source-filter').value='';renderCatalog();showPanel('programs');notice('Программа сохранена. Её можно выбрать при создании группы.');
   };
   const openGroup=(type,id,body,title,confirm)=>{
     const g=groups[id]||{name:'',code:'',program_id:'',id:'admin',format:'Очно',access_days:30,status:'Запускается',registration_open:true};
