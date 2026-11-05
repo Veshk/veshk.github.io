@@ -42,18 +42,19 @@ class EnrollmentApplicationResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->defaultSort('created_at', 'desc')->columns([
-            TextColumn::make('user.name')->label('Слушатель')->searchable()->description(fn (EnrollmentApplication $record) => $record->user->email),
+            TextColumn::make('user.name')->label('Слушатель')->searchable()->sortable()->description(fn (EnrollmentApplication $record) => $record->user->email),
             TextColumn::make('group.title')->label('Группа')->placeholder('Нужна помощь с группой')->description(fn (EnrollmentApplication $record) => $record->group?->code)->wrap(),
             TextColumn::make('status')->label('Статус')->badge()->formatStateUsing(fn ($state, EnrollmentApplication $record) => $record->statusLabel())->color(fn ($state) => match ($state) {
                 'approved' => 'success','rejected' => 'danger',default => 'warning'
             }),
+            TextColumn::make('group.administrator.name')->label('Администратор')->placeholder('Ответственные сотрудники'),
             TextColumn::make('scope')->label('Ваш доступ')->state(fn (EnrollmentApplication $record) => auth()->user()->can('review', $record) ? 'Можно обработать' : 'Только просмотр')->color(fn (EnrollmentApplication $record) => auth()->user()->can('review', $record) ? 'primary' : 'gray'),
             TextColumn::make('created_at')->label('Подана')->dateTime('d.m.Y H:i')->sortable(),
             TextColumn::make('message')->label('Комментарий')->limit(45)->toggleable(isToggledHiddenByDefault: true),
         ])->filters([
             SelectFilter::make('status')->label('Статус')->options(['pending' => 'Ожидает проверки', 'approved' => 'Одобрена', 'rejected' => 'Отклонена']),
             SelectFilter::make('study_group_id')->label('Группа')->options(fn () => StudyGroup::pluck('title', 'id')->all()),
-        ])->recordActions([
+        ])->deferFilters(false)->recordActions([
             Action::make('details')->label('Подробнее')->icon('heroicon-o-eye')->modalHeading('Заявка на обучение')->modalContent(fn (EnrollmentApplication $record) => view('filament.application-details', ['application' => $record]))->modalSubmitAction(false)->modalCancelActionLabel('Закрыть'),
             Action::make('approve')->label('Одобрить')->color('success')->icon('heroicon-o-check')->visible(fn (EnrollmentApplication $record) => $record->status === 'pending' && $record->study_group_id && auth()->user()->can('review', $record))
                 ->modalHeading('Открыть доступ к группе')->modalSubmitActionLabel('Открыть доступ')->modalDescription('Подтвердите, что слушатель действительно учится в выбранной группе.')->schema([

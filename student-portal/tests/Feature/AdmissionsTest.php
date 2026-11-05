@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Filament\Pages\Reviewers;
+use App\Filament\Pages\StaffProfiles;
 use App\Filament\Resources\EnrollmentApplications\Pages\ListEnrollmentApplications;
 use App\Models\Enrollment;
 use App\Models\EnrollmentApplication;
@@ -170,7 +171,9 @@ class AdmissionsTest extends TestCase
         $senior = User::factory()->create(['role' => 'senior']);
         $admin = User::factory()->create(['role' => 'admin']);
         $this->actingAs($senior);
-        Livewire::test(Reviewers::class)->set('selected', [(string) $senior->id, (string) $admin->id])->call('save')->assertHasNoErrors();
+        Livewire::test(StaffProfiles::class)->set('reviewsUnassigned', true)->call('save')->assertHasNoErrors();
+        Livewire::test(StaffProfiles::class)->call('selectPerson', $admin->id)->set('reviewsUnassigned', true)->call('save')->assertHasNoErrors();
+        Livewire::test(Reviewers::class)->assertRedirect(StaffProfiles::getUrl());
         $this->assertTrue($senior->fresh()->reviews_unassigned);
         $this->assertTrue($admin->fresh()->reviews_unassigned);
         $this->actingAs($admin)->get('/admin/reviewers')->assertForbidden();
@@ -222,8 +225,8 @@ class AdmissionsTest extends TestCase
         $this->assertAuthenticatedAs($user);
         $this->post('/logout')->assertRedirect('/login');
         for ($attempt = 0; $attempt < 5; $attempt++) {
-            $this->post('/login',['email' => $user->email, 'password' => 'wrong-password']);
+            $this->post('/login', ['email' => $user->email, 'password' => 'wrong-password']);
         }
-        $this->post('/login',['email' => $user->email, 'password' => 'wrong-password'])->assertSessionHasErrors(['email' => 'Слишком много попыток. Попробуйте через минуту.']);
+        $this->post('/login', ['email' => $user->email, 'password' => 'wrong-password'])->assertSessionHasErrors(['email' => 'Слишком много попыток. Попробуйте через минуту.']);
     }
 }

@@ -2,23 +2,31 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Resources\StudyGroups\StudyGroupResource;
 use App\Models\User;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Table;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
-class StaffProfiles extends Page
+class StaffProfiles extends Page implements HasTable
 {
+    use InteractsWithTable;
     use WithFileUploads;
 
     protected string $view = 'filament.pages.staff-profiles';
 
-    protected static ?string $title = 'Администраторы и фото';
+    protected static ?string $title = 'Администраторы';
 
-    protected static ?string $navigationLabel = 'Администраторы и фото';
+    protected static ?string $navigationLabel = 'Администраторы';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserCircle;
 
@@ -27,6 +35,8 @@ class StaffProfiles extends Page
     public ?int $selectedId = null;
 
     public string $contactText = '';
+
+    public bool $reviewsUnassigned = false;
 
     public string $contactUrl = '';
 
@@ -48,6 +58,22 @@ class StaffProfiles extends Page
         return $person;
     }
 
+    public function table(Table $table): Table
+    {
+        return $table->query(User::query()->whereIn('role', ['admin', 'senior'])->withCount('studyGroups'))->defaultSort('name')->columns([
+            TextColumn::make('name')->label('Администратор')->searchable(['name', 'email'])->sortable()->description(fn (User $record): string => $record->email)->action(fn (User $record) => $this->selectPerson($record->id)),
+            TextColumn::make('role')->label('Роль аккаунта')->badge()->formatStateUsing(fn (string $state): string => $state === 'senior' ? 'Старший администратор' : 'Администратор'),
+            TextColumn::make('study_groups_count')->label('Группы')->sortable()->url(fn (User $record): string => StudyGroupResource::getUrl('index', ['filters' => ['administrator_id' => ['value' => $record->id]]])),
+            TextColumn::make('reviews_unassigned')->label('Заявки без группы')->badge()->formatStateUsing(fn (bool $state): string => $state ? 'Назначен ответственным' : 'Не назначен')->color(fn (bool $state): string => $state ? 'info' : 'gray'),
+        ])->filters([
+            TernaryFilter::make('reviews_unassigned')->label('Разбирает заявки без группы'),
+            TernaryFilter::make('has_groups')->label('Есть группы')->queries(true: fn ($query) => $query->has('studyGroups'), false: fn ($query) => $query->doesntHave('studyGroups'), blank: fn ($query) => $query),
+        ])->deferFilters(false)->recordActions([
+            Action::make('profile')->label('Профиль')->action(fn (User $record) => $this->selectPerson($record->id)),
+            Action::make('groups')->label('К группам')->url(fn (User $record): string => StudyGroupResource::getUrl('index', ['filters' => ['administrator_id' => ['value' => $record->id]]])),
+        ])->emptyStateHeading('Администраторы не найдены');
+    }
+
     public function mount(): void
     {
         $this->selectPerson(auth()->id());
@@ -55,9 +81,11 @@ class StaffProfiles extends Page
 
     public function selectPerson(int $id): void
     {
-        $person = $this->editablePerson($id);
+        abort_unless(static::canAccess(), 403);
+        $person = User::whereIn('role', ['admin', 'senior'])->findOrFail($id);
         $this->selectedId = $person->id;
         $this->contactText = $person->contact_text ?? '';
+        $this->reviewsUnassigned = $person->reviews_unassigned;
         $this->contactUrl = $person->contact_url ?? '';
         $this->photo = null;
         $this->removePhoto = false;
@@ -67,7 +95,9 @@ class StaffProfiles extends Page
     public function save(): void
     {
         $person = $this->editablePerson((int) $this->selectedId);
+        abort_if(! auth()->user()->isSenior() && $this->reviewsUnassigned !== $person->reviews_unassigned, 403);
         $this->validate([
+            'reviewsUnassigned' => ['boolean'],
             'contactText' => ['string', 'max:2000'],
             'contactUrl' => ['nullable', 'url:http,https', 'max:2000'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048', 'dimensions:max_width=5000,max_height=5000'],
@@ -79,15 +109,15 @@ class StaffProfiles extends Page
         } elseif ($this->removePhoto) {
             $path = null;
         }
-        $person->forceFill(['contact_text' => $this->contactText, 'contact_url' => $this->contactUrl ?: null, 'profile_photo' => $path])->save();
+        $person->forceFill(['contact_text' => $this->contactText, 'contact_url' => $this->contactUrl ?: null, 'profile_photo' => $path, 'reviews_unassigned' => auth()->user()->isSenior() ? $this->reviewsUnassigned : $person->reviews_unassigned])->save();
         $this->photo = null;
         $this->removePhoto = false;
-        Notification::make()->title('Фото и контакты сохранены')->success()->send();
+        Notification::make()->title('Профиль и настройки сохранены')->success()->send();
     }
 
     protected function getViewData(): array
     {
-        return ['people' => User::whereIn('role', ['admin', 'senior'])->when(! auth()->user()->isSenior(), fn ($q) => $q->whereKey(auth()->id()))->orderBy('name')->get(),
-            'person' => $this->editablePerson((int) $this->selectedId)];
+        return ['person' => User::whereIn('role', ['admin', 'senior'])->findOrFail($this->selectedId),
+            'canEdit' => auth()->user()->isSenior() || auth()->id() === $this->selectedId];
     }
 }

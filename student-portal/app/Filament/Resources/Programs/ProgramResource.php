@@ -70,14 +70,14 @@ class ProgramResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->columns([
+        return $table->defaultSort('title')->recordUrl(fn (Program $record): string => static::getUrl('view', ['record' => $record]))->columns([
             TextColumn::make('tag')->label('ТЕГ программы')->searchable()->sortable(),
-            TextColumn::make('title')->label('Название программы')->searchable()->wrap(),
+            TextColumn::make('title')->label('Название программы')->searchable()->sortable()->wrap(),
             TextColumn::make('section')->label('Раздел')->badge(),
-            TextColumn::make('study_groups_count')->counts('studyGroups')->label('Групп'),
+            TextColumn::make('study_groups_count')->counts('studyGroups')->label('Групп')->sortable()->url(fn (Program $record): string => StudyGroupResource::getUrl('index', ['filters' => ['program_id' => ['value' => $record->id]]])),
         ])->filters([
             SelectFilter::make('section')->label('Раздел')->options(array_combine(Program::SECTIONS, Program::SECTIONS)),
-        ])->recordActions([
+        ])->deferFilters(false)->recordActions([
             Action::make('view')->label('Карточка')->url(fn (Program $record): string => static::getUrl('view', ['record' => $record])),
             EditAction::make()->label('Редактировать'),
             Action::make('groups')->label('Группы')->url(fn (Program $record): string => StudyGroupResource::getUrl('index', ['filters' => ['program_id' => ['value' => $record->id]]])),

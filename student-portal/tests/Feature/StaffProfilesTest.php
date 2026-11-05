@@ -38,7 +38,7 @@ class StaffProfilesTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $other = User::factory()->create(['role' => 'admin']);
         $this->actingAs($admin);
-        Livewire::test(StaffProfiles::class)->set('selectedId', $other->id)->assertForbidden();
+        Livewire::test(StaffProfiles::class)->set('selectedId', $other->id)->call('save')->assertForbidden();
         $this->assertNull($other->fresh()->contact_text);
         $this->actingAs(User::factory()->create())->get('/admin/staff-profiles')->assertForbidden();
     }
@@ -54,6 +54,23 @@ class StaffProfilesTest extends TestCase
         Livewire::test(StaffProfiles::class)->call('selectPerson', $student->id)->assertNotFound();
         Livewire::test(StaffProfiles::class)->set('contactUrl', 'javascript:alert(1)')->call('save')->assertHasErrors('contactUrl');
         Livewire::test(StaffProfiles::class)->set('photo', UploadedFile::fake()->create('document.txt', 10, 'text/plain'))->call('save')->assertHasErrors('photo');
+    }
+
+    public function test_directory_includes_staff_without_groups_and_only_senior_can_grant_review_permission(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $other = User::factory()->create(['role' => 'admin']);
+        $senior = User::factory()->create(['role' => 'senior']);
+        StudyGroup::factory()->create(['administrator_id' => $other->id]);
+        $this->actingAs($admin);
+        Livewire::test(StaffProfiles::class)->assertCanSeeTableRecords([$admin, $other, $senior])->filterTable('has_groups', false)->assertCanSeeTableRecords([$admin, $senior])->assertCanNotSeeTableRecords([$other]);
+        Livewire::test(StaffProfiles::class)->set('reviewsUnassigned', true)->call('save')->assertForbidden();
+        $this->assertFalse($admin->fresh()->reviews_unassigned);
+        $this->actingAs($senior);
+        Livewire::test(StaffProfiles::class)->call('selectPerson', $admin->id)->set('reviewsUnassigned', true)->call('save')->assertHasNoErrors();
+        $this->assertTrue($admin->fresh()->reviews_unassigned);
+        Livewire::test(StaffProfiles::class)->call('selectPerson', $admin->id)->set('reviewsUnassigned', false)->call('save')->assertHasNoErrors();
+        $this->assertFalse($admin->fresh()->reviews_unassigned);
     }
 
     public function test_shared_login_and_registration_form_order_and_start_date(): void

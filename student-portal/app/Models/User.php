@@ -39,6 +39,16 @@ class User extends Authenticatable implements FilamentUser
         return $this->isStaff();
     }
 
+    public function studyGroups(): HasMany
+    {
+        return $this->hasMany(StudyGroup::class, 'administrator_id');
+    }
+
+    public function portalVisits(): HasMany
+    {
+        return $this->hasMany(PortalVisit::class);
+    }
+
     public function applications(): HasMany
     {
         return $this->hasMany(EnrollmentApplication::class);

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StudentController;
+use App\Http\Middleware\RecordPortalVisit;
 use App\Models\StudyGroup;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -17,10 +18,10 @@ Route::middleware('guest')->group(function (): void {
 });
 Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/learning', [StudentController::class, 'home'])->name('student.home');
-    Route::get('/applications/new', [StudentController::class, 'applicationForm'])->name('student.apply');
+    Route::get('/learning', [StudentController::class, 'home'])->middleware(RecordPortalVisit::class)->name('student.home');
+    Route::get('/applications/new', [StudentController::class, 'applicationForm'])->middleware(RecordPortalVisit::class)->name('student.apply');
     Route::post('/applications', [StudentController::class, 'apply'])->middleware('throttle:10,1')->name('student.apply.store');
-    Route::get('/learning/{group}', [StudentController::class, 'group'])->name('student.group');
+    Route::get('/learning/{group}', [StudentController::class, 'group'])->middleware(RecordPortalVisit::class)->name('student.group');
     Route::get('/learning/{group}/materials/{index}', function (Request $request, StudyGroup $group, int $index) {
         abort_unless($request->user()->isStaff() || $group->availableTo($request->user()), 403);
         $material = $group->materials[$index] ?? null;
@@ -36,8 +37,8 @@ Route::middleware('auth')->group(function (): void {
 $roles = [
     'student' => ['email' => 'student@vesh.test', 'name' => 'Анна Петрова', 'label' => 'Слушатель — доступ открыт', 'description' => 'Страница программы, расписание и защищённые материалы'],
     'waiting' => ['email' => 'waiting@vesh.test', 'name' => 'Илья Морозов', 'label' => 'Слушатель — ожидает одобрения', 'description' => 'Кабинет после регистрации, пока группа недоступна'],
-    'admin' => ['email' => 'admin@vesh.test', 'name' => 'Мария Белова', 'label' => 'Администратор', 'description' => 'Свои группы, очередь заявок и обращения без группы'],
-    'senior' => ['email' => 'senior@vesh.test', 'name' => 'Елена Волкова', 'label' => 'Старший администратор', 'description' => 'Все группы и назначение ответственных сотрудников'],
+    'admin' => ['email' => 'admin@vesh.test', 'name' => 'Дарья Маврина', 'label' => 'Администратор', 'description' => 'Свои группы, очередь заявок и обращения без группы'],
+    'senior' => ['email' => 'senior@vesh.test', 'name' => 'Варвара Маврина', 'label' => 'Старший администратор', 'description' => 'Все группы и назначение ответственных сотрудников'],
 ];
 Route::get('/demo', function () use ($roles) {
     abort_unless(app()->environment('local') && config('app.demo_mode'), 404);
