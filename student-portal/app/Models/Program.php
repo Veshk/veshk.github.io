@@ -24,7 +24,16 @@ class Program extends Model
 
     protected function casts(): array
     {
-        return ['page_blocks' => 'array'];
+        return ['page_blocks' => 'array', 'formats' => 'array', 'hours' => 'integer'];
+    }
+
+    public const TYPES = ['Программа проф. переподготовки' => 'Профпереподготовка', 'Программа повышения квалификации' => 'Повышение квалификации', 'Семинар-практикум' => 'Семинар-практикум', 'Специализированный курс' => 'Специализированный курс'];
+
+    public function coverUrl(): ?string
+    {
+        $url = parse_url($this->cover_url ?? '');
+
+        return is_array($url) && ($url['scheme'] ?? '') === 'https' && ($url['host'] ?? '') === 'veshk.ru' && ! isset($url['user']) && ! isset($url['pass']) && str_starts_with($url['path'] ?? '', '/media/images/') ? $this->cover_url : null;
     }
 
     public const SECTIONS = ['HR', 'Аналитика', 'КОРП', 'Маркетинг', 'Менеджмент', 'Продажи', 'Производство', 'Упр. навыки', 'Финансы', 'Центр', 'НЕДОСТУПНО'];

@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
         foreach ($sample['programs'] as $key => $program) {
             $programs[$key] = Program::firstOrCreate(['tag' => $program['tag']], ['title' => $program['title'], 'section' => $program['section'] ?: null, 'template_key' => 'short']);
         }
+        $this->call(SchoolProgramSeeder::class);
         $groups = [];
         $schedules = json_decode(file_get_contents(__DIR__.'/data/school-schedules.json'), true, flags: JSON_THROW_ON_ERROR);
         foreach ($sample['groups'] as $key => $group) {
