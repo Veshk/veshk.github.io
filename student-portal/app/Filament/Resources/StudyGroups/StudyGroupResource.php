@@ -27,8 +27,11 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class StudyGroupResource extends Resource
 {
@@ -115,23 +118,44 @@ class StudyGroupResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('title')->label('Группа')->searchable()->wrap()->description(fn (StudyGroup $record): string => $record->code),
-            TextColumn::make('program.tag')->label('Программа')->searchable()->placeholder('Не выбрана'),
-            TextColumn::make('program.section')->label('Раздел'),
-            TextColumn::make('status')->label('Статус'),
-            TextColumn::make('administrator.name')->label('Администратор'),
-            TextColumn::make('enrollments_count')->counts('enrollments')->label('Слушателей'),
-            IconColumn::make('registration_open')->label('Приём заявок')->boolean(),
-            TextColumn::make('starts_at')->label('Запуск')->date('d.m.Y')->sortable(),
-            TextColumn::make('scope')->label('Ваш доступ')->state(fn (StudyGroup $record): string => auth()->user()->can('update', $record) ? 'Редактирование' : 'Только просмотр'),
-        ])->filters([
-            SelectFilter::make('program_id')->label('Программа')->relationship('program', 'tag')->searchable()->preload(),
-        ])->recordActions([
-            Action::make('view')->label('Карточка')->url(fn (StudyGroup $record): string => static::getUrl('view', ['record' => $record])),
-            EditAction::make()->label('Настройки группы'),
-            Action::make('page')->label('Редактировать страницу ЛК')->visible(fn (StudyGroup $record): bool => auth()->user()->can('update', $record))->url(fn (StudyGroup $record): string => static::getUrl('page', ['record' => $record])),
-            Action::make('student')->label('Зайти в ЛК')->url(fn (StudyGroup $record): string => route('student.group', $record))->openUrlInNewTab(),
-        ]);
+            TextColumn::make('title')->label('Название группы')->searchable(['title', 'code', 'number'])->sortable()->wrap()
+                ->description(fn (StudyGroup $record): ?string => $record->program?->section),
+            TextColumn::make('status')->label('Статус')->badge()->sortable()->color(fn (?string $state): string => match ($state) {
+                'Запускается', 'Экскурсия' => 'info',
+                'Идет обучение' => 'success',
+                'На закрытии' => 'warning',
+                'обучение отложено' => 'danger',
+                'Продление доступа' => 'primary',
+                default => 'gray',
+            }),
+            TextColumn::make('code')->label('ТЕГ группы')->sortable()->copyable(),
+            TextColumn::make('number')->label('№')->sortable()->placeholder('—'),
+            TextColumn::make('administrator.name')->label('Администратор')->searchable()->sortable()
+                ->description(fn (StudyGroup $record): ?string => auth()->user()->can('update', $record) ? null : 'Только просмотр'),
+            TextColumn::make('chat_url')->label('Чат')->formatStateUsing(fn (): string => 'Чат ↗')->placeholder('—')
+                ->url(fn (StudyGroup $record): ?string => $record->chat_url)->openUrlInNewTab(),
+            TextColumn::make('program.tag')->label('Программа')->searchable()->placeholder('Не выбрана')->toggleable(isToggledHiddenByDefault: true),
+            TextColumn::make('enrollments_count')->counts('enrollments')->label('Слушателей')->toggleable(isToggledHiddenByDefault: true),
+            IconColumn::make('registration_open')->label('Приём заявок')->boolean()->toggleable(isToggledHiddenByDefault: true),
+            TextColumn::make('starts_at')->label('Запуск')->date('d.m.Y')->sortable()->toggleable(isToggledHiddenByDefault: true),
+            TextColumn::make('graduates_at')->label('Выпуск')->date('d.m.Y')->sortable()->toggleable(isToggledHiddenByDefault: true),
+            TextColumn::make('closes')->label('Доступ до')->state(fn (StudyGroup $record): string => $record->closesAt()->format('d.m.Y'))->toggleable(isToggledHiddenByDefault: true),
+            TextColumn::make('format')->label('Формат')->toggleable(isToggledHiddenByDefault: true),
+        ])->groups([
+            Group::make('administrator.name')->label('Администратор')->collapsible(),
+            Group::make('status')->label('Статус')->collapsible(),
+        ])->defaultGroup('administrator.name')->defaultSort('title')->recordUrl(fn (StudyGroup $record): string => static::getUrl('view', ['record' => $record]))
+            ->paginated([25, 50, 100])->searchPlaceholder('Название, ТЕГ, номер или администратор')
+            ->filters([
+                SelectFilter::make('status')->label('Статус группы')->options(array_combine(StudyGroup::STATUSES, StudyGroup::STATUSES)),
+                SelectFilter::make('administrator_id')->label('Администратор')->relationship('administrator', 'name')->searchable()->preload(),
+                SelectFilter::make('program_id')->label('Программа')->relationship('program', 'tag')->searchable()->preload(),
+                Filter::make('mine')->label('Только мои группы')->query(fn (Builder $query): Builder => $query->where('administrator_id', auth()->id())),
+            ])->deferFilters(false)->recordActions([
+                Action::make('student')->label('Зайти в ЛК')->url(fn (StudyGroup $record): string => route('student.group', $record))->openUrlInNewTab(),
+                Action::make('page')->label('Редактор')->visible(fn (StudyGroup $record): bool => auth()->user()->can('update', $record))->url(fn (StudyGroup $record): string => static::getUrl('page', ['record' => $record])),
+                EditAction::make()->label('Настройки группы')->iconButton(),
+            ]);
     }
 
     public static function getPages(): array

@@ -6,6 +6,7 @@ use App\Filament\Resources\Programs\Pages\CreateProgram;
 use App\Filament\Resources\Programs\Pages\EditProgram;
 use App\Filament\Resources\StudyGroups\Pages\CreateStudyGroup;
 use App\Filament\Resources\StudyGroups\Pages\EditStudyGroup;
+use App\Filament\Resources\StudyGroups\Pages\ListStudyGroups;
 use App\Models\Enrollment;
 use App\Models\Program;
 use App\Models\StudyGroup;
@@ -126,5 +127,50 @@ class ProgramCatalogTest extends TestCase
         $this->assertTrue($group->availableTo($extended->user));
         $group->update(['extended_until' => '2026-12-11']);
         $this->assertSame('2027-01-09', $group->closesAt()->toDateString());
+    }
+
+    public function test_group_directory_filters_combine_without_changing_access_to_other_groups(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $program = Program::factory()->create();
+        $own = StudyGroup::factory()->for($program)->create(['administrator_id' => $admin->id, 'status' => 'Идет обучение']);
+        $starting = StudyGroup::factory()->for($program)->create(['administrator_id' => $admin->id, 'status' => 'Запускается']);
+        $other = StudyGroup::factory()->for($program)->create(['status' => 'Идет обучение']);
+        $this->actingAs($admin);
+
+        Livewire::test(ListStudyGroups::class)
+            ->assertCanSeeTableRecords([$own, $starting, $other])
+            ->assertTableActionVisible('page', $own)
+            ->assertTableActionHidden('page', $other)
+            ->assertTableActionHidden('edit', $other)
+            ->filterTable('status', 'Идет обучение')
+            ->assertCanSeeTableRecords([$own, $other])
+            ->assertCanNotSeeTableRecords([$starting])
+            ->filterTable('mine')
+            ->assertCanSeeTableRecords([$own])
+            ->assertCanNotSeeTableRecords([$starting, $other]);
+
+        $this->assertSame('Идет обучение', $other->fresh()->status);
+    }
+
+    public function test_group_directory_searches_tags_and_combines_program_and_administrator_filters(): void
+    {
+        $senior = User::factory()->create(['role' => 'senior']);
+        $program = Program::factory()->create(['tag' => 'Проверка']);
+        $target = StudyGroup::factory()->for($program)->create(['number' => '741', 'administrator_id' => $senior->id]);
+        $otherProgram = StudyGroup::factory()->create(['administrator_id' => $senior->id]);
+        $otherOwner = StudyGroup::factory()->for($program)->create(['number' => '742']);
+        $this->actingAs($senior);
+
+        Livewire::test(ListStudyGroups::class)
+            ->searchTable('Проверка-741')
+            ->assertCanSeeTableRecords([$target])
+            ->assertCanNotSeeTableRecords([$otherProgram, $otherOwner])
+            ->searchTable('')
+            ->filterTable('program_id', $program->id)
+            ->filterTable('administrator_id', $senior->id)
+            ->assertCanSeeTableRecords([$target])
+            ->assertCanNotSeeTableRecords([$otherProgram, $otherOwner])
+            ->assertTableActionVisible('page', $target);
     }
 }
