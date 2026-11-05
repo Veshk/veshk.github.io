@@ -150,8 +150,24 @@ class ScheduleImport
         return isset($row['source_id']) && $row['source_id'] !== '' ? 'id:'.$row['source_id'] : json_encode([$row['date'] ?? '', str_replace([' ', '-', '—', '.'], ['', '–', '–', ':'], $row['time'] ?? ''), $row['title'] ?? '', $row['teacher'] ?? '']);
     }
 
-    public static function merge(array $parsed, array $current): array
+    public static function merge(array $parsed, array $current, string $mode = 'replace'): array
     {
+        if (! in_array($mode, ['replace', 'append'], true)) {
+            throw new InvalidArgumentException('Выберите способ обновления расписания.');
+        }
+        if ($mode === 'append') {
+            $identity = fn (array $row): string => self::key(array_diff_key($row, ['source_id' => true]));
+            $keys = array_fill_keys(array_map(self::key(...), $current), true);
+            $identities = array_fill_keys(array_map($identity, $current), true);
+            $added = array_values(array_filter($parsed['lessons'], fn ($row) => ! isset($keys[self::key($row)]) && ! isset($identities[$identity($row)])));
+            $lessons = array_merge($current, $added);
+            usort($lessons, fn ($a, $b) => strcmp(($a['date'] ?? '').($a['time'] ?? ''), ($b['date'] ?? '').($b['time'] ?? '')));
+            if (count($lessons) > 2000) {
+                $parsed['errors'][] = 'В блоке может быть не более 2000 занятий.';
+            }
+
+            return array_merge($parsed, ['mode' => $mode, 'lessons' => $lessons, 'counts' => ['added' => count($added), 'changed' => 0, 'same' => count($parsed['lessons']) - count($added), 'removed' => 0], 'removed' => []]);
+        }
         $old = [];
         foreach ($current as $row) {
             $old[self::key($row)] = $row;
@@ -167,6 +183,6 @@ class ScheduleImport
             $lessons[] = array_merge($match ?? [], $row);
         }
 
-        return array_merge($parsed, ['lessons' => $lessons, 'counts' => $counts + ['removed' => count($old)], 'removed' => array_values($old)]);
+        return array_merge($parsed, ['mode' => $mode, 'lessons' => $lessons, 'counts' => $counts + ['removed' => count($old)], 'removed' => array_values($old)]);
     }
 }

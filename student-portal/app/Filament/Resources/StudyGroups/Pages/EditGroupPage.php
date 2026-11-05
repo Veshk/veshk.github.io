@@ -5,6 +5,7 @@ namespace App\Filament\Resources\StudyGroups\Pages;
 use App\Filament\Pages\ImportSchedule;
 use App\Filament\Resources\StudyGroups\StudyGroupResource;
 use App\Support\CoursePage;
+use App\Support\GroupHero;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Schema;
@@ -17,7 +18,7 @@ class EditGroupPage extends EditRecord
 
     public function form(Schema $schema): Schema
     {
-        return $schema->components([CoursePage::builder()->helperText('Это отдельная страница группы. Главный экран, ответы на вопросы и подвал входят в каждую страницу. После сохранения откройте предпросмотр.')]);
+        return $schema->components([...GroupHero::fields(), CoursePage::builder()->helperText('После сохранения откройте предпросмотр страницы группы.')]);
     }
 
     protected function mutateFormDataBeforeFill(array $data): array
@@ -31,7 +32,7 @@ class EditGroupPage extends EditRecord
     {
         CoursePage::validateAliases($data['page_blocks'] ?? [], $this->getRecord(), auth()->user());
 
-        return ['page_blocks' => $data['page_blocks'] ?? []];
+        return ['page_blocks' => $data['page_blocks'] ?? [], 'hero_image' => $data['hero_image'] ?? null, 'hero_position' => $data['hero_position'] ?? 'center', 'description' => $data['description'] ?? null];
     }
 
     protected function getHeaderActions(): array

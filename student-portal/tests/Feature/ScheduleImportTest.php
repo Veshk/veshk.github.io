@@ -69,7 +69,7 @@ class ScheduleImportTest extends TestCase
         $before = $group->page_blocks;
         $this->actingAs($group->administrator);
         $page = Livewire::withQueryParams(['group' => $group->id])->test(ImportSchedule::class)
-            ->set('sourceText', $this->input())->call('prepare')->assertHasNoErrors()
+            ->set('mergeMode', 'replace')->set('sourceText', $this->input())->call('prepare')->assertHasNoErrors()
             ->assertSet('preview.counts.changed', 1)->assertSet('preview.counts.added', 1)->assertSet('preview.counts.removed', 1);
         $this->assertSame($before, $group->fresh()->page_blocks);
         $page->call('publish')->assertHasNoErrors()->assertSet('preview', null);

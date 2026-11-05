@@ -29,13 +29,26 @@ class DatabaseSeeder extends Seeder
             $programs[$key] = Program::firstOrCreate(['tag' => $program['tag']], ['title' => $program['title'], 'section' => $program['section'] ?: null, 'template_key' => 'short']);
         }
         $groups = [];
+        $schedules = json_decode(file_get_contents(__DIR__.'/data/school-schedules.json'), true, flags: JSON_THROW_ON_ERROR);
         foreach ($sample['groups'] as $key => $group) {
+            $blocks = CoursePage::defaults('short');
+            $source = $schedules['groups'][$key] ?? ['lessons' => [], 'pending_lessons' => []];
+            foreach ($blocks as &$block) {
+                if ($block['type'] === 'schedule') {
+                    $block['data']['lessons'] = $source['lessons'];
+                }
+            }
+            unset($block);
+            if ($source['pending_lessons']) {
+                $blocks[] = ['type' => 'info', 'data' => ['block_id' => 'school-undated', 'title' => 'Занятия без даты', 'visible' => true, 'text' => "Дата и время будут уточнены администратором.\n\n".implode("\n", array_map(fn ($lesson) => $lesson['title'].' — '.$lesson['teacher'].' ('.$lesson['hours'].' ак. ч.)', $source['pending_lessons']))]];
+            }
             // Preserve source tags, including legacy tags that differ from the automatic convention.
             $groups[$key] = StudyGroup::withoutEvents(fn () => StudyGroup::firstOrCreate(['code' => $group['code']], [
                 'title' => $group['name'], 'number' => $group['number'], 'program_id' => $programs[$group['program_id']]->id,
                 'administrator_id' => $users[$group['id']]->id, 'format' => $group['format'], 'group_type' => $group['group_type'],
                 'status' => $group['status'], 'starts_at' => $group['starts_at'], 'graduates_at' => $group['graduates_at'],
-                'access_days' => 30, 'registration_open' => true, 'page_template' => 'short', 'page_blocks' => CoursePage::defaults('short'),
+                'access_days' => 30, 'registration_open' => true, 'page_template' => 'short', 'page_blocks' => $blocks,
+                'description' => 'Расписание, записи и материалы вашей группы собраны здесь. По вопросам обучения обращайтесь к администратору.',
             ]));
         }
         $names = ['Анна Петрова', 'Иван Соловьёв', 'Софья Новикова', 'Михаил Орлов', 'Анастасия Белова', 'Дмитрий Смирнов', 'Екатерина Соколова', 'Александр Волков', 'Марина Кузьмина', 'Андрей Лебедев', 'Ольга Фролова', 'Павел Крылов'];

@@ -34,6 +34,8 @@ class ImportSchedule extends Page
 
     public string $inputMode = 'paste';
 
+    public string $mergeMode = 'append';
+
     public string $sourceText = '';
 
     public ?TemporaryUploadedFile $csv = null;
@@ -54,7 +56,7 @@ class ImportSchedule extends Page
         return auth()->user()?->isStaff() ?? false;
     }
 
-    private function group(): StudyGroup
+    protected function group(): StudyGroup
     {
         $group = StudyGroup::findOrFail($this->groupId);
         abort_unless(auth()->user()->can('update', $group), 403);
@@ -77,7 +79,7 @@ class ImportSchedule extends Page
 
     private function inputHash(): string
     {
-        return hash('sha256', json_encode([$this->groupId, $this->blockId, $this->sourceUrl, $this->inputMode, $this->sourceText, $this->csv?->getFilename()]));
+        return hash('sha256', json_encode([$this->groupId, $this->blockId, $this->sourceUrl, $this->inputMode, $this->mergeMode, $this->sourceText, $this->csv?->getFilename()]));
     }
 
     public function prepare(): void
@@ -85,7 +87,7 @@ class ImportSchedule extends Page
         $group = $this->group();
         $this->preview = null;
         $this->resultMessage = '';
-        $this->validate(['blockId' => ['required', 'string', 'max:100'], 'sourceUrl' => ['nullable', 'url:https', 'max:2000'], 'inputMode' => ['in:paste,google,file'], 'sourceText' => ['string', 'max:2000000'], 'csv' => ['nullable', 'file', 'max:1953']]);
+        $this->validate(['blockId' => ['required', 'string', 'max:100'], 'sourceUrl' => ['nullable', 'url:https', 'max:2000'], 'inputMode' => ['in:paste,google,file'], 'mergeMode' => ['required', 'in:append,replace'], 'sourceText' => ['string', 'max:2000000'], 'csv' => ['nullable', 'file', 'max:1953']]);
         $blocks = CoursePage::forGroup($group);
         $block = collect($blocks)->first(fn ($b) => $b['type'] === 'schedule' && $b['data']['block_id'] === $this->blockId);
         abort_unless($block, 422);
@@ -98,7 +100,7 @@ class ImportSchedule extends Page
                 'file' => $this->csv ? file_get_contents($this->csv->getRealPath()) : '',
                 default => $this->sourceText,
             };
-            $this->preview = ScheduleImport::merge(ScheduleImport::parse($text, $group->code), $block['data']['lessons'] ?? []);
+            $this->preview = ScheduleImport::merge(ScheduleImport::parse($text, $group->code), $block['data']['lessons'] ?? [], $this->mergeMode);
             $this->snapshot = hash('sha256', json_encode([$blocks, $group->code]));
             $this->inputSnapshot = $this->inputHash();
         } catch (InvalidArgumentException $e) {
