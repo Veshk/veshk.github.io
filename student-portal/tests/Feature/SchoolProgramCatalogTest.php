@@ -83,6 +83,6 @@ class SchoolProgramCatalogTest extends TestCase
 
         $group->update(['hero_image' => null]);
         $program->update(['cover_url' => 'https://veshk.ru.attacker.invalid/media/images/image.jpg']);
-        $this->get('/learning/'.$group->id)->assertOk()->assertDontSee('attacker.invalid');
+        $this->get('/learning/'.$group->id)->assertOk()->assertDontSee('attacker.invalid')->assertSee('/brand/group-placeholder.png')->assertSee('has-default-cover');
     }
 }
