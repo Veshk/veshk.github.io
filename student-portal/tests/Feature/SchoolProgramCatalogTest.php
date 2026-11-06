@@ -82,7 +82,14 @@ class SchoolProgramCatalogTest extends TestCase
         $this->get('/learning/'.$group->id)->assertOk()->assertSee('/storage/group-covers/personal.jpg')->assertDontSee($cover);
 
         $group->update(['hero_image' => null]);
-        $program->update(['cover_url' => 'https://veshk.ru.attacker.invalid/media/images/image.jpg']);
-        $this->get('/learning/'.$group->id)->assertOk()->assertDontSee('attacker.invalid')->assertSee('/brand/group-placeholder.png')->assertSee('has-default-cover');
+        $program->update(['cover_url' => 'https://veshk.ru.attacker.invalid/media/images/image.jpg', 'program_type' => 'Программа проф. переподготовки']);
+        $this->get('/learning/'.$group->id)->assertOk()->assertDontSee('attacker.invalid')->assertSee('/brand/group-placeholder-long.png')->assertSee('has-default-cover');
+
+        $program->update(['program_type' => 'Программа повышения квалификации']);
+        $this->get('/learning/'.$group->id)->assertOk()->assertSee('/brand/group-placeholder-long.png');
+        $program->update(['program_type' => 'Семинар-практикум']);
+        $this->get('/learning/'.$group->id)->assertOk()->assertSee('/brand/group-placeholder-short.png')->assertDontSee('/brand/group-placeholder-long.png');
+        $program->update(['program_type' => 'Специализированный курс']);
+        $this->get('/learning/'.$group->id)->assertOk()->assertSee('/brand/group-placeholder-short.png');
     }
 }

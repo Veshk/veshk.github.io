@@ -36,6 +36,13 @@ class Program extends Model
         return is_array($url) && ($url['scheme'] ?? '') === 'https' && ($url['host'] ?? '') === 'veshk.ru' && ! isset($url['user']) && ! isset($url['pass']) && str_starts_with($url['path'] ?? '', '/media/images/') ? $this->cover_url : null;
     }
 
+    public function defaultCoverPath(): string
+    {
+        return in_array($this->program_type, ['Программа проф. переподготовки', 'Программа повышения квалификации'], true)
+            ? 'brand/group-placeholder-long.png'
+            : 'brand/group-placeholder-short.png';
+    }
+
     public const SECTIONS = ['HR', 'Аналитика', 'КОРП', 'Маркетинг', 'Менеджмент', 'Продажи', 'Производство', 'Упр. навыки', 'Финансы', 'Центр', 'НЕДОСТУПНО'];
 
     public function studyGroups(): HasMany
