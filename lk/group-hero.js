@@ -5,7 +5,9 @@ window.GroupHero = (()=>{
   const safeImage=value=>/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(value||'')?value:'';
   function render(element,group){
     element.querySelector('.group-hero-background')?.remove();
-    const source=safeImage(group.hero_image)||SchoolPrograms.safeCover(group.program_cover_url);
+    const customSource=safeImage(group.hero_image)||SchoolPrograms.safeCover(group.program_cover_url);
+    const source=customSource||'brand/group-placeholder.png';
+    element.classList.toggle('has-default-cover',!customSource);
     element.classList.toggle('has-group-cover',!!source);
     if(source){const img=document.createElement('img');img.className='group-hero-background';img.alt='';img.src=source;img.style.objectPosition=positions.includes(group.hero_position)?group.hero_position:'center';element.prepend(img);}
     const text=element.querySelector('.hero-side p');if(text){text.textContent=group.description??defaultText;text.hidden=!text.textContent;}

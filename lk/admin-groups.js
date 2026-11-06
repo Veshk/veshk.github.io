@@ -27,7 +27,7 @@ window.AdminGroups = (() => {
       const mine = document.getElementById('group-mine').checked;
       const grouping = value('group-by');
       const details = document.getElementById('group-more-columns').checked;
-      const all = Object.entries(ctx.groups);
+      const all = Object.entries(ctx.groups).map(([id,g]) => [id,{...g,participants:ctx.countParticipants(id)}]);
       const rows = all.filter(([,g]) => (!program || g.program_id === program) && (!status || g.status === status) && (!owner || g.id === owner) && (!mine || g.id === ctx.role) && [g.name,g.code,g.number,g.owner,ctx.programs[g.program_id]?.title,ctx.programs[g.program_id]?.tag].join(' ').toLocaleLowerCase('ru').includes(search));
       rows.sort((a,b) => String(a[1][sort] || '').localeCompare(String(b[1][sort] || ''), 'ru', {numeric:true}) * direction || a[0].localeCompare(b[0]));
       document.getElementById('groups-count').textContent = `Показано ${rows.length} из ${all.length}`;
@@ -38,12 +38,12 @@ window.AdminGroups = (() => {
         if (!buckets.has(key)) buckets.set(key, []);
         buckets.get(key).push(row);
       }
-      const headers = [['name','Название группы'],['status','Статус'],['code','ТЕГ группы'],['number','№'],['owner','Администратор'],[null,'Чат'],[null,'Действия']];
+      const headers = [['name','Название группы'],['status','Статус'],['participants','Участники'],['code','ТЕГ группы'],['number','№'],['owner','Администратор'],[null,'Чат'],[null,'Действия']];
       if (details) headers.push(['starts_at','Запуск'],['graduates_at','Выпуск'],[null,'Доступ до'],['format','Формат'],[null,'Приём заявок']);
       const header = headers.map(([key,label]) => `<th scope="col"${key === sort ? ` aria-sort="${direction === 1 ? 'ascending' : 'descending'}"` : ''}>${key ? `<button data-group-sort="${key}">${label}<span aria-hidden="true">${key === sort ? direction === 1 ? '↑' : '↓' : '↕'}</span></button>` : label}</th>`).join('');
       const rowHtml = ([id,g]) => {
         const editable = ctx.canEditGroup(id), chat = ctx.safeUrl(g.chat_url);
-        return `<tr class="group-data-row" data-group-row="${esc(id)}"><td><button class="group-name" data-group-view="${esc(id)}">${esc(g.name)}</button><span class="group-subtitle">${esc(ctx.programs[g.program_id]?.section || 'Раздел не указан')}</span></td><td>${badge(g.status)}</td><td class="group-code">${esc(g.code)}</td><td>${esc(g.number || '—')}</td><td><span class="group-owner">${esc(g.owner)}</span>${!editable ? '<small class="group-readonly">Только просмотр</small>' : ''}</td><td>${chat ? `<a class="group-chat" href="${esc(chat)}" target="_blank" rel="noopener" aria-label="Чат группы ${esc(g.code)}">Чат ↗</a>` : '<span class="group-unset">—</span>'}</td><td><div class="group-row-actions"><a class="group-action" href="${ctx.groupLink(id)}&preview=1&role=${ctx.role}" target="_blank" rel="noopener">Зайти в ЛК ↗</a>${editable ? `<a class="group-action group-action-primary" href="editor.html?group=${encodeURIComponent(id)}&role=${ctx.role}">Редактор</a><button class="group-settings" data-group-edit="${esc(id)}" aria-label="Настройки группы ${esc(g.code)}" title="Настройки группы"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 17h16M9 4v6M15 14v6"/></svg></button>` : ''}</div></td>${details ? `<td>${ctx.dateLabel(g.starts_at)}</td><td>${ctx.dateLabel(g.graduates_at)}</td><td>${ctx.dateLabel(ctx.closes(g))}</td><td>${esc(g.format || '—')}</td><td>${g.registration_open === false ? 'Закрыт' : 'Открыт'}</td>` : ''}</tr>`;
+        return `<tr class="group-data-row" data-group-row="${esc(id)}"><td><button class="group-name" data-group-view="${esc(id)}">${esc(g.name)}</button><span class="group-subtitle">${esc(ctx.programs[g.program_id]?.section || 'Раздел не указан')}</span></td><td>${badge(g.status)}</td><td><button class="group-action group-participants" data-group-participants="${esc(id)}" aria-label="Участники группы ${esc(g.code)}: ${g.participants}. Открыть список"><strong>${g.participants}</strong><span>Список →</span></button></td><td class="group-code">${esc(g.code)}</td><td>${esc(g.number || '—')}</td><td><span class="group-owner">${esc(g.owner)}</span>${!editable ? '<small class="group-readonly">Только просмотр</small>' : ''}</td><td>${chat ? `<a class="group-chat" href="${esc(chat)}" target="_blank" rel="noopener" aria-label="Чат группы ${esc(g.code)}">Чат ↗</a>` : '<span class="group-unset">—</span>'}</td><td><div class="group-row-actions"><a class="group-action" href="${ctx.groupLink(id)}&preview=1&role=${ctx.role}" target="_blank" rel="noopener">Зайти в ЛК ↗</a>${editable ? `<a class="group-action group-action-primary" href="editor.html?group=${encodeURIComponent(id)}&role=${ctx.role}">Редактор</a><button class="group-settings" data-group-edit="${esc(id)}" aria-label="Настройки группы ${esc(g.code)}" title="Настройки группы"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 17h16M9 4v6M15 14v6"/></svg></button>` : ''}</div></td>${details ? `<td>${ctx.dateLabel(g.starts_at)}</td><td>${ctx.dateLabel(g.graduates_at)}</td><td>${ctx.dateLabel(ctx.closes(g))}</td><td>${esc(g.format || '—')}</td><td>${g.registration_open === false ? 'Закрыт' : 'Открыт'}</td>` : ''}</tr>`;
       };
       const body = [...buckets.entries()].sort(([a],[b]) => a.localeCompare(b,'ru')).map(([key,items]) => {
         const groupKey = grouping + ':' + key;
@@ -67,6 +67,7 @@ window.AdminGroups = (() => {
         if (collapsed.has(key)) collapsed.delete(key); else collapsed.add(key);
         render();
       } else if (button.hasAttribute('data-group-view')) ctx.open('group-view',button.dataset.groupView);
+      else if (button.hasAttribute('data-group-participants')) ctx.openParticipants(button.dataset.groupParticipants);
       else if (button.hasAttribute('data-group-edit')) ctx.open('group-edit',button.dataset.groupEdit);
       else if (button.hasAttribute('data-group-reset')) { resetFilters(); render(); }
     });

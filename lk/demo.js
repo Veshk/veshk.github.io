@@ -120,9 +120,9 @@
   const dialog=document.getElementById('action-dialog');let action=null;let active=null;let selectedId=null;
   const close=()=>dialog.close();
   dialog.querySelectorAll('[data-close],.dialog-close').forEach(b=>b.addEventListener('click',close));
-  const groupTable = window.AdminGroups.init({...pageContext, names, statuses, escape, safeUrl, dateLabel, open:(type,id)=>open(type,id)});
+  const groupTable = window.AdminGroups.init({...pageContext, names, statuses, escape, safeUrl, dateLabel, countParticipants:id=>catalogs.participantCount(id), openParticipants:id=>navigateStudents(id), open:(type,id)=>open(type,id)});
   const schedules=AdminSchedules.init({...pageContext,escape});
-  const catalogs=AdminCatalog.init({...pageContext,escape,safeUrl,canReview,labels,open:(type,id)=>open(type,id),openGroups:(owner,program)=>navigateGroups(owner,program)});
+  const catalogs=AdminCatalog.init({...pageContext,escape,safeUrl,canReview,labels,open:(type,id)=>open(type,id),openGroups:(owner,program)=>navigateGroups(owner,program),showGroups:()=>showPanel('groups')});
   const renderCatalog=()=>{
     const groupFilter=document.getElementById('group-program-filter'),chosen=groupFilter.value;
     groupFilter.innerHTML='<option value="">Все программы</option>'+programOptions(chosen);
@@ -180,8 +180,8 @@
   };
   const viewGroup=(id,body,title)=>{
     const g=groups[id],p=programs[g.program_id];title.textContent=g.name;
-    const entries=[['Программа',p?.title||'Нужно выбрать'],['ТЕГ программы',p?.tag||'Не указан'],['Раздел',p?.section||'Не указан'],['ТЕГ группы',g.code],['№ группы',g.number||'Не указан'],['Статус группы',g.status||'Не указан'],['Тип группы',g.group_type||'Не указан'],['Администратор',g.owner],['Дата запуска',dateLabel(g.starts_at)],['Дата выпуска',dateLabel(g.graduates_at)],['Доступ после выпуска, дней',g.access_days??30],['Дата архивации',dateLabel(closes(g,false))],['Продление до',g.extended_until?dateLabel(g.extended_until):'Без продления'],['Доступ до включительно',dateLabel(closes(g))],['Приём заявок',g.registration_open?'Открыт':'Закрыт'],['Заполнение завершено',g.setup_completed?'Да':'Нет'],['Количество слушателей',(id==='mba'?1:0)+state.requests.filter(r=>r.group===id&&r.status==='approved').length]];
-    body.innerHTML=`<p>${canEditGroup(id)?'Доступно редактирование':'Только просмотр'}</p><dl class="dialog-fields">${entries.map(([name,value])=>`<div><dt>${name}</dt><dd>${escape(value)}</dd></div>`).join('')}<div class="full"><dt>Чат группы</dt><dd>${safeUrl(g.chat_url)?`<a class="text-link" href="${escape(safeUrl(g.chat_url))}" target="_blank" rel="noopener">Открыть чат ↗</a>`:'Не указан'}</dd></div><div class="full"><dt>Комментарий администратора</dt><dd>${escape(g.admin_notes||'Нет комментария')}</dd></div></dl><a class="btn outline" href="${groupLink(id)}&preview=1&role=${role}">Зайти в ЛК ↗</a> ${canEditGroup(id)?`<a class="btn" href="editor.html?group=${encodeURIComponent(id)}&role=${role}">Редактировать страницу ЛК</a>`:''}`;
+    const entries=[['Программа',p?.title||'Нужно выбрать'],['ТЕГ программы',p?.tag||'Не указан'],['Раздел',p?.section||'Не указан'],['ТЕГ группы',g.code],['№ группы',g.number||'Не указан'],['Статус группы',g.status||'Не указан'],['Тип группы',g.group_type||'Не указан'],['Администратор',g.owner],['Дата запуска',dateLabel(g.starts_at)],['Дата выпуска',dateLabel(g.graduates_at)],['Доступ после выпуска, дней',g.access_days??30],['Дата архивации',dateLabel(closes(g,false))],['Продление до',g.extended_until?dateLabel(g.extended_until):'Без продления'],['Доступ до включительно',dateLabel(closes(g))],['Приём заявок',g.registration_open?'Открыт':'Закрыт'],['Заполнение завершено',g.setup_completed?'Да':'Нет']];
+    body.innerHTML=`<p>${canEditGroup(id)?'Доступно редактирование':'Только просмотр'}</p><p><button type="button" class="group-action group-participants" data-participants-open="${escape(id)}">Участники: <strong>${catalogs.participantCount(id)}</strong> · Открыть список →</button></p><dl class="dialog-fields">${entries.map(([name,value])=>`<div><dt>${name}</dt><dd>${escape(value)}</dd></div>`).join('')}<div class="full"><dt>Чат группы</dt><dd>${safeUrl(g.chat_url)?`<a class="text-link" href="${escape(safeUrl(g.chat_url))}" target="_blank" rel="noopener">Открыть чат ↗</a>`:'Не указан'}</dd></div><div class="full"><dt>Комментарий администратора</dt><dd>${escape(g.admin_notes||'Нет комментария')}</dd></div></dl><a class="btn outline" href="${groupLink(id)}&preview=1&role=${role}">Зайти в ЛК ↗</a> ${canEditGroup(id)?`<a class="btn" href="editor.html?group=${encodeURIComponent(id)}&role=${role}">Редактировать страницу ЛК</a>`:''}`;
   };
   const render=()=>{
     document.getElementById('pending-count').textContent=state.requests.filter(r=>r.status==='pending').length;
@@ -225,7 +225,7 @@
     const titles={requests:'Заявки на обучение',students:'Слушатели',groups:'Группы',programs:'Программы',profiles:'Администраторы',schedules:'Расписание'};
     if(!titles[panel])panel='requests';
     document.getElementById('create-course').hidden=!senior||panel!=='groups';
-    const url=new URL(location.href);url.searchParams.set('panel',panel);history.replaceState(null,'',url);
+    const url=new URL(location.href);url.searchParams.set('panel',panel);const participantGroup=panel==='students'?document.getElementById('student-group').value:'';if(participantGroup)url.searchParams.set('group',participantGroup);else url.searchParams.delete('group');history.replaceState(null,'',url);
     document.querySelector('.page-heading h1').textContent=titles[panel];
     document.querySelector('.page-heading p').textContent={requests:'Проверка заявок и открытие доступа к обучению.',students:'Аккаунты слушателей, группы, доступ и история посещений кабинета.',groups:'Учебные группы со своими слушателями, датами и материалами.',programs:'Программы школы и связанные с ними группы.',profiles:'Аккаунт, контакты, группы и дополнительные права сотрудника.',schedules:'Расписание всех групп: просмотр опубликованных занятий и массовая правка таблицей.'}[panel];
     document.querySelectorAll('[data-panel]').forEach(x=>x.classList.toggle('active',x.dataset.panel===panel));
@@ -233,6 +233,8 @@
     staffDirectory?.render();
     schedules.render();
   };
+  const navigateStudents=id=>{close();catalogs.selectGroup(id);showPanel('students');document.querySelector('#student-group-context h2')?.focus();};
+  dialog.addEventListener('click',event=>{const button=event.target.closest('[data-participants-open]');if(button)navigateStudents(button.dataset.participantsOpen);});
   const navigateGroups=(owner='',program='')=>{
     groupTable.resetFilters();document.getElementById('group-owner-filter').value=owner;
     document.getElementById('group-program-filter').value=program;renderCatalog();showPanel('groups');
@@ -245,6 +247,7 @@
   document.getElementById('program-section-filter').innerHTML='<option value="">Все разделы</option>'+options(sections);
   ['program-search','group-search'].forEach(id=>document.getElementById(id).addEventListener('input',renderCatalog));
   ['program-section-filter','group-program-filter'].forEach(id=>document.getElementById(id).addEventListener('change',renderCatalog));
+  const query=new URLSearchParams(location.search);
   render();
-  const query=new URLSearchParams(location.search);showPanel(query.get('panel')||'requests');if(query.get('owner')&&names[query.get('owner')])navigateGroups(query.get('owner'));if(senior&&query.get('create')==='1')open('create',null);
+  showPanel(query.get('panel')||'requests');if(query.get('panel')==='students'&&groups[query.get('group')])navigateStudents(query.get('group'));if(query.get('owner')&&names[query.get('owner')])navigateGroups(query.get('owner'));if(senior&&query.get('create')==='1')open('create',null);
 })();
