@@ -9,3 +9,5 @@
 .program-cover{display:block;width:100%;height:220px;object-fit:cover;border-radius:12px;margin-bottom:18px}.program-name-cell{display:flex;align-items:center;gap:12px}.program-cover-thumb{width:70px;height:48px;object-fit:cover;border-radius:6px;flex-shrink:0}
 
 .course-hero.has-default-cover:before{display:none}
+
+.course-hero.has-default-cover{background:#e9eeeb;color:#263937}.has-default-cover .breadcrumb,.has-default-cover .hero-meta{color:#52636a}.has-default-cover .hero-meta strong{color:#263937}.has-default-cover .hero-side{border-top-color:#203e4930}.has-default-cover .hero-side p{color:#485b62}.past-schedule+.month-card{margin-top:20px}
