@@ -1,7 +1,22 @@
 @php
     $safe = fn ($url) => \App\Support\CoursePage::safeUrl($url);
 @endphp
-@if($type === 'contacts')
+@if(in_array($type, ['introductions', 'video'], true))
+@php
+    $isVideo = $type === 'video';
+    $title = ($data['title'] ?? '') ?: \App\Support\CoursePage::BLOCKS[$type];
+    $actionUrl = $safe($data['url'] ?? null);
+    $imageUrl = $safe($data['image_url'] ?? null);
+    $actionLabel = ($data['button'] ?? '') ?: ($isVideo ? 'Смотреть видео' : 'Перейти в Holst');
+@endphp
+<div class="welcome-card {{ $isVideo ? 'welcome-video' : 'welcome-intro' }}">
+    <div class="welcome-copy"><p class="welcome-handwriting">{{ $isVideo ? 'Это ВЭШ' : 'Давайте знакомиться!' }}</p><h2>{{ $title }}</h2><p class="block-text">{{ ($data['text'] ?? '') ?: ($isVideo ? 'Познакомьтесь со школой в коротком видео.' : 'Расскажите о себе и познакомьтесь с коллегами по обучению.') }}</p>@if($actionUrl)<a class="btn welcome-action" href="{{ $actionUrl }}" target="_blank" rel="noopener noreferrer">{{ $actionLabel }} ↗</a>@endif</div>
+    @if($isVideo && $actionUrl)<a class="welcome-art" href="{{ $actionUrl }}" target="_blank" rel="noopener noreferrer" aria-label="{{ $actionLabel }}: {{ $title }}">@else<div class="welcome-art">@endif
+        @if($imageUrl)<img class="block-image" src="{{ $imageUrl }}" alt="{{ $data['image_alt'] ?? '' }}" loading="lazy" referrerpolicy="no-referrer">@endif
+        @if($isVideo)<span class="welcome-play" aria-hidden="true">▶</span><span class="welcome-video-label" aria-hidden="true">ВИДЕО О ШКОЛЕ</span>@else<span class="welcome-hello" aria-hidden="true">Привет!</span>@endif
+    @if($isVideo && $actionUrl)</a>@else</div>@endif
+</div>
+@elseif($type === 'contacts')
 @php
     $contactLines = \App\Support\CoursePage::contactLines(($data['text'] ?? '') ?: ($group->administrator->contact_text ?: 'Поможет с расписанием и организационными вопросами.'), $group->administrator->name);
     $chatText = $data['chat_text'] ?? 'Присоединяйтесь к чатам, чтобы быть на связи с группой и получать объявления.';
@@ -29,7 +44,7 @@
 @endphp
 @if($past)<details class="past-schedule"><summary>Прошедшие занятия — {{ \Carbon\Carbon::parse($month.'-01')->locale('ru')->translatedFormat('F Y') }}</summary>@endif
 <div class="month-card"><div class="month-label">{{ \Carbon\Carbon::parse($month.'-01')->locale('ru')->translatedFormat('F Y') }}</div><div class="schedule-scroll"><table class="compact-schedule"><colgroup><col class="col-date"><col class="col-time"><col class="col-lesson"><col class="col-teacher"></colgroup><thead><tr><th>Дата</th><th>Время ЕКБ{{ ($data['show_moscow'] ?? false) ? ' / МСК' : '' }}</th><th>Занятие</th><th>Преподаватель</th></tr></thead><tbody>
-@foreach($lessons as $lesson)<tr><td><strong>{{ \Carbon\Carbon::parse($lesson['date'])->format('d.m.Y') }}</strong> <small>{{ \Carbon\Carbon::parse($lesson['date'])->locale('ru')->translatedFormat('D') }}</small></td><td class="lesson-time">{{ $lesson['time'] ?? '' }}@if($data['show_moscow'] ?? false)<small>{{ \App\Support\CoursePage::moscow($lesson['time'] ?? '') }} МСК</small>@endif</td><td><strong>{{ $lesson['title'] ?? '' }}</strong><div class="lesson-context"><span>{{ $lesson['module'] ?? '' }}</span><span>{{ $lesson['format'] ?? $group->format }}</span></div>@if($url = $safe($lesson['url'] ?? null))<a class="text-link" href="{{ $url }}" target="_blank" rel="noopener noreferrer">Подключиться ↗</a>@endif</td><td>{{ $lesson['teacher'] ?? '' }}</td></tr>@endforeach
+@foreach($lessons as $lesson)<tr><td><strong>{{ \Carbon\Carbon::parse($lesson['date'])->format('d.m.Y') }}</strong> <small>{{ \Carbon\Carbon::parse($lesson['date'])->locale('ru')->translatedFormat('D') }}</small></td><td class="lesson-time">{{ $lesson['time'] ?? '' }}<span class="lesson-timezone"> ЕКБ</span>@if($data['show_moscow'] ?? false)<small>{{ \App\Support\CoursePage::moscow($lesson['time'] ?? '') }} МСК</small>@endif</td><td><strong>{{ $lesson['title'] ?? '' }}</strong><div class="lesson-context"><span>{{ $lesson['module'] ?? '' }}</span><span>{{ $lesson['format'] ?? $group->format }}</span></div>@if($url = $safe($lesson['url'] ?? null))<a class="text-link" href="{{ $url }}" target="_blank" rel="noopener noreferrer">Подключиться ↗</a>@endif</td><td>{{ $lesson['teacher'] ?? '' }}</td></tr>@endforeach
 </tbody></table></div></div>@if($past)</details>@endif
 @empty<div class="empty">Расписание ещё не опубликовано.</div>@endforelse
 @if($url = $safe($data['source_url'] ?? null))<a class="btn outline" href="{{ $url }}" target="_blank" rel="noopener noreferrer">Открыть исходное расписание ↗</a>@endif
