@@ -84,6 +84,28 @@ class CoursePageTest extends TestCase
         $this->actingAs($enrollment->user)->get('/learning/'.$group->id)->assertOk()->assertSeeInOrder(['Второй блок первым', 'Папка группы'])->assertDontSee('Скрытый блок')->assertDontSee('javascript:alert(1)', false)->assertDontSee('<script>alert(1)</script>', false)->assertSee('&lt;script&gt;', false)->assertSee('https://example.com/folder')->assertSee('target="_blank"', false);
     }
 
+    public function test_legacy_contacts_render_safe_email_phone_and_multiple_chats_without_duplicate_name(): void
+    {
+        $group = StudyGroup::factory()->make();
+        $group->setRelation('administrator', User::factory()->make([
+            'name' => 'Дарья Маврина',
+            'contact_text' => "  Дарья   Маврина\nemail: dasha+group@example.com\nтел.: 8-999-286-67-07\nГрафик работы: пн-пт с 10:00 до 18:00\n<script>alert(1)</script>",
+            'contact_url' => 'https://max.ru/admin',
+        ]));
+        $html = view('student.page-block', ['type' => 'contacts', 'group' => $group, 'data' => ['chats' => [
+            ['label' => 'MAX', 'url' => 'https://max.ru/group'],
+            ['label' => 'Telegram', 'url' => 'https://t.me/group'],
+            ['label' => 'Unsafe', 'url' => 'javascript:alert(1)'],
+        ]]])->render();
+        $this->assertSame(1, substr_count($html, 'Дарья Маврина'));
+        foreach (['href="mailto:dasha%2Bgroup@example.com"', 'href="tel:+79992866707"', '10:00 до 18:00', 'https://max.ru/group', 'https://t.me/group', 'Написать администратору', '&lt;script&gt;'] as $value) {
+            $this->assertStringContainsString($value, $html);
+        }
+        $this->assertStringNotContainsString('javascript:', $html);
+        $this->assertStringNotContainsString('<script>', $html);
+        $this->assertStringNotContainsString('tel:10', $html);
+    }
+
     public function test_legacy_schedule_is_preserved_and_moscow_time_handles_midnight(): void
     {
         $group = StudyGroup::factory()->create(['schedule' => [['date' => '06.11.2026', 'time' => '01:00–03:00', 'title' => 'Старое занятие', 'subtitle' => 'Модуль 1']]]);

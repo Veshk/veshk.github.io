@@ -138,6 +138,42 @@ class CoursePage
         return $value && filter_var($value, FILTER_VALIDATE_URL) && in_array(strtolower(parse_url($value, PHP_URL_SCHEME) ?? ''), ['http', 'https'], true) ? $value : null;
     }
 
+    /** @return list<array{linked: bool, parts: list<array{text: string, href: ?string}>}> */
+    public static function contactLines(string $text, string $name): array
+    {
+        $normalize = fn (string $value): string => mb_strtolower(preg_replace('/\s+/u', ' ', trim($value)));
+        $pattern = "/[a-z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+|\+?\d[\d ()\x{00a0}.\-\x{2010}-\x{2015}]{7,}\d/iu";
+        $lines = [];
+        foreach (preg_split('/\r?\n/', $text) as $line) {
+            $line = trim($line);
+            if ($line === '' || $normalize($line) === $normalize($name)) {
+                continue;
+            }
+            $line = preg_replace('/^(?:e-?mail|почта|тел(?:ефон)?\.?)\s*:\s*/iu', '', $line);
+            preg_match_all($pattern, $line, $matches, PREG_OFFSET_CAPTURE);
+            $parts = [];
+            $last = 0;
+            $linked = false;
+            foreach ($matches[0] as [$value, $offset]) {
+                $parts[] = ['text' => substr($line, $last, $offset - $last), 'href' => null];
+                $digits = preg_replace('/\D/', '', $value);
+                $href = null;
+                if (str_contains($value, '@')) {
+                    $href = 'mailto:'.str_replace('%40', '@', rawurlencode($value));
+                } elseif (strlen($digits) >= 10 && strlen($digits) <= 15) {
+                    $href = 'tel:'.(strlen($digits) === 11 && str_starts_with($digits, '8') ? '+7'.substr($digits, 1) : (str_starts_with($value, '+') ? '+' : '').$digits);
+                }
+                $parts[] = ['text' => $value, 'href' => $href];
+                $linked = $linked || $href !== null;
+                $last = $offset + strlen($value);
+            }
+            $parts[] = ['text' => substr($line, $last), 'href' => null];
+            $lines[] = ['linked' => $linked, 'parts' => $parts];
+        }
+
+        return $lines;
+    }
+
     public static function moscow(string $time): string
     {
         return preg_replace_callback('/(\d{1,2})[:.](\d{2})/', fn (array $m): string => sprintf('%02d:%s', ((int) $m[1] + 22) % 24, $m[2]), $time);
@@ -161,7 +197,7 @@ class CoursePage
                 return new HtmlString($links ? '<div>Этот блок используется в других ЛК: '.implode(', ', $links).'. Изменение, скрытие или удаление повлияет на подключённые блоки.</div>' : '');
             })];
             $fields = array_merge($fields, match ($type) {
-                'contacts' => [Text::make('Фото и общие контакты: Панель администратора → Администраторы и фото.'), Textarea::make('text')->label('Описание')->maxLength(5000), self::url('contact_url', 'Ссылка для связи с администратором'), Repeater::make('chats')->label('Чаты группы')->schema([TextInput::make('label')->label('Название чата')->required()->maxLength(180), self::url('url', 'Ссылка')->required()])->defaultItems(0)->addActionLabel('Добавить чат')],
+                'contacts' => [Text::make('Фото и общие контакты: Панель администратора → Администраторы и фото.'), Textarea::make('text')->label('Описание')->maxLength(5000), self::url('contact_url', 'Ссылка для связи с администратором'), Textarea::make('chat_text')->label('Описание чатов')->default('Присоединяйтесь к чатам, чтобы быть на связи с группой и получать объявления.')->maxLength(5000), Repeater::make('chats')->label('Чаты группы')->schema([TextInput::make('label')->label('Название чата')->required()->maxLength(180), self::url('url', 'Ссылка')->required()])->defaultItems(0)->addActionLabel('Добавить чат')],
                 'alias' => [
                     Select::make('source_group')->label('ЛК-источник')->options(fn (): array => StudyGroup::query()->when(! auth()->user()?->isSenior(), fn ($q) => $q->where('administrator_id', auth()->id()))->get()->mapWithKeys(fn ($g) => [$g->id => $g->title.' — '.$g->code])->all())->required()->live()->afterStateUpdated(fn ($set) => $set('source_block', null)),
                     Select::make('source_block')->label('Исходный блок')->options(fn (Get $get): array => ($source = StudyGroup::find($get('source_group'))) ? collect(self::forGroup($source))->filter(fn ($b) => $b['type'] !== 'alias')->mapWithKeys(fn ($b) => [$b['data']['block_id'] => $b['data']['title'] ?? self::BLOCKS[$b['type']]])->all() : [])->required(),

@@ -2,7 +2,22 @@
     $safe = fn ($url) => \App\Support\CoursePage::safeUrl($url);
 @endphp
 @if($type === 'contacts')
-<div class="contact-grid"><div class="card"><div class="eyebrow muted">Администратор группы</div><div class="contact">@if($group->administrator->profile_photo)<img class="staff-photo" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($group->administrator->profile_photo) }}" alt="Фото администратора">@else<span class="avatar">{{ mb_substr($group->administrator->name,0,1) }}</span>@endif<h3>{{ $group->administrator->name }}</h3></div><p class="block-text">{{ ($data['text'] ?? '') ?: ($group->administrator->contact_text ?: 'Поможет с расписанием и организационными вопросами.') }}</p>@if($url = $safe(($data['contact_url'] ?? '') ?: $group->administrator->contact_url))<a class="btn outline" href="{{ $url }}" target="_blank" rel="noopener noreferrer">Связаться с администратором ↗</a>@endif</div><div class="card"><h3>Общение с группой</h3><div class="block-links">@forelse((!empty($data['chats']) ? $data['chats'] : ($group->chat_url ? [['label' => 'Чат группы', 'url' => $group->chat_url]] : [])) as $chat)@if($url = $safe($chat['url'] ?? null))<a class="btn outline" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ $chat['label'] }} ↗</a>@endif @empty<p class="muted">Ссылки на чаты скоро появятся.</p>@endforelse</div></div></div>
+@php
+    $contactLines = \App\Support\CoursePage::contactLines(($data['text'] ?? '') ?: ($group->administrator->contact_text ?: 'Поможет с расписанием и организационными вопросами.'), $group->administrator->name);
+    $chatText = $data['chat_text'] ?? 'Присоединяйтесь к чатам, чтобы быть на связи с группой и получать объявления.';
+    $chats = array_values(array_filter(!empty($data['chats']) ? $data['chats'] : ($group->chat_url ? [['label' => 'Чат группы', 'url' => $group->chat_url]] : []), fn ($chat) => $safe($chat['url'] ?? null)));
+@endphp
+<div class="contact-panel">
+    <div class="contact-person">
+        @if($group->administrator->profile_photo)<img class="staff-photo" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($group->administrator->profile_photo) }}" alt="Фото администратора">@else<span class="avatar staff-photo">{{ mb_substr($group->administrator->name,0,1) }}</span>@endif
+        <div class="contact-details">
+            <div class="eyebrow muted">Администратор группы</div><h3>{{ $group->administrator->name }}</h3>
+            <div class="contact-info">@foreach($contactLines as $line)<p class="contact-line{{ $line['linked'] ? '' : ' contact-note' }}">@foreach($line['parts'] as $part)@if($part['href'])<a href="{{ $part['href'] }}">{{ $part['text'] }}</a>@else{{ $part['text'] }}@endif@endforeach</p>@endforeach</div>
+            @if($url = $safe(($data['contact_url'] ?? '') ?: $group->administrator->contact_url))<a class="contact-message" href="{{ $url }}" target="_blank" rel="noopener noreferrer">Написать администратору ↗</a>@endif
+        </div>
+    </div>
+    <div class="contact-chats"><h3>Чаты группы</h3>@if($chatText)<p class="chat-description">{{ $chatText }}</p>@endif<div class="chat-links">@forelse($chats as $chat)<a class="btn outline" href="{{ $safe($chat['url']) }}" target="_blank" rel="noopener noreferrer">{{ $chat['label'] }} ↗</a>@empty<p class="muted">Ссылки на чаты скоро появятся.</p>@endforelse</div></div>
+</div>
 @elseif($type === 'schedule')
 @php
     $months = collect($data['lessons'] ?? [])->filter(fn ($l) => !empty($l['date']))->sortBy(fn ($l) => $l['date'].' '.($l['time'] ?? ''))->groupBy(fn ($l) => substr($l['date'], 0, 7));
