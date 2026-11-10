@@ -30,6 +30,24 @@ function render(blocks,group={}){
   return main.innerHTML;
 }
 
+test('artwork update replaces only the original intro photo and preserves later edits',()=>{
+  const original='https://static.tildacdn.com/tild3362-6637-4938-b938-613537666336/joanna-kosinska-uGcD.jpg';
+  for(const image of [original,'https://example.com/my-photo.jpg','']){
+    const intro={type:'introductions',data:{block_id:'pilot-spo-intro',title:'Мой заголовок',url:'https://example.com/my-board',image_url:image}};
+    const groups={mba:{page_blocks:[intro,{type:'info',data:{text:'Моя правка'}}]},other:{page_blocks:[]}};
+    const state={realCourseContentVersion:content.version};
+    assert.equal(content.apply(state,groups,{staff:{}}),true);
+    assert.equal(intro.data.image_url,image===original?'':image);
+    assert.equal(intro.data.title,'Мой заголовок');
+    assert.equal(intro.data.url,'https://example.com/my-board');
+    assert.equal(groups.mba.page_blocks[1].data.text,'Моя правка');
+    assert.deepEqual(groups.other.page_blocks,[]);
+    intro.data.image_url='https://example.com/later.jpg';
+    assert.equal(content.apply(state,groups,{staff:{}}),false);
+    assert.equal(intro.data.image_url,'https://example.com/later.jpg');
+  }
+});
+
 test('new blocks escape text and reject unsafe links; pending video never exposes its draft URL',()=>{
   const html=render([
     {type:'homework',data:{tasks:[{title:'<script>alert(1)</script>',status:'past',deadline:'2026-11-10',url:'javascript:alert(1)'}]}},
@@ -54,6 +72,27 @@ test('all imported resource and contact links use HTTP or HTTPS',()=>{
     }
   }
   visit(content.groups);visit(content.staffProfiles);
+});
+
+test('past homework is collapsed by status while current tasks and custom actions stay available',()=>{
+  const past={title:'Архивное задание',status:'past',url:'https://example.com/past',button:'Открыть'};
+  const current={title:'Текущее задание',status:'upcoming',deadline:'2000-01-01',url:'https://example.com/current',button:'Моя подпись'};
+  for(const tasks of [[past,current],[past],[current],[]]){
+    const html=render([{type:'homework',data:{tasks}}]);
+    const archive=html.match(/<details class="past-homework">([\s\S]*?)<\/details>/)?.[1]||'';
+    assert.equal(Boolean(archive),tasks.includes(past));
+    assert.ok(!/<details class="past-homework"[^>]*\bopen\b/.test(html));
+    if(tasks.includes(past)){
+      assert.ok(archive.includes('Архивное задание'));
+      assert.ok(archive.includes('https://example.com/past'));
+      assert.ok(archive.includes('Перейти к заданию'));
+    }
+    if(tasks.includes(current)){
+      assert.ok(html.includes('Текущее задание'));
+      assert.ok(!archive.includes('Текущее задание'));
+      assert.ok(html.includes('Моя подпись'));
+    }
+  }
 });
 
 test('legacy contacts become safe actionable links, omit repeated name and keep multiple chats',()=>{

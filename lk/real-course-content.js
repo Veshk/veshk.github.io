@@ -29,8 +29,8 @@ const RealCourseContent = {
             "text": "Для знакомства с коллегами по обучению и обмена контактными данными",
             "url": "https://app.holst.so/share/b/9bcba795-bc53-40c4-bf7f-ac2437e3f045",
             "button": "Перейти в Holst",
-            "image_url": "https://static.tildacdn.com/tild3362-6637-4938-b938-613537666336/joanna-kosinska-uGcD.jpg",
-            "image_alt": "Практика знакомства с коллегами по обучению"
+            "image_url": "",
+            "image_alt": ""
           }
         },
         {
@@ -696,6 +696,18 @@ RealCourseContent.apply = (state, groups, directory) => {
       state.staffProfiles[id] = {...state.staffProfiles[id], ...structuredClone(profile)};
     }
     state.realCourseContentVersion = RealCourseContent.version;
+    changed = true;
+  }
+  if (!state.welcomeArtworkRefined) {
+    const group = groups.mba;
+    const intro = group?.page_blocks?.find(b => b.type === 'introductions' && b.data.block_id === 'pilot-spo-intro');
+    if (intro?.data.image_url === 'https://static.tildacdn.com/tild3362-6637-4938-b938-613537666336/joanna-kosinska-uGcD.jpg') {
+      intro.data.image_url = '';
+      intro.data.image_alt = '';
+      state.groupOverrides ??= {};
+      state.groupOverrides.mba = group;
+    }
+    state.welcomeArtworkRefined = true;
     changed = true;
   }
   for (const [id, name] of Object.entries(RealCourseContent.staffNames)) {
