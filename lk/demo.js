@@ -49,6 +49,10 @@
     }
     state.schoolScheduleVersion=SchoolSchedules.version;save();
   }
+  if(window.RealCourseContent){
+    if(RealCourseContent.apply(state,groups,directory))save();
+    for(const [id,person] of Object.entries(directory.staff))names[id]=person.name;
+  }
   const options = (values,selected='') => values.map(value=>`<option value="${escape(value)}"${value===selected?' selected':''}>${escape(value)}</option>`).join('');
   const programOptions = selected => Object.entries(programs).map(([id,p])=>`<option value="${escape(id)}"${id===selected?' selected':''}>${escape(p.tag)} — ${escape(p.title)}</option>`).join('');
   const safeUrl = value => { try { const url=new URL(value);return ['http:','https:'].includes(url.protocol)?url.href:''; } catch { return ''; } };
