@@ -74,19 +74,31 @@
 @php
     $videoUrl = $safe($video['url'] ?? null);
     $ready = (($video['status'] ?? '') ?: ($videoUrl ? 'published' : 'pending')) === 'published' && $videoUrl;
+    $videoDate = !empty($video['date']) ? \Carbon\Carbon::parse($video['date'])->format('d.m.Y') : '';
+    $videoTitle = trim($video['title'] ?? '');
+    $videoText = trim($video['text'] ?? '');
+    if ($videoDate && str_ends_with($videoTitle, $videoDate)) {
+        $videoTitle = preg_replace('/[\s,–—-]+$/u', '', substr($videoTitle, 0, -strlen($videoDate)));
+    }
+    $videoTitle = preg_replace('/^(\d+)\s+занятие$/iu', 'Занятие $1', $videoTitle) ?: 'Запись занятия';
+    if ($videoDate && rtrim($videoText, '.') === 'Запись занятия от '.$videoDate) {
+        $videoText = '';
+    }
 @endphp
-<article class="card recording-card {{ $ready ? '' : 'is-pending' }}"><span class="content-status {{ $ready ? 'is-published' : 'is-upcoming' }}">{{ $ready ? 'Запись опубликована' : 'Видео ещё не опубликовано' }}</span>@if(!empty($video['date']))<time datetime="{{ $video['date'] }}">{{ \Carbon\Carbon::parse($video['date'])->format('d.m.Y') }}</time>@endif<h3>{{ $video['title'] }}</h3>@if(!empty($video['text']))<p class="block-text">{{ $video['text'] }}</p>@endif @if($ready)<a class="btn outline" href="{{ $videoUrl }}" target="_blank" rel="noopener noreferrer">Смотреть запись ↗</a>@else<p class="muted">Ссылка появится после публикации видео.</p>@endif</article>
+<article class="card recording-card {{ $ready ? '' : 'is-pending' }}"><div class="recording-meta"><span class="content-status {{ $ready ? 'is-published' : 'is-upcoming' }}">{{ $ready ? 'Запись опубликована' : 'Видео ещё не опубликовано' }}</span>@if(!empty($video['date']))<time datetime="{{ $video['date'] }}">{{ $videoDate }}</time>@endif</div><h3>{{ $videoTitle }}</h3>@if($videoText)<p class="block-text">{{ $videoText }}</p>@endif @if($ready)<a class="btn outline" href="{{ $videoUrl }}" target="_blank" rel="noopener noreferrer">Смотреть запись ↗</a>@else<p class="muted">Ссылка появится после публикации видео.</p>@endif</article>
 @endforeach</div></div>@empty<div class="empty">Записи появятся здесь после занятий.</div>@endforelse
 @elseif($type === 'materials')
-@if(!empty($data['resources']))
-@if(!empty($data['text']))<p class="block-text">{{ $data['text'] }}</p>@endif
 @php
-    $resources = array_merge(!empty($data['url']) ? [['title' => 'Папка вашей группы', 'url' => $data['url']]] : [], $data['resources']);
+    $resources = array_merge(!empty($data['url']) ? [['title' => 'Папка вашей группы', 'url' => $data['url']]] : [], $data['resources'] ?? []);
+    if (!$resources) {
+        $resources = [[]];
+    }
 @endphp
-<div class="resource-grid">@foreach($resources as $resource)<article class="card resource-card"><h3>{{ $resource['title'] ?? '' }}</h3>@if(!empty($resource['text']))<p class="block-text">{{ $resource['text'] }}</p>@endif @if($url = $safe($resource['url'] ?? null))<a class="btn outline" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ ($resource['button'] ?? '') ?: 'Открыть материалы' }} ↗</a>@endif</article>@endforeach</div>
-@else
-<div class="folder-banner"><svg width="92" height="72" viewBox="0 0 92 72" aria-hidden="true"><path d="M4 14h30l9 10h45v42H4z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M4 24V6h31l9 8h39v10" fill="none" stroke="currentColor" stroke-width="3"/></svg><div><h3>Папка вашей группы</h3><p>{{ $data['text'] ?? '' }}</p>@if($url = $safe($data['url'] ?? null))<a class="btn" href="{{ $url }}" target="_blank" rel="noopener noreferrer">Перейти к материалам ↗</a>@else<p class="muted">Ссылка скоро появится.</p>@endif</div></div>
-@endif
+@if(!empty($data['text']))<p class="block-text">{{ $data['text'] }}</p>@endif
+<div class="resource-grid">@foreach($resources as $resource)
+@php($showResourceTitle = !empty($resource['title']) && !(count($resources) === 1 && in_array($resource['title'], ['Материалы группы', 'Папка вашей группы', $data['title'] ?? ''], true)))
+<article class="resource-folder"><svg class="resource-folder-art" viewBox="0 0 92 72" fill="none" aria-hidden="true"><path d="M4 24V6h31l9 8h39v10" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 24h84l-8 42H12L4 24Z" fill="#fff" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M23 39h22M23 47h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div class="resource-folder-copy">@if($showResourceTitle)<h3>{{ $resource['title'] }}</h3>@endif @if(!empty($resource['text']))<p class="block-text">{{ $resource['text'] }}</p>@endif @if($url = $safe($resource['url'] ?? null))<a class="resource-action" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ ($resource['button'] ?? '') ?: 'Открыть папку' }}<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>@else<p class="muted">Ссылка скоро появится.</p>@endif</div></article>
+@endforeach</div>
 @foreach(($isAlias ?? false) ? [] : ($group->materials ?? []) as $index => $material)<a class="material" href="{{ route('student.material',[$group,$index]) }}"><span class="file-icon">TXT</span><div class="details"><h3>{{ $material['title'] }}</h3><small>Демонстрационный материал — {{ $group->code }}</small></div><span class="arrow">↓</span></a>@endforeach
 @else
 <div class="card information-block">@if($imageUrl = $safe($data['image_url'] ?? null))<img class="block-image" src="{{ $imageUrl }}" alt="{{ $data['image_alt'] ?? '' }}" loading="lazy" referrerpolicy="no-referrer">@endif<p class="block-text">{{ ($data['text'] ?? '') ?: ($type === 'join' ? 'Информация о подключении появится перед занятием.' : 'Администратор добавит информацию.') }}</p>@if($type === 'join' && !empty($data['platform']))<p class="muted">Платформа: {{ $data['platform'] }}</p>@endif @if($url = $safe($data['url'] ?? null))<a class="btn outline" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ ($data['button'] ?? '') ?: match($type) { 'join' => 'Подключиться', 'video' => 'Смотреть видео', 'introductions' => 'Перейти в Holst', default => 'Подробнее' } }} ↗</a>@endif</div>

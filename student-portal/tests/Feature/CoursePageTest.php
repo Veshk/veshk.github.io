@@ -179,6 +179,28 @@ class CoursePageTest extends TestCase
         $this->assertStringContainsString('Моя подпись', $html);
     }
 
+    public function test_recording_dates_are_not_repeated_and_custom_copy_is_preserved(): void
+    {
+        $group = StudyGroup::factory()->create(['page_blocks' => [
+            ['type' => 'recordings', 'data' => ['videos' => [
+                ['date' => '2026-10-19', 'title' => '1 занятие 19.10.2026', 'text' => 'Запись занятия от 19.10.2026.', 'url' => 'https://example.com/one'],
+                ['date' => '2026-10-26', 'title' => 'Разбор кейса — 26.10.2026', 'text' => 'Разбор решений команды', 'url' => 'https://example.com/two'],
+            ]]],
+            ['type' => 'materials', 'data' => ['resources' => [
+                ['title' => 'Папка группы', 'url' => 'https://example.com/folder'],
+                ['title' => 'Библиотека MBA', 'url' => 'https://example.com/books'],
+            ]]],
+            ['type' => 'faq', 'data' => ['questions' => [['question' => 'Мой вопрос', 'answer' => 'Мой ответ']]]],
+        ]]);
+        $enrollment = Enrollment::factory()->create(['study_group_id' => $group->id]);
+        $response = $this->actingAs($enrollment->user)->get('/learning/'.$group->id)->assertOk();
+        $response->assertSee('Занятие 1')->assertSee('Разбор кейса')->assertSee('Разбор решений команды')
+            ->assertSee('Папка группы')->assertSee('Библиотека MBA')->assertSee('https://example.com/folder')->assertSee('https://example.com/books')
+            ->assertSee('Мой вопрос')->assertDontSee('id="help"', false)->assertDontSee('href="#help"', false);
+        $this->assertSame(1, substr_count($response->getContent(), '19.10.2026'));
+        $this->assertSame(1, substr_count($response->getContent(), '26.10.2026'));
+    }
+
     public function test_legacy_program_video_stays_published_after_editing_its_template(): void
     {
         $program = Program::factory()->create(['template_key' => 'short', 'page_blocks' => [
