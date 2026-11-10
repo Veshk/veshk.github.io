@@ -23,7 +23,7 @@ class EditGroupPage extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $data['page_blocks'] = CoursePage::forGroup($this->getRecord());
+        $data['page_blocks'] = CoursePage::forEditor(CoursePage::forGroup($this->getRecord()));
 
         return $data;
     }

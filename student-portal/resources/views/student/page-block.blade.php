@@ -9,18 +9,43 @@
     $today = now('Asia/Yekaterinburg')->toDateString();
 @endphp
 @forelse($months as $month => $lessons)
-@php($past = ($data['collapse_past'] ?? false) && $lessons->every(fn ($l) => $l['date'] < $today))
+@php
+    $past = ($data['collapse_past'] ?? false) && $lessons->every(fn ($l) => $l['date'] < $today);
+@endphp
 @if($past)<details class="past-schedule"><summary>Прошедшие занятия — {{ \Carbon\Carbon::parse($month.'-01')->locale('ru')->translatedFormat('F Y') }}</summary>@endif
 <div class="month-card"><div class="month-label">{{ \Carbon\Carbon::parse($month.'-01')->locale('ru')->translatedFormat('F Y') }}</div><div class="schedule-scroll"><table class="compact-schedule"><colgroup><col class="col-date"><col class="col-time"><col class="col-lesson"><col class="col-teacher"></colgroup><thead><tr><th>Дата</th><th>Время ЕКБ{{ ($data['show_moscow'] ?? false) ? ' / МСК' : '' }}</th><th>Занятие</th><th>Преподаватель</th></tr></thead><tbody>
 @foreach($lessons as $lesson)<tr><td><strong>{{ \Carbon\Carbon::parse($lesson['date'])->format('d.m.Y') }}</strong> <small>{{ \Carbon\Carbon::parse($lesson['date'])->locale('ru')->translatedFormat('D') }}</small></td><td class="lesson-time">{{ $lesson['time'] ?? '' }}@if($data['show_moscow'] ?? false)<small>{{ \App\Support\CoursePage::moscow($lesson['time'] ?? '') }} МСК</small>@endif</td><td><strong>{{ $lesson['title'] ?? '' }}</strong><div class="lesson-context"><span>{{ $lesson['module'] ?? '' }}</span><span>{{ $lesson['format'] ?? $group->format }}</span></div>@if($url = $safe($lesson['url'] ?? null))<a class="text-link" href="{{ $url }}" target="_blank" rel="noopener noreferrer">Подключиться ↗</a>@endif</td><td>{{ $lesson['teacher'] ?? '' }}</td></tr>@endforeach
 </tbody></table></div></div>@if($past)</details>@endif
 @empty<div class="empty">Расписание ещё не опубликовано.</div>@endforelse
 @if($url = $safe($data['source_url'] ?? null))<a class="btn outline" href="{{ $url }}" target="_blank" rel="noopener noreferrer">Открыть исходное расписание ↗</a>@endif
+@elseif($type === 'homework')
+@if(!empty($data['tasks']))
+<div class="homework-scroll"><table class="homework-table"><thead><tr><th>Статус</th><th>Срок</th><th>Модуль и задание</th><th>Материалы</th></tr></thead><tbody>
+@foreach($data['tasks'] as $task)<tr><td><span class="content-status {{ ($task['status'] ?? '') === 'past' ? 'is-past' : 'is-upcoming' }}">{{ ($task['status'] ?? '') === 'past' ? 'Прошедшее' : 'Предстоит' }}</span></td><td class="homework-deadline">{{ !empty($task['deadline']) ? \Carbon\Carbon::parse($task['deadline'])->format('d.m.Y') : 'Уточняется' }}</td><td>@if(!empty($task['module']))<div class="homework-module">{{ $task['module'] }}</div>@endif<p class="block-text">{{ $task['title'] ?? '' }}</p></td><td>@if($url = $safe($task['url'] ?? null))<a class="text-link" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ ($task['button'] ?? '') ?: 'Открыть' }} ↗</a>@endif</td></tr>@endforeach
+</tbody></table></div><p class="form-note">Статус общий для группы и не обозначает личное выполнение задания.</p>
+@else<div class="empty">Задания появятся здесь после публикации.</div>@endif
+@elseif($type === 'faq')
+@forelse($data['questions'] ?? [] as $question)<details class="course-faq"><summary>{{ $question['question'] ?? '' }}</summary><div class="faq-answer"><p class="block-text">{{ $question['answer'] ?? '' }}</p>@if($url = $safe($question['url'] ?? null))<a class="text-link" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ ($question['button'] ?? '') ?: 'Подробнее' }} ↗</a>@endif</div></details>@empty<div class="empty">Ответы на вопросы скоро появятся.</div>@endforelse
 @elseif($type === 'recordings')
-@forelse(collect($data['videos'] ?? [])->groupBy(fn ($v) => ($v['module'] ?? '') ?: 'Записи занятий') as $module => $videos)<div class="recording-module"><h3>{{ $module }}</h3><div class="recording-grid">@foreach($videos as $video)<article class="card"><span class="video-symbol" aria-hidden="true">▷</span><h3>{{ $video['title'] }}</h3><p class="block-text">{{ $video['text'] ?? '' }}</p>@if($url = $safe($video['url'] ?? null))<a class="btn outline" href="{{ $url }}" target="_blank" rel="noopener noreferrer">Смотреть запись ↗</a>@endif</article>@endforeach</div></div>@empty<div class="empty">Записи появятся здесь после занятий.</div>@endforelse
+@forelse(collect($data['videos'] ?? [])->groupBy(fn ($v) => ($v['module'] ?? '') ?: 'Записи занятий') as $module => $videos)
+<div class="recording-module"><h3>{{ $module }}</h3><div class="recording-grid">@foreach($videos as $video)
+@php
+    $videoUrl = $safe($video['url'] ?? null);
+    $ready = (($video['status'] ?? '') ?: ($videoUrl ? 'published' : 'pending')) === 'published' && $videoUrl;
+@endphp
+<article class="card recording-card {{ $ready ? '' : 'is-pending' }}"><span class="content-status {{ $ready ? 'is-published' : 'is-upcoming' }}">{{ $ready ? 'Запись опубликована' : 'Видео ещё не опубликовано' }}</span>@if(!empty($video['date']))<time datetime="{{ $video['date'] }}">{{ \Carbon\Carbon::parse($video['date'])->format('d.m.Y') }}</time>@endif<h3>{{ $video['title'] }}</h3>@if(!empty($video['text']))<p class="block-text">{{ $video['text'] }}</p>@endif @if($ready)<a class="btn outline" href="{{ $videoUrl }}" target="_blank" rel="noopener noreferrer">Смотреть запись ↗</a>@else<p class="muted">Ссылка появится после публикации видео.</p>@endif</article>
+@endforeach</div></div>@empty<div class="empty">Записи появятся здесь после занятий.</div>@endforelse
 @elseif($type === 'materials')
+@if(!empty($data['resources']))
+@if(!empty($data['text']))<p class="block-text">{{ $data['text'] }}</p>@endif
+@php
+    $resources = array_merge(!empty($data['url']) ? [['title' => 'Папка вашей группы', 'url' => $data['url']]] : [], $data['resources']);
+@endphp
+<div class="resource-grid">@foreach($resources as $resource)<article class="card resource-card"><h3>{{ $resource['title'] ?? '' }}</h3>@if(!empty($resource['text']))<p class="block-text">{{ $resource['text'] }}</p>@endif @if($url = $safe($resource['url'] ?? null))<a class="btn outline" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ ($resource['button'] ?? '') ?: 'Открыть материалы' }} ↗</a>@endif</article>@endforeach</div>
+@else
 <div class="folder-banner"><svg width="92" height="72" viewBox="0 0 92 72" aria-hidden="true"><path d="M4 14h30l9 10h45v42H4z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M4 24V6h31l9 8h39v10" fill="none" stroke="currentColor" stroke-width="3"/></svg><div><h3>Папка вашей группы</h3><p>{{ $data['text'] ?? '' }}</p>@if($url = $safe($data['url'] ?? null))<a class="btn" href="{{ $url }}" target="_blank" rel="noopener noreferrer">Перейти к материалам ↗</a>@else<p class="muted">Ссылка скоро появится.</p>@endif</div></div>
+@endif
 @foreach(($isAlias ?? false) ? [] : ($group->materials ?? []) as $index => $material)<a class="material" href="{{ route('student.material',[$group,$index]) }}"><span class="file-icon">TXT</span><div class="details"><h3>{{ $material['title'] }}</h3><small>Демонстрационный материал — {{ $group->code }}</small></div><span class="arrow">↓</span></a>@endforeach
 @else
-<div class="card information-block"><p class="block-text">{{ ($data['text'] ?? '') ?: ($type === 'join' ? 'Информация о подключении появится перед занятием.' : 'Администратор добавит информацию.') }}</p>@if($type === 'join' && !empty($data['platform']))<p class="muted">Платформа: {{ $data['platform'] }}</p>@endif @if($url = $safe($data['url'] ?? null))<a class="btn outline" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ ($data['button'] ?? '') ?: match($type) { 'join' => 'Подключиться', 'video' => 'Смотреть видео', 'introductions' => 'Перейти в Holst', default => 'Подробнее' } }} ↗</a>@endif</div>
+<div class="card information-block">@if($imageUrl = $safe($data['image_url'] ?? null))<img class="block-image" src="{{ $imageUrl }}" alt="{{ $data['image_alt'] ?? '' }}" loading="lazy" referrerpolicy="no-referrer">@endif<p class="block-text">{{ ($data['text'] ?? '') ?: ($type === 'join' ? 'Информация о подключении появится перед занятием.' : 'Администратор добавит информацию.') }}</p>@if($type === 'join' && !empty($data['platform']))<p class="muted">Платформа: {{ $data['platform'] }}</p>@endif @if($url = $safe($data['url'] ?? null))<a class="btn outline" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ ($data['button'] ?? '') ?: match($type) { 'join' => 'Подключиться', 'video' => 'Смотреть видео', 'introductions' => 'Перейти в Holst', default => 'Подробнее' } }} ↗</a>@endif</div>
 @endif

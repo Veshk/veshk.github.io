@@ -76,14 +76,21 @@ class ScheduleWorkspaceTest extends TestCase
         $this->get('/learning/'.$group->id)->assertDontSee('Приветствие моей группы');
     }
 
-    public function test_seeded_schedules_have_213_dated_lessons_and_seven_undated_mba_rows(): void
+    public function test_seeded_schedules_use_current_pilot_pages_and_keep_the_original_snapshot(): void
     {
         $this->seed();
         $count = StudyGroup::all()->sum(fn ($g) => collect(CoursePage::forGroup($g))->where('type', 'schedule')->sum(fn ($b) => count($b['data']['lessons'] ?? [])));
-        $this->assertSame(213, $count);
+        $this->assertSame(177, $count);
         $monetka = StudyGroup::where('code', 'МОНЕТКА/49586266')->firstOrFail();
         $this->assertEmpty(collect(CoursePage::forGroup($monetka))->firstWhere('type', 'schedule')['data']['lessons']);
         $mba = StudyGroup::where('code', 'МБАстрат-7.1')->firstOrFail();
-        $this->assertStringContainsString('Консультация №1', collect(CoursePage::forGroup($mba))->firstWhere('type', 'info')['data']['text']);
+        $this->assertCount(16, collect(CoursePage::forGroup($mba))->firstWhere('type', 'schedule')['data']['lessons']);
+        $this->assertSame('Вера Багрянцева', $mba->administrator->name);
+        $this->assertCount(4, collect(CoursePage::forGroup($mba))->firstWhere('type', 'faq')['data']['questions']);
+        $source = json_decode(file_get_contents(database_path('seeders/data/school-schedules.json')), true);
+        $this->assertCount(7, $source['groups']['recuGnPizfrDCbFKH']['pending_lessons']);
+        $mba->update(['description' => 'Ручная правка']);
+        $this->seed();
+        $this->assertSame('Ручная правка', $mba->fresh()->description);
     }
 }

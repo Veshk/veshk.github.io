@@ -25,7 +25,7 @@ class CoursePage
 {
     public const TEMPLATES = ['mba' => 'MBA / длительная программа', 'short' => 'Короткая программа', 'corporate' => 'Корпоративная программа'];
 
-    public const BLOCKS = ['contacts' => 'Контакты и чаты', 'schedule' => 'Расписание', 'join' => 'Подключиться к занятию', 'recordings' => 'Записи занятий', 'materials' => 'Материалы для обучения', 'info' => 'Информационный блок', 'video' => 'Видео о школе', 'introductions' => 'Практика «Знакомство»', 'alias' => 'Общий блок из другого ЛК'];
+    public const BLOCKS = ['contacts' => 'Контакты и чаты', 'schedule' => 'Расписание', 'join' => 'Подключиться к занятию', 'homework' => 'Домашние задания', 'recordings' => 'Записи занятий', 'materials' => 'Материалы для обучения', 'faq' => 'Вопросы об обучении', 'info' => 'Информационный блок', 'video' => 'Видео о школе', 'introductions' => 'Практика «Знакомство»', 'alias' => 'Общий блок из другого ЛК'];
 
     public static function defaults(string $template = 'mba'): array
     {
@@ -71,6 +71,20 @@ class CoursePage
     {
         foreach ($blocks as $i => &$block) {
             $block['data']['block_id'] ??= 'legacy-'.$i;
+        }
+
+        return $blocks;
+    }
+
+    public static function forEditor(array $blocks): array
+    {
+        $blocks = self::withIds($blocks);
+        foreach ($blocks as &$block) {
+            if (($block['type'] ?? '') === 'recordings') {
+                foreach ($block['data']['videos'] ?? [] as $j => $video) {
+                    $block['data']['videos'][$j]['status'] = ($video['status'] ?? '') ?: (self::safeUrl($video['url'] ?? null) ? 'published' : 'pending');
+                }
+            }
         }
 
         return $blocks;
@@ -160,8 +174,19 @@ class CoursePage
                 'schedule' => [Toggle::make('show_moscow')->label('Показывать время Москвы рядом с Екатеринбургом'), Toggle::make('collapse_past')->label('Сворачивать полностью прошедшие месяцы')->default(true), self::url('source_url', 'Ссылка на исходное расписание')->helperText('Для загрузки занятий используйте «Обновить расписание из таблицы» над редактором группы. Сначала сохраните изменения страницы.'), Repeater::make('lessons')->label('Занятия')->schema([
                     TextInput::make('source_id')->label('ID занятия для обновления из таблицы')->maxLength(100), TextInput::make('hours')->label('Академические часы')->maxLength(10), DatePicker::make('date')->label('Дата')->required(), TextInput::make('time')->label('Время ЕКБ')->placeholder('17:00–21:00')->required()->regex('/^([01]?\d|2[0-3])[:.][0-5]\d\s*[-–—]\s*([01]?\d|2[0-3])[:.][0-5]\d$/u'), TextInput::make('title')->label('Занятие')->required()->maxLength(300), TextInput::make('teacher')->label('Преподаватель')->maxLength(180), TextInput::make('module')->label('Модуль')->maxLength(180), TextInput::make('format')->label('Формат занятия')->helperText('Можно указать онлайн для очной группы.')->maxLength(60), self::url('url', 'Ссылка для подключения'),
                 ])->columns(2)->defaultItems(0)->addActionLabel('Добавить занятие')->collapsible()],
-                'recordings' => [Repeater::make('videos')->label('Записи')->schema([TextInput::make('module')->label('Модуль')->maxLength(180), TextInput::make('title')->label('Название записи')->required()->maxLength(300), Textarea::make('text')->label('Описание')->maxLength(5000), self::url('url', 'Ссылка на запись')->required()])->defaultItems(0)->addActionLabel('Добавить запись')->collapsible()],
-                'materials' => [Textarea::make('text')->label('Описание')->maxLength(5000), self::url('url', 'Ссылка на папку группы')->helperText('Папка открывается в новой вкладке.')],
+                'homework' => [Text::make('Статус общий для группы, а не персональная отметка выполнения.'), Repeater::make('tasks')->label('Задания')->schema([
+                    TextInput::make('module')->label('Модуль')->maxLength(300), DatePicker::make('deadline')->label('Срок'), Select::make('status')->label('Статус задания')->options(['upcoming' => 'Предстоит', 'past' => 'Прошедшее'])->default('upcoming')->required(), Textarea::make('title')->label('Задание')->required()->maxLength(5000), self::url('url', 'Ссылка на материалы'), TextInput::make('button')->label('Текст ссылки')->maxLength(100),
+                ])->defaultItems(0)->addActionLabel('Добавить задание')->collapsible()],
+                'faq' => [Repeater::make('questions')->label('Вопросы и ответы')->schema([
+                    TextInput::make('question')->label('Вопрос')->required()->maxLength(500), Textarea::make('answer')->label('Ответ')->required()->maxLength(5000), self::url('url', 'Ссылка в ответе'), TextInput::make('button')->label('Текст ссылки')->maxLength(100),
+                ])->defaultItems(0)->addActionLabel('Добавить вопрос')->collapsible()],
+                'recordings' => [Repeater::make('videos')->label('Записи')->schema([
+                    TextInput::make('module')->label('Модуль')->maxLength(300), TextInput::make('title')->label('Название записи')->required()->maxLength(300), DatePicker::make('date')->label('Дата занятия'), Select::make('status')->label('Статус записи')->options(['pending' => 'Видео ещё не опубликовано', 'published' => 'Запись опубликована'])->default('pending')->required()->live(), Textarea::make('text')->label('Описание')->maxLength(5000), self::url('url', 'Ссылка на запись')->required(fn (Get $get): bool => $get('status') === 'published'),
+                ])->defaultItems(0)->addActionLabel('Добавить запись')->collapsible()],
+                'materials' => [Textarea::make('text')->label('Описание')->maxLength(5000), self::url('url', 'Ссылка на папку группы (необязательно)'), Repeater::make('resources')->label('Материалы')->schema([
+                    TextInput::make('title')->label('Название материала')->required()->maxLength(300), Textarea::make('text')->label('Описание')->maxLength(5000), self::url('url', 'Ссылка на материал')->required(), TextInput::make('button')->label('Текст кнопки')->maxLength(100),
+                ])->defaultItems(0)->addActionLabel('Добавить материал')->collapsible()],
+                'video', 'introductions' => [Textarea::make('text')->label('Текст')->maxLength(5000), self::url('url', 'Ссылка'), TextInput::make('button')->label('Текст кнопки')->maxLength(100), self::url('image_url', 'Ссылка на изображение (необязательно)'), TextInput::make('image_alt')->label('Описание изображения')->maxLength(300)],
                 'join' => [TextInput::make('platform')->label('Платформа')->maxLength(100), Textarea::make('text')->label('Текст')->maxLength(5000), self::url('url', 'Ссылка для подключения'), TextInput::make('button')->label('Текст кнопки')->maxLength(100)],
                 default => [Textarea::make('text')->label('Текст')->maxLength(5000), self::url('url', 'Ссылка'), TextInput::make('button')->label('Текст кнопки')->maxLength(100)],
             });

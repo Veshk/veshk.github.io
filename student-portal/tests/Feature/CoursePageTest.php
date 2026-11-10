@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Programs\Pages\EditProgram;
 use App\Filament\Resources\StudyGroups\Pages\CreateStudyGroup;
 use App\Filament\Resources\StudyGroups\Pages\EditGroupPage;
 use App\Models\Enrollment;
@@ -92,5 +93,56 @@ class CoursePageTest extends TestCase
         $this->assertSame('Модуль 1', $blocks[1]['data']['lessons'][0]['module']);
         $this->assertNull($group->fresh()->page_blocks);
         $this->assertSame('23:00–01:00', CoursePage::moscow('01:00–03:00'));
+    }
+
+    public function test_editor_saves_new_blocks_and_requires_a_url_only_for_published_recordings(): void
+    {
+        $group = StudyGroup::factory()->create();
+        $this->actingAs($group->administrator);
+        $blocks = [
+            ['type' => 'homework', 'data' => ['block_id' => 'tasks', 'title' => 'Задания', 'visible' => true, 'tasks' => [['module' => 'Модуль', 'deadline' => '2026-11-18', 'status' => 'upcoming', 'title' => 'Прочитать материалы', 'url' => 'https://example.com/task']]]],
+            ['type' => 'faq', 'data' => ['block_id' => 'faq', 'title' => 'Вопросы', 'visible' => true, 'questions' => [['question' => 'Где материалы?', 'answer' => "В папке группы.\nСсылка ниже.", 'url' => 'https://example.com/folder']]]],
+            ['type' => 'recordings', 'data' => ['block_id' => 'videos', 'title' => 'Записи', 'visible' => true, 'videos' => [['title' => 'Будущая запись', 'date' => '2026-11-16', 'status' => 'pending', 'url' => null]]]],
+            ['type' => 'materials', 'data' => ['block_id' => 'resources', 'title' => 'Материалы', 'visible' => true, 'resources' => [['title' => 'Книги', 'url' => 'https://example.com/books'], ['title' => 'Задания', 'url' => 'https://example.com/tasks']]]],
+            ['type' => 'introductions', 'data' => ['block_id' => 'intro', 'title' => 'Знакомство', 'visible' => true, 'image_url' => 'https://example.com/cover.jpg', 'image_alt' => 'Обложка']],
+        ];
+        Livewire::test(EditGroupPage::class, ['record' => $group->id])->fillForm(['page_blocks' => $blocks])->call('save')->assertHasNoFormErrors();
+        $saved = $group->fresh()->page_blocks;
+        $this->assertSame('upcoming', $saved[0]['data']['tasks'][0]['status']);
+        $this->assertSame('Где материалы?', $saved[1]['data']['questions'][0]['question']);
+        $this->assertCount(2, $saved[3]['data']['resources']);
+        $this->assertSame('https://example.com/cover.jpg', $saved[4]['data']['image_url']);
+        $blocks[2]['data']['videos'][0]['status'] = 'published';
+        Livewire::test(EditGroupPage::class, ['record' => $group->id])->fillForm(['page_blocks' => $blocks])->call('save')->assertHasFormErrors();
+        $this->assertSame('pending', $group->fresh()->page_blocks[2]['data']['videos'][0]['status']);
+        $blocks[2]['data']['videos'][0]['url'] = 'https://example.com/video';
+        Livewire::test(EditGroupPage::class, ['record' => $group->id])->fillForm(['page_blocks' => $blocks])->call('save')->assertHasNoFormErrors();
+        $this->assertSame('published', $group->fresh()->page_blocks[2]['data']['videos'][0]['status']);
+    }
+
+    public function test_new_blocks_render_safely_and_pending_recordings_hide_draft_links(): void
+    {
+        $group = StudyGroup::factory()->create(['page_blocks' => [
+            ['type' => 'homework', 'data' => ['title' => 'Задания', 'tasks' => [['title' => '<script>alert(1)</script>', 'status' => 'past', 'url' => 'javascript:alert(1)']]]],
+            ['type' => 'faq', 'data' => ['title' => 'Вопросы', 'questions' => [['question' => 'Как учиться?', 'answer' => 'Ответ для группы', 'url' => 'https://example.com/faq']]]],
+            ['type' => 'recordings', 'data' => ['title' => 'Записи', 'videos' => [['title' => 'Будущая запись', 'status' => 'pending', 'url' => 'https://example.com/draft'], ['title' => 'Старая запись', 'url' => 'https://example.com/legacy']]]],
+            ['type' => 'materials', 'data' => ['title' => 'Материалы', 'url' => 'https://example.com/folder', 'resources' => [['title' => 'Книги', 'url' => 'https://example.com/books']]]],
+            ['type' => 'video', 'data' => ['title' => 'Ролик', 'image_url' => 'javascript:alert(1)']],
+        ]]);
+        $enrollment = Enrollment::factory()->create(['study_group_id' => $group->id]);
+        $this->actingAs($enrollment->user)->get('/learning/'.$group->id)->assertOk()
+            ->assertSee('Прошедшее')->assertSee('Видео ещё не опубликовано')->assertSee('Ответ для группы')
+            ->assertSee('https://example.com/legacy')->assertSee('https://example.com/folder')->assertSee('https://example.com/books')
+            ->assertDontSee('https://example.com/draft')->assertDontSee('javascript:', false)->assertDontSee('<script>alert(1)</script>', false)->assertSee('&lt;script&gt;', false);
+    }
+
+    public function test_legacy_program_video_stays_published_after_editing_its_template(): void
+    {
+        $program = Program::factory()->create(['template_key' => 'short', 'page_blocks' => [
+            ['type' => 'recordings', 'data' => ['title' => 'Записи', 'visible' => true, 'videos' => [['title' => 'Старая запись', 'url' => 'https://example.com/legacy']]]],
+        ]]);
+        $this->actingAs(User::factory()->create(['role' => 'senior']));
+        Livewire::test(EditProgram::class, ['record' => $program->id])->call('save')->assertHasNoFormErrors();
+        $this->assertSame('published', $program->fresh()->page_blocks[0]['data']['videos'][0]['status']);
     }
 }
