@@ -341,7 +341,7 @@ const RealCourseContent = {
             "block_id": "pilot-spo-materials",
             "title": "Материалы для обучения",
             "visible": true,
-            "text": "Дополнительные материалы группы ОНЛ_СПО-8.",
+            "text": "",
             "resources": [
               {
                 "title": "Материалы группы",
@@ -708,6 +708,17 @@ RealCourseContent.apply = (state, groups, directory) => {
       state.groupOverrides.mba = group;
     }
     state.welcomeArtworkRefined = true;
+    changed = true;
+  }
+  if (!state.materialsCopyRefined) {
+    const group = groups.mba;
+    const materials = group?.page_blocks?.find(b => b.type === 'materials' && b.data.block_id === 'pilot-spo-materials');
+    if (materials?.data.text === 'Дополнительные материалы группы ОНЛ_СПО-8.') {
+      materials.data.text = '';
+      state.groupOverrides ??= {};
+      state.groupOverrides.mba = group;
+    }
+    state.materialsCopyRefined = true;
     changed = true;
   }
   for (const [id, name] of Object.entries(RealCourseContent.staffNames)) {

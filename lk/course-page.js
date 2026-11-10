@@ -39,6 +39,13 @@ window.CoursePages = (() => {
     }).join('');
   };
   const dateLabel=value=>value?value.split('-').reverse().join('.'):'';
+  const recordingCopy=v=>{
+    const date=dateLabel(v.date);let title=(v.title||'').trim(),text=(v.text||'').trim();
+    if(date&&title.endsWith(date))title=title.slice(0,-date.length).replace(/[\s,–—-]+$/,'');
+    title=title.replace(/^(\d+)\s+занятие$/i,'Занятие $1');
+    if(date&&text.replace(/\.$/,'')===`Запись занятия от ${date}`)text='';
+    return {title:title||'Запись занятия',text};
+  };
   const month=value=>{const d=new Date(value+'T12:00:00Z');return Number.isNaN(d.valueOf())?'Дата уточняется':new Intl.DateTimeFormat('ru',{month:'long',year:'numeric',timeZone:'UTC'}).format(d).replace(/\s*г\.$/,'');};
   const weekday=value=>{const d=new Date(value+'T12:00:00Z');return Number.isNaN(d.valueOf())?'':new Intl.DateTimeFormat('ru',{weekday:'short',timeZone:'UTC'}).format(d);};
   const moscow=value=>String(value||'').replace(/(\d{1,2})[:.](\d{2})/g,(_,h,m)=>`${String((Number(h)+22)%24).padStart(2,'0')}:${m}`);
@@ -68,23 +75,28 @@ window.CoursePages = (() => {
     if(b.type==='faq')return (d.questions||[]).map(q=>`<details class="course-faq"><summary>${esc(q.question)}</summary><div class="faq-answer"><p class="block-text">${esc(q.answer)}</p>${link(q.url,q.button||'Подробнее','text-link')}</div></details>`).join('')||'<div class="empty">Ответы на вопросы скоро появятся.</div>';
     if(b.type==='recordings'){
       const modules={};(d.videos||[]).forEach(v=>(modules[v.module||'Записи занятий']??=[]).push(v));
-      return Object.entries(modules).map(([name,items])=>`<div class="recording-module"><h3>${esc(name)}</h3><div class="recording-grid">${items.map(v=>{const ready=recordingStatus(v)==='published'&&url(v.url);return `<article class="card recording-card ${ready?'':'is-pending'}"><span class="content-status ${ready?'is-published':'is-upcoming'}">${ready?'Запись опубликована':'Видео ещё не опубликовано'}</span>${v.date?`<time datetime="${esc(v.date)}">${esc(dateLabel(v.date))}</time>`:''}<h3>${esc(v.title)}</h3>${v.text?`<p class="block-text">${esc(v.text)}</p>`:''}${ready?link(v.url,'Смотреть запись'):'<p class="muted">Ссылка появится после публикации видео.</p>'}</article>`;}).join('')}</div></div>`).join('')||'<div class="empty">Записи появятся здесь после занятий.</div>';
+      return Object.entries(modules).map(([name,items])=>`<div class="recording-module"><h3>${esc(name)}</h3><div class="recording-grid">${items.map(v=>{const ready=recordingStatus(v)==='published'&&url(v.url),copy=recordingCopy(v);return `<article class="card recording-card ${ready?'':'is-pending'}"><div class="recording-meta"><span class="content-status ${ready?'is-published':'is-upcoming'}">${ready?'Запись опубликована':'Видео ещё не опубликовано'}</span>${v.date?`<time datetime="${esc(v.date)}">${esc(dateLabel(v.date))}</time>`:''}</div><h3>${esc(copy.title)}</h3>${copy.text?`<p class="block-text">${esc(copy.text)}</p>`:''}${ready?link(v.url,'Смотреть запись'):'<p class="muted">Ссылка появится после публикации видео.</p>'}</article>`;}).join('')}</div></div>`).join('')||'<div class="empty">Записи появятся здесь после занятий.</div>';
     }
-    if(b.type==='materials'&&d.resources?.length){const items=[...(d.url?[{title:'Папка вашей группы',url:d.url}]:[]),...d.resources];return `${d.text?`<p class="block-text">${esc(d.text)}</p>`:''}<div class="resource-grid">${items.map(r=>`<article class="card resource-card"><h3>${esc(r.title)}</h3>${r.text?`<p class="block-text">${esc(r.text)}</p>`:''}${link(r.url,r.button||'Открыть материалы')}</article>`).join('')}</div>`;}
-    if(b.type==='materials')return `<div class="folder-banner"><svg width="92" height="72" viewBox="0 0 92 72" aria-hidden="true"><path d="M4 14h30l9 10h45v42H4z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M4 24V6h31l9 8h39v10" fill="none" stroke="currentColor" stroke-width="3"/></svg><div><h3>Папка вашей группы</h3><p>${esc(d.text)}</p>${link(d.url,'Перейти к материалам','btn')||'<p class="muted">Ссылка скоро появится.</p>'}</div></div>`;
+    if(b.type==='materials'){
+      const items=[...(d.url?[{title:'Папка вашей группы',url:d.url}]:[]),...(d.resources||[])];
+      if(!items.length)items.push({});
+      return `${d.text?`<p class="block-text">${esc(d.text)}</p>`:''}<div class="resource-grid">${items.map(r=>{
+        const heading=r.title&&!(items.length===1&&['Материалы группы','Папка вашей группы',title].includes(r.title));
+        return `<article class="resource-folder"><svg class="resource-folder-art" viewBox="0 0 92 72" fill="none" aria-hidden="true"><path d="M4 24V6h31l9 8h39v10" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 24h84l-8 42H12L4 24Z" fill="#fff" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M23 39h22M23 47h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div class="resource-folder-copy">${heading?`<h3>${esc(r.title)}</h3>`:''}${r.text?`<p class="block-text">${esc(r.text)}</p>`:''}${url(r.url)?`<a class="resource-action" href="${esc(url(r.url))}" target="_blank" rel="noopener noreferrer">${esc(r.button||'Открыть папку')}<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`:'<p class="muted">Ссылка скоро появится.</p>'}</div></article>`;
+      }).join('')}</div>`;
+    }
     return `<div class="card information-block">${image(d)}<p class="block-text">${esc(d.text||(b.type==='join'?'Информация о подключении появится перед занятием.':'Администратор добавит информацию.'))}</p>${b.type==='join'&&d.platform?`<p class="muted">Платформа: ${esc(d.platform)}</p>`:''}${link(d.url,d.button||({join:'Подключиться',video:'Смотреть видео',introductions:'Перейти в Holst'}[b.type]||'Подробнее'))}</div>`;
   };
   const render=(ctx,g)=>{
     GroupHero.render(document.querySelector('.course-hero'),{...g,program_cover_url:ctx.programs[g.program_id]?.cover_url,program_type:ctx.programs[g.program_id]?.program_type});
     const blocks=getBlocks(g).filter(b=>labels[b.type]&&b.data.visible!==false);
     const nav=document.querySelector('.course-nav-inner');
-    nav.innerHTML=blocks.map((b,i)=>`<a href="#block-${i}">${esc(b.data.title||labels[b.type])}</a>`).join('')+'<a href="#help">Помощь</a>';
+    nav.innerHTML=blocks.map((b,i)=>`<a href="#block-${i}">${esc(b.data.title||labels[b.type])}</a>`).join('');
     const main=document.querySelector('main.shell');
-    const help=`<section id="help" class="section"><div class="section-title"><h2>Ответы на популярные вопросы</h2></div><details><summary>К кому обратиться с вопросом об обучении?</summary><p>Ваш администратор — ${esc(g.owner)}. Контакты и чаты указаны в начале страницы.</p></details><details><summary>Как добавить ещё одну программу?</summary><p>Откройте «Моё обучение» и нажмите «Добавить обучение». Новый аккаунт создавать не нужно.</p></details><details><summary>До какого числа доступны материалы?</summary><p>Общий срок группы — до ${esc(dateLabel(ctx.closes(g)))} включительно. Индивидуальное продление уточняйте у администратора.</p></details></section>`;
     main.innerHTML=blocks.map((b,i)=>{
       const source=b.type==='alias'?resolveAlias(b,ctx.groups):{block:b,group:g},compact=source&&['introductions','video'].includes(source.block.type),title=b.data.title||labels[b.type];
       return `<section id="block-${i}" class="section${compact?' welcome-section':''}">${compact?'':`<div class="section-title"><h2>${esc(title)}</h2></div>`}${source?content(source.block,source.group,title):'<div class="empty">Содержимое временно недоступно. Администратор проверит подключение блока.</div>'}</section>`;
-    }).join('')+help;
+    }).join('');
     window.CourseNavigation?.mount();
     if(new URLSearchParams(location.search).has('preview')){
       const bar=document.createElement('div');bar.className='page-edit-banner';bar.innerHTML=`<span>Предпросмотр страницы группы</span><a class="text-link" href="editor.html?group=${encodeURIComponent(ctx.groupId)}&role=${ctx.role}">Редактировать страницу ЛК →</a>`;document.querySelector('.course-hero').before(bar);

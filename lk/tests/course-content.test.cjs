@@ -103,3 +103,29 @@ test('legacy contacts become safe actionable links, omit repeated name and keep 
   assert.ok(!html.includes('<script>'));
   assert.ok(!html.includes('tel:10'));
 });
+
+test('recordings show the date once and preserve meaningful custom copy',()=>{
+  const html=render([{type:'recordings',data:{videos:[
+    {date:'2026-10-19',title:'1 занятие 19.10.2026',text:'Запись занятия от 19.10.2026.',url:'https://example.com/one'},
+    {date:'2026-10-26',title:'Разбор кейса — 26.10.2026',text:'Разбор решений команды',url:'https://example.com/two'},
+    {title:'Без даты',text:'Полезное описание',status:'pending'}
+  ]}}]);
+  assert.equal((html.match(/19\.10\.2026/g)||[]).length,1);
+  assert.equal((html.match(/26\.10\.2026/g)||[]).length,1);
+  for(const value of ['Занятие 1','<h3>Разбор кейса</h3>','Разбор решений команды','Без даты','Полезное описание','https://example.com/one','https://example.com/two'])assert.ok(html.includes(value),value);
+});
+
+test('materials cleanup is targeted and one-time, keeping custom descriptions and multiple resources',()=>{
+  for(const description of ['Дополнительные материалы группы ОНЛ_СПО-8.','Сначала изучите инструкцию']){
+    const block={type:'materials',data:{block_id:'pilot-spo-materials',title:'Материалы для обучения',text:description,resources:[{title:'Материалы группы',url:'https://example.com/folder'}]}};
+    const groups={mba:{page_blocks:[block]}};
+    const state={realCourseContentVersion:content.version,welcomeArtworkRefined:true};
+    content.apply(state,groups,{staff:{}});
+    assert.equal(block.data.text,description.startsWith('Дополнительные')?'':description);
+    const html=render([block]);assert.ok(!html.includes('<h3>Материалы группы</h3>'));assert.ok(html.includes('https://example.com/folder'));
+    block.data.text='Моя новая подпись';assert.equal(content.apply(state,groups,{staff:{}}),false);assert.equal(block.data.text,'Моя новая подпись');
+  }
+  const html=render([{type:'materials',data:{resources:[{title:'Папка группы',url:'https://example.com/group'},{title:'Библиотека MBA',url:'https://example.com/books'}]}},{type:'faq',data:{questions:[{question:'Мой вопрос',answer:'Мой ответ'}]}}]);
+  for(const value of ['Папка группы','Библиотека MBA','https://example.com/group','https://example.com/books','Мой вопрос'])assert.ok(html.includes(value));
+  assert.ok(!html.includes('id="help"'));
+});
