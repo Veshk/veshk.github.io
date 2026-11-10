@@ -11,9 +11,9 @@
 @endphp
 <div class="welcome-card {{ $isVideo ? 'welcome-video' : 'welcome-intro' }}">
     <div class="welcome-copy"><p class="welcome-handwriting">{{ $isVideo ? 'Это ВЭШ' : 'Давайте знакомиться!' }}</p><h2>{{ $title }}</h2><p class="block-text">{{ ($data['text'] ?? '') ?: ($isVideo ? 'Познакомьтесь со школой в коротком видео.' : 'Расскажите о себе и познакомьтесь с коллегами по обучению.') }}</p>@if($actionUrl)<a class="btn welcome-action" href="{{ $actionUrl }}" target="_blank" rel="noopener noreferrer">{{ $actionLabel }} ↗</a>@endif</div>
-    @if($isVideo && $actionUrl)<a class="welcome-art" href="{{ $actionUrl }}" target="_blank" rel="noopener noreferrer" aria-label="{{ $actionLabel }}: {{ $title }}">@else<div class="welcome-art">@endif
+    @if($isVideo && $actionUrl)<a class="welcome-art{{ $imageUrl ? ' has-image' : '' }}" href="{{ $actionUrl }}" target="_blank" rel="noopener noreferrer" aria-label="{{ $actionLabel }}: {{ $title }}">@else<div class="welcome-art{{ $imageUrl ? ' has-image' : '' }}">@endif
         @if($imageUrl)<img class="block-image" src="{{ $imageUrl }}" alt="{{ $data['image_alt'] ?? '' }}" loading="lazy" referrerpolicy="no-referrer">@endif
-        @if($isVideo)<span class="welcome-play" aria-hidden="true">▶</span><span class="welcome-video-label" aria-hidden="true">ВИДЕО О ШКОЛЕ</span>@else<span class="welcome-hello" aria-hidden="true">Привет!</span>@endif
+        @if($isVideo)<span class="welcome-play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 5.5 19 12 9 18.5Z"/></svg></span>@elseif(!$imageUrl)<svg class="welcome-dialogue" viewBox="0 0 120 96" fill="none" aria-hidden="true"><path d="M58 38h34a14 14 0 0 1 14 14v20a14 14 0 0 1-14 14h-3l-13 9v-9H63a14 14 0 0 1-14-14V51" stroke="#b2272a" stroke-width="2.5" stroke-linejoin="round"/><path d="M22 8h42a14 14 0 0 1 14 14v23a14 14 0 0 1-14 14H43L25 72V59h-3A14 14 0 0 1 8 45V22A14 14 0 0 1 22 8Z" fill="#fff" stroke="#226d8d" stroke-width="2.5" stroke-linejoin="round"/><path d="M25 29h35M25 40h24" stroke="#226d8d" stroke-width="2.5" stroke-linecap="round"/></svg>@endif
     @if($isVideo && $actionUrl)</a>@else</div>@endif
 </div>
 @elseif($type === 'contacts')
@@ -49,10 +49,22 @@
 @empty<div class="empty">Расписание ещё не опубликовано.</div>@endforelse
 @if($url = $safe($data['source_url'] ?? null))<a class="btn outline" href="{{ $url }}" target="_blank" rel="noopener noreferrer">Открыть исходное расписание ↗</a>@endif
 @elseif($type === 'homework')
-@if(!empty($data['tasks']))
+@php
+    $homeworkTasks = collect($data['tasks'] ?? []);
+    $pastHomework = $homeworkTasks->filter(fn ($task) => ($task['status'] ?? '') === 'past');
+    $currentHomework = $homeworkTasks->reject(fn ($task) => ($task['status'] ?? '') === 'past');
+@endphp
+@if($homeworkTasks->isNotEmpty())
+@foreach([$currentHomework, $pastHomework] as $taskSet)
+@if($taskSet->isNotEmpty())
+@if($loop->last)<details class="past-homework"><summary>Прошедшие задания <span class="past-homework-count">{{ $taskSet->count() }}</span></summary>@endif
 <div class="homework-scroll"><table class="homework-table"><thead><tr><th>Статус</th><th>Срок</th><th>Модуль и задание</th><th>Материалы</th></tr></thead><tbody>
-@foreach($data['tasks'] as $task)<tr><td><span class="content-status {{ ($task['status'] ?? '') === 'past' ? 'is-past' : 'is-upcoming' }}">{{ ($task['status'] ?? '') === 'past' ? 'Прошедшее' : 'Предстоит' }}</span></td><td class="homework-deadline">{{ !empty($task['deadline']) ? \Carbon\Carbon::parse($task['deadline'])->format('d.m.Y') : 'Уточняется' }}</td><td>@if(!empty($task['module']))<div class="homework-module">{{ $task['module'] }}</div>@endif<p class="block-text">{{ $task['title'] ?? '' }}</p></td><td>@if($url = $safe($task['url'] ?? null))<a class="text-link" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ ($task['button'] ?? '') ?: 'Открыть' }} ↗</a>@endif</td></tr>@endforeach
-</tbody></table></div><p class="form-note">Статус общий для группы и не обозначает личное выполнение задания.</p>
+@foreach($taskSet as $task)<tr><td><span class="content-status {{ ($task['status'] ?? '') === 'past' ? 'is-past' : 'is-upcoming' }}">{{ ($task['status'] ?? '') === 'past' ? 'Прошедшее' : 'Предстоит' }}</span></td><td class="homework-deadline">{{ !empty($task['deadline']) ? \Carbon\Carbon::parse($task['deadline'])->format('d.m.Y') : 'Уточняется' }}</td><td>@if(!empty($task['module']))<div class="homework-module">{{ $task['module'] }}</div>@endif<p class="block-text">{{ $task['title'] ?? '' }}</p></td><td>@if($url = $safe($task['url'] ?? null))<a class="homework-action" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ empty($task['button']) || $task['button'] === 'Открыть' ? 'Перейти к заданию' : $task['button'] }}<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>@endif</td></tr>@endforeach
+</tbody></table></div>
+@if($loop->last)</details>@endif
+@endif
+@endforeach
+<p class="form-note">Статус общий для группы и не обозначает личное выполнение задания.</p>
 @else<div class="empty">Задания появятся здесь после публикации.</div>@endif
 @elseif($type === 'faq')
 @forelse($data['questions'] ?? [] as $question)<details class="course-faq"><summary>{{ $question['question'] ?? '' }}</summary><div class="faq-answer"><p class="block-text">{{ $question['answer'] ?? '' }}</p>@if($url = $safe($question['url'] ?? null))<a class="text-link" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ ($question['button'] ?? '') ?: 'Подробнее' }} ↗</a>@endif</div></details>@empty<div class="empty">Ответы на вопросы скоро появятся.</div>@endforelse

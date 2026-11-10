@@ -158,6 +158,27 @@ class CoursePageTest extends TestCase
             ->assertDontSee('https://example.com/draft')->assertDontSee('javascript:', false)->assertDontSee('<script>alert(1)</script>', false)->assertSee('&lt;script&gt;', false);
     }
 
+    public function test_past_homework_is_collapsed_by_status_without_hiding_current_tasks(): void
+    {
+        $group = StudyGroup::factory()->create(['page_blocks' => [
+            ['type' => 'homework', 'data' => ['tasks' => [
+                ['title' => 'Архивное задание', 'status' => 'past', 'url' => 'https://example.com/past', 'button' => 'Открыть'],
+                ['title' => 'Текущее задание', 'status' => 'upcoming', 'deadline' => '2000-01-01', 'url' => 'https://example.com/current', 'button' => 'Моя подпись'],
+            ]]],
+        ]]);
+        $enrollment = Enrollment::factory()->create(['study_group_id' => $group->id]);
+        $response = $this->actingAs($enrollment->user)->get('/learning/'.$group->id)->assertOk();
+        $html = $response->getContent();
+        preg_match('/<details class="past-homework">([\s\S]*?)<\/details>/', $html, $archive);
+        $this->assertNotEmpty($archive);
+        $this->assertStringContainsString('Архивное задание', $archive[1]);
+        $this->assertStringContainsString('https://example.com/past', $archive[1]);
+        $this->assertStringContainsString('Перейти к заданию', $archive[1]);
+        $this->assertStringNotContainsString('Текущее задание', $archive[1]);
+        $this->assertStringContainsString('Текущее задание', $html);
+        $this->assertStringContainsString('Моя подпись', $html);
+    }
+
     public function test_legacy_program_video_stays_published_after_editing_its_template(): void
     {
         $program = Program::factory()->create(['template_key' => 'short', 'page_blocks' => [
