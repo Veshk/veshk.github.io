@@ -58,7 +58,7 @@
 .welcome-play svg{width:32px;height:32px}
 .welcome-video a.welcome-art:hover .welcome-play{color:#fff;background:#b2272a}
 .welcome-art:focus-visible,.welcome-action:focus-visible{outline:3px solid #226d8d;outline-offset:4px}
-.lesson-timezone{display:none}
+.lesson-timezone,.lesson-format-mobile{display:none}
 @media(max-width:720px){
   .welcome-card{grid-template-columns:minmax(0,1fr) 76px;gap:0 14px;padding:20px}
   .welcome-copy{display:contents}
@@ -78,18 +78,21 @@
   .compact-schedule colgroup{display:none}
   .compact-schedule thead{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
   .compact-schedule tbody{display:block}
-  .compact-schedule tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 12px;padding:16px;border-bottom:1px solid #e3eaec}
+  .compact-schedule tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;padding:14px 16px;border-bottom:1px solid #e3eaec}
   .compact-schedule tbody tr:last-child{border-bottom:0}
   .compact-schedule td{display:block;padding:0!important;border:0;min-width:0}
-  .compact-schedule td:first-child{grid-column:1;white-space:normal}
-  .compact-schedule td:first-child strong{display:block;font-size:14px}
-  .compact-schedule td:first-child small{display:block;margin-top:3px;text-transform:capitalize}
+  .compact-schedule td:first-child{grid-column:1;display:flex;align-items:baseline;gap:6px;white-space:nowrap}
+  .compact-schedule td:first-child strong{font-size:14px}
+  .compact-schedule td:first-child small{margin:0;text-transform:capitalize}
   .compact-schedule .lesson-time{grid-column:2;text-align:right;font-size:13px}
   .compact-schedule .lesson-timezone{display:inline;font-size:10px;color:#637780}
   .compact-schedule td:nth-child(3){grid-column:1/-1;line-height:1.5;font-size:14px;overflow-wrap:anywhere}
-  .compact-schedule td:nth-child(4){grid-column:1/-1;font-size:12px;color:#526b72;line-height:1.5}
-  .compact-schedule td:nth-child(4):not(:empty):before{content:'Преподаватель: ';color:#70828a}
-  .compact-schedule .lesson-context{font-size:12px;margin-top:5px}
+  .compact-schedule td:nth-child(4){grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:12px;color:#526b72;line-height:1.5}
+  .compact-schedule .lesson-teacher-name{min-width:0;overflow-wrap:anywhere}
+  .compact-schedule .lesson-format-mobile{display:block;margin-left:auto;text-align:right;color:#74858b;flex-shrink:0}
+  .compact-schedule .lesson-format-desktop{display:none}
+  .compact-schedule .lesson-context{font-size:12px;margin-top:0}
+  .compact-schedule .lesson-module{margin-top:4px}
   .compact-schedule .text-link{display:inline-flex;margin-top:8px;min-height:34px;align-items:center}
 }
 
