@@ -21,12 +21,12 @@ test('real content imports once, backs up prior pages and preserves later edits 
   assert.equal(state.staffProfiles.other.text,'Мои контакты');
 });
 
-function render(blocks){
+function render(blocks,group={}){
   const main={innerHTML:''},nav={innerHTML:''};
-  const sandbox={window:{},URL,URLSearchParams,Intl,Date,crypto:require('node:crypto').webcrypto,location:{search:''},GroupHero:{render(){}},document:{querySelector(selector){return selector==='main.shell'?main:nav;}}};
+  const sandbox={window:{},URL,URLSearchParams,Intl,Date,crypto:require('node:crypto').webcrypto,location:{search:''},GroupHero:{render(){}},AdminTools:{avatar(){return '<span class="avatar"></span>';}},document:{querySelector(selector){return selector==='main.shell'?main:nav;}}};
   vm.createContext(sandbox);
   vm.runInContext(fs.readFileSync(require.resolve('../course-page.js'),'utf8'),sandbox);
-  sandbox.window.CoursePages.render({programs:{},closes:()=>'',groups:{}},{page_blocks:blocks});
+  sandbox.window.CoursePages.render({programs:{},closes:()=>'',groups:{}},{...group,page_blocks:blocks});
   return main.innerHTML;
 }
 
@@ -54,4 +54,13 @@ test('all imported resource and contact links use HTTP or HTTPS',()=>{
     }
   }
   visit(content.groups);visit(content.staffProfiles);
+});
+
+test('legacy contacts become safe actionable links, omit repeated name and keep multiple chats',()=>{
+  const html=render([{type:'contacts',data:{chats:[{label:'MAX',url:'https://max.ru/group'},{label:'Telegram',url:'https://t.me/group'},{label:'Unsafe',url:'javascript:alert(1)'}]}}],{owner:'Дарья Маврина',staffProfile:{text:'  Дарья   Маврина\nemail: dasha+group@example.com\nтел.: 8-999-286-67-07\nГрафик работы: пн-пт с 10:00 до 18:00\n<script>alert(1)</script>',contact_url:'https://max.ru/admin'}}).split('<section id="help"')[0];
+  assert.equal((html.match(/Дарья Маврина/g)||[]).length,1);
+  for(const value of ['href="mailto:dasha%2Bgroup@example.com"','href="tel:+79992866707"','10:00 до 18:00','https://max.ru/group','https://t.me/group','Написать администратору','&lt;script&gt;'])assert.ok(html.includes(value),value);
+  assert.ok(!html.includes('javascript:'));
+  assert.ok(!html.includes('<script>'));
+  assert.ok(!html.includes('tel:10'));
 });

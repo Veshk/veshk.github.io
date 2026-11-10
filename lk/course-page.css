@@ -13,3 +13,24 @@
 .course-hero.has-default-cover{background:#e9eeeb;color:#263937}.has-default-cover .breadcrumb,.has-default-cover .hero-meta{color:#52636a}.has-default-cover .hero-meta strong{color:#263937}.has-default-cover .hero-side{border-top-color:#203e4930}.has-default-cover .hero-side p{color:#485b62}.past-schedule+.month-card{margin-top:20px}
 
 .homework-scroll{overflow-x:auto;border:1px solid #dce5e9;border-radius:8px;background:#fff}.homework-table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.5}.homework-table th{text-align:left;background:#edf3f5;font-size:12px;color:#526a72;font-weight:500}.homework-table th,.homework-table td{padding:18px;vertical-align:top;border-bottom:1px solid #e3eaec}.homework-table tr:last-child td{border-bottom:0}.homework-table .block-text{margin:8px 0 0}.homework-deadline{white-space:nowrap}.homework-module{font-size:12px;color:#61757d}.homework-table td:nth-child(3){min-width:260px}.content-status{display:inline-block;border-radius:5px;padding:5px 9px;font-size:11px;line-height:1.5;white-space:nowrap}.is-past{background:#eff2f3;color:#65777d}.is-upcoming{background:#fff2d9;color:#78591b}.is-published{background:#e7efeb;color:#3c6551}.recording-card time{display:block;margin:14px 0;color:#627980;font-size:12px}.recording-card h3{margin:18px 0 12px}.recording-card.is-pending{background:#f8faf9}.recording-card .muted{font-size:13px;margin-top:14px}.course-faq{padding:0;border-bottom:1px solid #dce5e9}.course-faq summary{padding:22px 0;cursor:pointer;font-size:16px;line-height:1.5}.course-faq .faq-answer{max-width:900px;padding:0 0 24px}.course-faq .block-text{margin:0 0 18px;line-height:1.7;overflow-wrap:anywhere}.resource-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}.resource-card{display:flex;align-items:flex-start;flex-direction:column}.resource-card .btn{margin-top:auto}.resource-card h3{margin-bottom:16px}.block-image{display:block;width:100%;max-height:320px;object-fit:contain;object-position:left center;border-radius:6px;margin-bottom:24px}.homework-table .text-link{white-space:nowrap}@media(max-width:720px){.homework-table{min-width:650px}.homework-table th,.homework-table td{padding:14px}.resource-grid{grid-template-columns:1fr}.block-image{max-height:240px}.course-faq summary{font-size:15px}.recording-grid{grid-template-columns:1fr}}
+
+/* Compact administrator contacts and group chats. */
+.contact-panel{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;background:#fff;border:1px solid var(--line);border-radius:5px;padding:20px 24px}
+.contact-person{display:flex;align-items:flex-start;gap:16px;min-width:0}
+.contact-person .staff-photo{width:56px;height:56px;flex:none;object-fit:cover;border-radius:50%}
+.contact-details{min-width:0;flex:1}
+.contact-details .eyebrow{font-size:10px;letter-spacing:1.1px;margin:0 0 4px}
+.contact-panel h3{font-size:18px;line-height:1.35;margin:0 0 8px}
+.contact-info{display:flex;flex-wrap:wrap;gap:3px 16px}
+.contact-panel .contact-line{font-size:13px;line-height:1.55;margin:0;overflow-wrap:anywhere}
+.contact-line a{color:var(--ink);text-decoration:underline;text-decoration-color:#a7bac2;text-underline-offset:3px}
+.contact-panel .contact-note{flex-basis:100%;color:var(--muted);font-size:12px}
+.contact-message{display:inline-block;margin-top:8px;font-size:12px;color:var(--blue);text-decoration:underline;text-underline-offset:3px}
+.contact-chats{min-width:0;border-left:1px solid var(--line);padding-left:24px}
+.contact-chats h3{font-size:16px;margin-bottom:6px}
+.contact-panel .chat-description{font-size:13px;color:var(--muted);line-height:1.5;white-space:pre-line;margin:0 0 12px;max-width:44ch}
+.chat-links{display:flex;flex-wrap:wrap;gap:8px}
+.contact-panel .chat-links .btn{min-height:36px;padding:7px 13px;font-size:12px;line-height:1.4;gap:8px;max-width:100%;overflow-wrap:anywhere;text-align:center}
+.chat-links .muted{font-size:13px;margin:0}
+.contact-panel a:focus-visible{outline:2px solid var(--blue);outline-offset:4px}
+@media(max-width:720px){.contact-panel{grid-template-columns:minmax(0,1fr);padding:18px;gap:18px}.contact-person{gap:12px}.contact-person .staff-photo{width:48px;height:48px}.contact-panel h3{font-size:17px}.contact-chats{border-left:0;border-top:1px solid var(--line);padding:16px 0 0}.contact-chats h3{font-size:15px}.contact-panel .chat-description{max-width:none}.contact-info{display:block}.contact-panel .contact-line+.contact-line{margin-top:3px}}

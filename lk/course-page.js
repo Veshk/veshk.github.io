@@ -22,6 +22,22 @@ window.CoursePages = (() => {
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const url=value=>{try{const u=new URL(value);return ['http:','https:'].includes(u.protocol)?u.href:'';}catch{return '';}};
   const link=(value,label,cls='btn outline')=>url(value)?`<a class="${cls}" href="${esc(url(value))}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`:'';
+  const chatDescription='Присоединяйтесь к чатам, чтобы быть на связи с группой и получать объявления.';
+  const contactDetails=(text,name)=>{
+    const normalized=value=>String(value||'').trim().replace(/\s+/g,' ').toLocaleLowerCase('ru');
+    const token=/[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+|\+?\d[\d ()\u00a0.\-\u2010-\u2015]{7,}\d/gi;
+    return String(text||'').split(/\r?\n/).map(line=>line.trim()).filter(line=>line&&normalized(line)!==normalized(name)).map(line=>{
+      let linked=false;
+      let last=0,html='';const clean=line.replace(/^(?:e-?mail|почта|тел(?:ефон)?\.?)\s*:\s*/i,'');
+      for(const match of clean.matchAll(token)){
+        html+=esc(clean.slice(last,match.index));const value=match[0],digits=value.replace(/\D/g,'');let href='';
+        if(value.includes('@'))href='mailto:'+encodeURIComponent(value).replace(/%40/g,'@');
+        else if(digits.length>=10&&digits.length<=15)href='tel:'+(digits.length===11&&digits.startsWith('8')?'+7'+digits.slice(1):(value.startsWith('+')?'+':'')+digits);
+        html+=href?`<a href="${esc(href)}">${esc(value)}</a>`:esc(value);linked=linked||Boolean(href);last=match.index+value.length;
+      }
+      html+=esc(clean.slice(last));return `<p class="contact-line${linked?'':' contact-note'}">${html}</p>`;
+    }).join('');
+  };
   const dateLabel=value=>value?value.split('-').reverse().join('.'):'';
   const month=value=>{const d=new Date(value+'T12:00:00Z');return Number.isNaN(d.valueOf())?'Дата уточняется':new Intl.DateTimeFormat('ru',{month:'long',year:'numeric',timeZone:'UTC'}).format(d).replace(/\s*г\.$/,'');};
   const weekday=value=>{const d=new Date(value+'T12:00:00Z');return Number.isNaN(d.valueOf())?'':new Intl.DateTimeFormat('ru',{weekday:'short',timeZone:'UTC'}).format(d);};
@@ -38,7 +54,7 @@ window.CoursePages = (() => {
   };
   const content=(b,g)=>{
     const d=b.data;
-    if(b.type==='contacts')return `<div class="contact-grid"><div class="card"><div class="eyebrow muted">Администратор группы</div><div class="contact">${AdminTools.avatar(g.staffProfile||{name:g.owner})}<h3>${esc(g.owner)}</h3></div><p class="block-text">${esc(d.text||g.staffProfile?.text||'Поможет с расписанием и организационными вопросами.')}</p>${link(d.contact_url||g.staffProfile?.contact_url,'Связаться с администратором')}</div><div class="card"><h3>Общение с группой</h3><div class="block-links">${(d.chats?.length?d.chats:g.chat_url?[{label:'Чат группы',url:g.chat_url}]:[]).map(c=>link(c.url,c.label)).join('')||'<p class="muted">Ссылки на чаты скоро появятся.</p>'}</div></div></div>`;
+    if(b.type==='contacts')return `<div class="contact-panel"><div class="contact-person">${AdminTools.avatar(g.staffProfile||{name:g.owner})}<div class="contact-details"><div class="eyebrow muted">Администратор группы</div><h3>${esc(g.owner)}</h3><div class="contact-info">${contactDetails(d.text||g.staffProfile?.text||'Поможет с расписанием и организационными вопросами.',g.owner)}</div>${link(d.contact_url||g.staffProfile?.contact_url,'Написать администратору','contact-message')}</div></div><div class="contact-chats"><h3>Чаты группы</h3>${(d.chat_text??chatDescription)?`<p class="chat-description">${esc(d.chat_text??chatDescription)}</p>`:''}<div class="chat-links">${(d.chats?.length?d.chats:g.chat_url?[{label:'Чат группы',url:g.chat_url}]:[]).map(c=>link(c.url,c.label)).join('')||'<p class="muted">Ссылки на чаты скоро появятся.</p>'}</div></div></div>`;
     if(b.type==='schedule')return schedule(d,g);
     if(b.type==='homework')return (d.tasks||[]).length?`<div class="homework-scroll"><table class="homework-table"><thead><tr><th>Статус</th><th>Срок</th><th>Модуль и задание</th><th>Материалы</th></tr></thead><tbody>${d.tasks.map(t=>`<tr><td><span class="content-status ${t.status==='past'?'is-past':'is-upcoming'}">${t.status==='past'?'Прошедшее':'Предстоит'}</span></td><td class="homework-deadline">${esc(dateLabel(t.deadline)||'Уточняется')}</td><td>${t.module?`<div class="homework-module">${esc(t.module)}</div>`:''}<p class="block-text">${esc(t.title)}</p></td><td>${link(t.url,t.button||'Открыть','text-link')}</td></tr>`).join('')}</tbody></table></div><p class="form-note">Статус общий для группы и не обозначает личное выполнение задания.</p>`:'<div class="empty">Задания появятся здесь после публикации.</div>';
     if(b.type==='faq')return (d.questions||[]).map(q=>`<details class="course-faq"><summary>${esc(q.question)}</summary><div class="faq-answer"><p class="block-text">${esc(q.answer)}</p>${link(q.url,q.button||'Подробнее','text-link')}</div></details>`).join('')||'<div class="empty">Ответы на вопросы скоро появятся.</div>';
@@ -97,7 +113,7 @@ window.CoursePages = (() => {
     const rows=(d,key)=>`<div class="editor-rows" data-rows="${key}">${(d[key]||[]).map((r,n)=>`<div class="editor-row" data-row="${n}"><div class="form-grid">${rowFields[key].map(([k,l,t])=>rowField(key,r,k,l,t)).join('')}</div><button type="button" class="text-button danger" data-remove-row="${key}" data-row-index="${n}">Удалить строку</button></div>`).join('')}<button type="button" class="btn outline" data-add-row="${key}">Добавить ${{chats:'чат',lessons:'занятие',videos:'запись',tasks:'задание',questions:'вопрос',resources:'материал'}[key]}</button></div>`;
     const draw=()=>{
       list.innerHTML=blocks.map((b,i)=>{const d=b.data;let fields='';
-        if(b.type==='contacts')fields=`<div class="alias-note">Фото и общие контакты меняются в профиле сотрудника. <a href="admin.html?role=${ctx.role}&panel=profiles" target="_blank" rel="noopener">Открыть «Администраторы и фото» ↗</a></div>`+field(i,'text','Описание',d.text,'textarea')+field(i,'contact_url','Ссылка для связи с администратором',d.contact_url,'url')+rows(d,'chats');
+        if(b.type==='contacts')fields=`<div class="alias-note">Фото и общие контакты меняются в профиле сотрудника. <a href="admin.html?role=${ctx.role}&panel=profiles" target="_blank" rel="noopener">Открыть «Администраторы и фото» ↗</a></div>`+field(i,'text','Описание',d.text,'textarea')+field(i,'contact_url','Ссылка для связи с администратором',d.contact_url,'url')+field(i,'chat_text','Описание чатов',d.chat_text??chatDescription,'textarea')+rows(d,'chats');
         else if(b.type==='alias'){
           const sources=Object.entries(ctx.groups).filter(([id])=>id!==gid&&(ctx.canEditGroup(id)||id===d.source_group));
           const source=ctx.groups[d.source_group],sourceBlocks=source?getBlocks(source).filter(x=>x.type!=='alias'):[];
