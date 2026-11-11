@@ -17,4 +17,3 @@ storage/app/**
 storage/framework/**
 storage/logs/**
 storage/*.key
-
