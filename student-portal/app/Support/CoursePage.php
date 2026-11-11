@@ -274,8 +274,25 @@ class CoursePage
                     return implode(' · ', array_filter([$date, $state['time'] ?? '', $state['title'] ?? ''])) ?: 'Новое занятие';
                 })->collapsed()],
                 'homework' => [Text::make('Статус общий для группы, а не персональная отметка выполнения.'), Repeater::make('tasks')->label('Задания')->schema([
-                    TextInput::make('module')->label('Модуль')->maxLength(300), DatePicker::make('deadline')->label('Срок'), Select::make('status')->label('Статус задания')->options(['upcoming' => 'Предстоит', 'past' => 'Прошедшее'])->default('upcoming')->required(), Textarea::make('title')->label('Задание')->required()->maxLength(5000), self::url('url', 'Ссылка на материалы'), TextInput::make('button')->label('Текст ссылки')->maxLength(100),
-                ])->defaultItems(0)->addActionLabel('Добавить задание')->collapsible()],
+                    DatePicker::make('deadline')->label('Срок')->live(onBlur: true),
+                    Select::make('status')->label('Статус задания')->options(['upcoming' => 'Предстоит', 'past' => 'Прошедшее'])->default('upcoming')->required()->live(),
+                    Textarea::make('title')->label('Задание')->required()->maxLength(5000)->rows(3)->columnSpanFull()->live(onBlur: true),
+                    self::url('url', 'Ссылка на материалы')->columnSpanFull(),
+                    Section::make('Дополнительно')->schema([
+                        TextInput::make('module')->label('Модуль')->maxLength(300),
+                        TextInput::make('button')->label('Текст ссылки')->maxLength(100),
+                    ])->columns(2)->columnSpanFull()->compact()->collapsed(),
+                ])->columns(2)->defaultItems(0)->addActionLabel('Добавить задание')->itemLabel(function (array $state): string {
+                    $date = $state['deadline'] ?? '';
+                    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                        $date = implode('.', array_reverse(explode('-', $date)));
+                    }
+
+                    $status = ($state['status'] ?? 'upcoming') === 'past' ? 'Прошедшее' : 'Предстоит';
+                    $title = Str::limit($state['title'] ?? 'Новое задание', 100);
+
+                    return implode(' · ', [$date ?: 'Без срока', $status, $title]);
+                })->collapsed()],
                 'faq' => [Repeater::make('questions')->label('Вопросы и ответы')->schema([
                     TextInput::make('question')->label('Вопрос')->required()->maxLength(500), Textarea::make('answer')->label('Ответ')->required()->maxLength(5000), self::url('url', 'Ссылка в ответе'), TextInput::make('button')->label('Текст ссылки')->maxLength(100),
                 ])->defaultItems(0)->addActionLabel('Добавить вопрос')->collapsible()],
