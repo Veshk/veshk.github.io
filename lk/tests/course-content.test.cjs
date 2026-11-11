@@ -22,8 +22,8 @@ test('real content imports once, backs up prior pages and preserves later edits 
 });
 
 function render(blocks,group={}){
-  const main={innerHTML:''},nav={innerHTML:''};
-  const sandbox={window:{},URL,URLSearchParams,Intl,Date,crypto:require('node:crypto').webcrypto,location:{search:''},GroupHero:{render(){}},AdminTools:{avatar(){return '<span class="avatar"></span>';}},document:{querySelector(selector){return selector==='main.shell'?main:nav;}}};
+  const main={innerHTML:'',classList:{add(){}},children:[]},nav={innerHTML:''};
+  const sandbox={window:{},URL,URLSearchParams,Intl,Date,crypto:require('node:crypto').webcrypto,location:{search:''},SchoolPrograms:{coverFor(){return null;}},GroupHero:{render(){}},AdminTools:{avatar(){return '<span class="avatar"></span>';}},document:{querySelector(selector){return selector==='main.shell'?main:nav;}}};
   vm.createContext(sandbox);
   vm.runInContext(fs.readFileSync(require.resolve('../course-page.js'),'utf8'),sandbox);
   sandbox.window.CoursePages.render({programs:{},closes:()=>'',groups:{}},{...group,page_blocks:blocks});
