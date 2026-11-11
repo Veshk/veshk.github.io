@@ -68,6 +68,10 @@ class DatabaseSeeder extends Seeder
             $student = User::firstOrCreate(['email' => $i === 0 ? 'student@vesh.test' : 'student-'.($i + 1).'@vesh.test'], ['name' => $names[$i] ?? 'Тестовый слушатель '.($i + 1), 'password' => Hash::make('VeshDemo2026!')]);
             Enrollment::firstOrCreate(['user_id' => $student->id, 'study_group_id' => $group->id]);
         }
+        $demoStudent = User::where('email', 'student@vesh.test')->firstOrFail();
+        foreach (['kd26', 'mba'] as $groupKey) {
+            Enrollment::firstOrCreate(['user_id' => $demoStudent->id, 'study_group_id' => $groups[$groupKey]->id]);
+        }
         foreach ([['waiting', 'Илья Морозов', $groups['mba']->id], ['unknown', 'Наталья Соколова', null], ['other', 'Олег Крылов', $groups['excel']->id]] as [$key, $name, $groupId]) {
             $student = User::firstOrCreate(['email' => $key.'@vesh.test'], ['name' => $name, 'password' => Hash::make('VeshDemo2026!')]);
             EnrollmentApplication::firstOrCreate(['user_id' => $student->id, 'study_group_id' => $groupId], ['message' => 'Тестовая заявка. Помогите проверить группу и открыть доступ.']);

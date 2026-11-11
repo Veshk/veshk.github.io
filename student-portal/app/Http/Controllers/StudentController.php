@@ -19,7 +19,7 @@ class StudentController extends Controller
         if ($request->user()->isStaff()) {
             return redirect('/admin');
         }
-        $enrollments = $request->user()->enrollments()->with('group.administrator')->get();
+        $enrollments = $request->user()->enrollments()->with(['group.administrator', 'group.program'])->get();
         $applications = $request->user()->applications()->with('group')->latest()->get();
         $available = $enrollments->filter(fn ($enrollment) => $enrollment->group->availableTo($request->user()));
         if ($available->count() === 1 && ! $request->boolean('list') && ! $applications->contains('status', 'pending')) {
@@ -55,6 +55,6 @@ class StudentController extends Controller
     {
         Gate::authorize('view', $preview->application);
 
-        return response($preview->body)->header('Content-Security-Policy',"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'self'");
+        return response($preview->body)->header('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'self'");
     }
 }

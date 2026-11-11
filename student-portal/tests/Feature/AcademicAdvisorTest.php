@@ -71,6 +71,7 @@ class AcademicAdvisorTest extends TestCase
 
     public function test_kd_seed_preserves_source_dates_links_and_later_edits(): void
     {
+        $this->travelTo(Carbon::parse('2026-11-11 12:00:00'));
         $this->seed();
         $group = StudyGroup::where('code', 'КД-26')->sole();
         $this->assertSame('2026-04-03', $group->starts_at->toDateString());
@@ -84,5 +85,16 @@ class AcademicAdvisorTest extends TestCase
         $this->assertSame('Своя правка', $group->fresh()->description);
         $this->assertSame('edited@example.com', $group->fresh()->academicAdvisor->email);
         $this->assertSame(1, StudyGroup::where('code', 'КД-26')->count());
+        $student = User::where('email', 'student@vesh.test')->sole();
+        $spo = StudyGroup::where('code', 'ОНЛ_СПО-8')->sole();
+        $this->assertEqualsCanonicalizing([$group->id, $spo->id], $student->enrollments()->pluck('study_group_id')->all());
+        $this->actingAs($student)->get('/learning')->assertOk()
+            ->assertSee('КД-26')->assertSee('ОНЛ_СПО-8')
+            ->assertSee('Обучение завершено')->assertSee('Идёт обучение')
+            ->assertSee('Материалы доступны до 09.12.2026')
+            ->assertSee('sorp.original.jpg')
+            ->assertSee(route('student.group', $group))->assertSee(route('student.group', $spo));
+        $this->get(route('student.group', $group))->assertOk()->assertSee('Своя правка');
+        $this->get(route('student.group', $spo))->assertOk()->assertSee('Домашние задания');
     }
 }
