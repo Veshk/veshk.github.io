@@ -97,6 +97,7 @@ window.CoursePages = (() => {
       const source=b.type==='alias'?resolveAlias(b,ctx.groups):{block:b,group:g},compact=source&&['introductions','video'].includes(source.block.type),title=b.data.title||labels[b.type];
       return `<section id="block-${i}" class="section${compact?' welcome-section':''}">${compact?'':`<div class="section-title"><h2>${esc(title)}</h2></div>`}${source?content(source.block,source.group,title):'<div class="empty">Содержимое временно недоступно. Администратор проверит подключение блока.</div>'}</section>`;
     }).join('');
+    window.CourseOverview?.render(ctx,g,blocks.map(b=>{const source=b.type==='alias'?resolveAlias(b,ctx.groups):null;return source?{...source.block,data:{...source.block.data,visible:b.data.visible}}:b;}));
     window.CourseNavigation?.mount();
     if(new URLSearchParams(location.search).has('preview')){
       const bar=document.createElement('div');bar.className='page-edit-banner';bar.innerHTML=`<span>Предпросмотр страницы группы</span><a class="text-link" href="editor.html?group=${encodeURIComponent(ctx.groupId)}&role=${ctx.role}">Редактировать страницу ЛК →</a>`;document.querySelector('.course-hero').before(bar);
@@ -114,6 +115,7 @@ window.CoursePages = (() => {
     const form=root.querySelector('form'),list=root.querySelector('#blocks-list');
     const mark=()=>{dirty=true;root.querySelector('#save-state').textContent='Есть несохранённые изменения';};
     const heroEditor=!isProgram?GroupHero.editor({root:form.querySelector('fieldset'),record,allowed,mark,escape:esc,programCover:ctx.programs[record.program_id]?.cover_url,programType:ctx.programs[record.program_id]?.program_type}):null;
+    const advisorEditor=!isProgram?window.CourseOverview?.editor({root:form.querySelector('fieldset'),record,ctx,mark}):null;
     if(isProgram){root.querySelector('.editor-toolbar span').textContent='Шаблон содержания для новых групп этой программы.';if(SchoolPrograms.safeCover(record.cover_url)){const cover=document.createElement('div');cover.className='editor-block';cover.innerHTML=`<h2>Обложка программы</h2><img class="program-cover" src="${esc(SchoolPrograms.safeCover(record.cover_url))}" alt="${esc(record.title)}"><p class="form-note">Используется в ЛК группы, пока для неё не загружена собственная обложка.</p>`;form.querySelector('fieldset').prepend(cover);}}
     const field=(i,key,label,value,kind='text',attrs='')=>`<label class="field">${label}${kind==='textarea'?`<textarea data-key="${key}" rows="3" maxlength="5000" ${attrs}>${esc(value)}</textarea>`:`<input data-key="${key}" type="${kind}" value="${esc(value)}" ${attrs}>`}</label>`;
     const rowFields={
@@ -165,7 +167,7 @@ window.CoursePages = (() => {
       else return;mark();draw();
     });
     root.querySelector('#add-block').addEventListener('click',()=>{if(!allowed)return;sync();blocks.push(block(root.querySelector('#block-type').value));mark();draw();list.lastElementChild.scrollIntoView({block:'start',behavior:'smooth'});});
-    form.addEventListener('submit',event=>{event.preventDefault();if(!allowed)return;if(heroEditor&&!heroEditor.save())return;sync();let invalid=false;form.querySelectorAll('input[type=url]').forEach(input=>{input.setCustomValidity(input.value&&!url(input.value)?'Укажите http:// или https:// ссылку':'');if(!input.checkValidity())invalid=true;});if(invalid){form.reportValidity();return;}record.page_blocks=clone(blocks);if(!isProgram)ctx.state.groupOverrides[gid]=record;if(!ctx.save()){root.querySelector('#save-state').textContent='Не удалось сохранить в браузере. Изменения остаются в форме.';return;}dirty=false;root.querySelector('#save-state').textContent='Сохранено. Можно открыть предпросмотр.';});
+    form.addEventListener('submit',event=>{event.preventDefault();if(!allowed)return;if(heroEditor&&!heroEditor.save())return;advisorEditor?.save();sync();let invalid=false;form.querySelectorAll('input[type=url]').forEach(input=>{input.setCustomValidity(input.value&&!url(input.value)?'Укажите http:// или https:// ссылку':'');if(!input.checkValidity())invalid=true;});if(invalid){form.reportValidity();return;}record.page_blocks=clone(blocks);if(!isProgram)ctx.state.groupOverrides[gid]=record;if(!ctx.save()){root.querySelector('#save-state').textContent='Не удалось сохранить в браузере. Изменения остаются в форме.';return;}dirty=false;root.querySelector('#save-state').textContent='Сохранено. Можно открыть предпросмотр.';});
     form.addEventListener('input',event=>event.target.setCustomValidity?.(''));
     window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
     draw();

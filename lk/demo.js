@@ -4,6 +4,13 @@
   const initial = () => ({requests:[{id:1,name:'Илья Морозов',email:'waiting@vesh.test',group:'mba',status:'pending',message:'Учусь в ноябрьской группе. Договор оформлен.',mail:false},{id:2,name:'Наталья Соколова',email:'unknown@vesh.test',group:'',status:'pending',message:'Поступила на программу по управлению. Не помню номер группы.',mail:false},{id:3,name:'Олег Крылов',email:'other@vesh.test',group:'excel',status:'pending',message:'Корпоративная группа, онлайн.',mail:false}],reviewers:['admin','senior'],days:30,customGroups:{},programs:null,groupOverrides:{}});
   let state = initial();
   try { const saved = JSON.parse(localStorage.getItem(key)); if(saved && Array.isArray(saved.requests) && saved.requests.length===3 && Array.isArray(saved.reviewers)) state=saved; } catch {}
+  window.addEventListener('storage',event=>{
+    if(event.key!==key||!event.newValue)return;
+    try{const saved=JSON.parse(event.newValue);if(saved.academicAdvisors){state.academicAdvisors=saved.academicAdvisors;document.dispatchEvent(new CustomEvent('academic-advisors-changed'));}}catch{}
+  });
+  const refreshAdvisors=()=>{try{const saved=JSON.parse(localStorage.getItem(key));if(saved?.academicAdvisors){state.academicAdvisors=saved.academicAdvisors;document.dispatchEvent(new CustomEvent('academic-advisors-changed'));}}catch{}};
+  window.addEventListener('focus',refreshAdvisors);
+  document.addEventListener('refresh-academic-advisors',refreshAdvisors);
   const save = () => { try { localStorage.setItem(key, JSON.stringify(state)); return true; } catch { notice('Изменение применено на этой странице. Браузер не разрешил сохранить его между страницами.'); return false; } };
   const notice = text => { const el=document.getElementById('demo-notice'); if(el) el.textContent=text; };
   const escape = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -113,6 +120,7 @@
   }
     if(!groups.mba.page_blocks && !groups.mba.schedule)groups.mba.schedule=[{date:'2026-11-06',time:'10:00–18:00',title:'Бизнес и организация как система',teacher:'Алексей Миронов',module:'Модуль 1 — Стратегия и управление'},{date:'2026-11-07',time:'10:00–18:00',title:'Модель устойчивой организации',teacher:'Алексей Миронов',module:'Модуль 1 — Стратегия и управление'},{date:'2026-12-04',time:'17:00–21:00',title:'Команда и управленческое взаимодействие',teacher:'Ирина Лебедева',module:'Модуль 2 — Управление людьми'}];
   const pageContext={state,programs,groups,names,staff:directory.staff,senior,role,canEditGroup,save,groupLink,closes,groupId:customId||(location.pathname.endsWith('excel.html')?'excel':'mba')};
+  const advisorDirectory=window.AcademicAdvisors?.init(pageContext);
   const staffDirectory=AdminTools.init(pageContext);
   if(location.pathname.endsWith('editor.html')){CoursePages.initEditor(pageContext);return;}
   if(pageGroup&&(location.pathname.endsWith('course.html')||location.pathname.endsWith('excel.html'))){
@@ -133,6 +141,7 @@
     groupTable.render();
     catalogs.renderPrograms();
     staffDirectory?.render();
+    advisorDirectory?.render();
     schedules.render();
   };
   const openProgram=(type,id,body,title,confirm)=>{
@@ -226,15 +235,16 @@
   document.getElementById('search').addEventListener('input',render);document.getElementById('filter').addEventListener('change',render);
   const showPanel = panel => {
     if(panel==='reviewers')panel='profiles';
-    const titles={requests:'Заявки на обучение',students:'Слушатели',groups:'Группы',programs:'Программы',profiles:'Администраторы',schedules:'Расписание'};
+    const titles={requests:'Заявки на обучение',students:'Слушатели',groups:'Группы',programs:'Программы',profiles:'Администраторы',advisors:'Научные руководители',schedules:'Расписание'};
     if(!titles[panel])panel='requests';
     document.getElementById('create-course').hidden=!senior||panel!=='groups';
     const url=new URL(location.href);url.searchParams.set('panel',panel);const participantGroup=panel==='students'?document.getElementById('student-group').value:'';if(participantGroup)url.searchParams.set('group',participantGroup);else url.searchParams.delete('group');history.replaceState(null,'',url);
     document.querySelector('.page-heading h1').textContent=titles[panel];
-    document.querySelector('.page-heading p').textContent={requests:'Проверка заявок и открытие доступа к обучению.',students:'Аккаунты слушателей, группы, доступ и история посещений кабинета.',groups:'Учебные группы со своими слушателями, датами и материалами.',programs:'Программы школы и связанные с ними группы.',profiles:'Аккаунт, контакты, группы и дополнительные права сотрудника.',schedules:'Расписание всех групп: просмотр опубликованных занятий и массовая правка таблицей.'}[panel];
+    document.querySelector('.page-heading p').textContent={requests:'Проверка заявок и открытие доступа к обучению.',students:'Аккаунты слушателей, группы, доступ и история посещений кабинета.',groups:'Учебные группы со своими слушателями, датами и материалами.',programs:'Программы школы и связанные с ними группы.',profiles:'Аккаунт, контакты, группы и дополнительные права сотрудника.',advisors:'Общий справочник руководителей и контактов для связи.',schedules:'Расписание всех групп: просмотр опубликованных занятий и массовая правка таблицей.'}[panel];
     document.querySelectorAll('[data-panel]').forEach(x=>x.classList.toggle('active',x.dataset.panel===panel));
     Object.keys(titles).forEach(p=>document.getElementById(p+'-panel').hidden=p!==panel);
     staffDirectory?.render();
+    advisorDirectory?.render();
     schedules.render();
   };
   const navigateStudents=id=>{close();catalogs.selectGroup(id);showPanel('students');document.querySelector('#student-group-context h2')?.focus();};

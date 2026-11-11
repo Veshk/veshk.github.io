@@ -661,6 +661,470 @@ const RealCourseContent = {
       "description": "Расписание и учебные материалы группы МБАстрат-7.1.",
       "chat_url": "https://max.ru/join/4UnKd7HzQtRk0tAHW65WNZgrus9OKeHS4AAIZ1Y0mtA",
       "code": "МБАстрат-7.1"
+    },
+    "kd26": {
+      "code": "КД-26",
+      "academic_advisor_id": "rublevskaya",
+      "description": "Обучение завершено. Доступ к личному кабинету открыт до 9 декабря 2026 года.",
+      "chat_url": "https://t.me/+59nBabvpVaAzM2Iy",
+      "page_blocks": [
+        {
+          "type": "contacts",
+          "data": {
+            "block_id": "kd26-contacts",
+            "title": "Контакты и чат",
+            "visible": true,
+            "text": "Дарья Маврина\nemail: dasha.veshk@gmail.com\nтел.: 8-999-286-67-07\nГрафик работы: пн-пт с 10:00 до 18:00",
+            "contact_url": "https://t.me/kurator_veshk",
+            "chats": [
+              {
+                "label": "Чат группы в Telegram",
+                "url": "https://t.me/+59nBabvpVaAzM2Iy"
+              }
+            ]
+          }
+        },
+        {
+          "type": "schedule",
+          "data": {
+            "block_id": "kd26-schedule",
+            "title": "Расписание",
+            "visible": true,
+            "text": "График обучения модульный: модуль раз в две недели, пятница — воскресенье с 10:00 до 19:00.",
+            "lessons": [
+              {
+                "source_id": "user-kd26-screenshot-1",
+                "date": "2026-04-03",
+                "time": "14:00–17:15",
+                "title": "Поведение потребителей в контексте управления продажами и маркетингом",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-2",
+                "date": "2026-04-04",
+                "time": "10:00–13:00",
+                "title": "Поведение потребителей в контексте управления продажами и маркетингом",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-3",
+                "date": "2026-04-04",
+                "time": "14:00–17:15",
+                "title": "Поведение потребителей в контексте управления продажами и маркетингом",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-4",
+                "date": "2026-04-05",
+                "time": "10:00–13:00",
+                "title": "Поведение потребителей в контексте управления продажами и маркетингом",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-5",
+                "date": "2026-05-15",
+                "time": "15:00–19:00",
+                "title": "Процесс проведения глубинного интервью",
+                "teacher": "Носкова А.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-6",
+                "date": "2026-05-16",
+                "time": "10:00–14:00",
+                "title": "Управление товарным портфелем и взаимоотношениями с поставщиками. Кейс",
+                "teacher": "Ильенкова К. М.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-7",
+                "date": "2026-05-16",
+                "time": "15:00–19:00",
+                "title": "Управление товарным портфелем и взаимоотношениями с поставщиками. Кейс",
+                "teacher": "Ильенкова К. М.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-8",
+                "date": "2026-05-17",
+                "time": "10:00–14:00",
+                "title": "Управление деловой репутацией. Работа с отзывами",
+                "teacher": "Куранов Е. Ю.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-9",
+                "date": "2026-05-17",
+                "time": "15:00–19:00",
+                "title": "Управление деловой репутацией. Работа с отзывами",
+                "teacher": "Куранов Е. Ю.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-10",
+                "date": "2026-06-05",
+                "time": "10:00–13:00",
+                "title": "Управление корпоративной товарной маркой (брэндинг)",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-11",
+                "date": "2026-06-05",
+                "time": "14:00–17:15",
+                "title": "Управление корпоративной товарной маркой (брэндинг)",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-12",
+                "date": "2026-06-06",
+                "time": "10:00–13:00",
+                "title": "Управление корпоративной товарной маркой (брэндинг)",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-13",
+                "date": "2026-06-06",
+                "time": "14:00–17:15",
+                "title": "Управление корпоративной товарной маркой (брэндинг)",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-14",
+                "date": "2026-06-07",
+                "time": "10:00–13:00",
+                "title": "Управление корпоративной товарной маркой (брэндинг). Кейс.",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-15",
+                "date": "2026-07-03",
+                "time": "10:00–14:00",
+                "title": "Экономика продаж",
+                "teacher": "Манец Т. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-16",
+                "date": "2026-07-03",
+                "time": "15:00–19:00",
+                "title": "Экономика продаж",
+                "teacher": "Манец Т. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-17",
+                "date": "2026-07-04",
+                "time": "10:00–13:00",
+                "title": "Управление взаимоотношениями с клиентами. CRM.",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-18",
+                "date": "2026-07-04",
+                "time": "14:00–17:15",
+                "title": "Управление взаимоотношениями с клиентами. CRM.",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-19",
+                "date": "2026-07-05",
+                "time": "10:00–13:00",
+                "title": "Управление взаимоотношениями с клиентами. CRM.",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-20",
+                "date": "2026-07-05",
+                "time": "14:00–17:15",
+                "title": "Основы юнит-экономики",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-21",
+                "date": "2026-07-29",
+                "time": "18:00–20:30",
+                "title": "Консультация Проведение поисковых глубинных интервью JTBD для выявления идей улучшения товара и клиентского опыта.",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Онлайн",
+                "url": ""
+              },
+              {
+                "source_id": "user-kd26-screenshot-22",
+                "date": "2026-08-04",
+                "time": "16:00–18:00",
+                "title": "Консультация Проведение поисковых глубинных интервью JTBD для выявления идей улучшения товара и клиентского опыта.",
+                "teacher": "Носкова А.",
+                "module": "",
+                "format": "Онлайн",
+                "url": ""
+              },
+              {
+                "source_id": "tilda-1955087251-1",
+                "date": "2026-09-05",
+                "time": "10:00–19:00",
+                "title": "Система управления продажами",
+                "teacher": "Ивановичев А. И.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "tilda-1955087251-2",
+                "date": "2026-09-06",
+                "time": "10:00–19:00",
+                "title": "Система управления продажами",
+                "teacher": "Ивановичев А. И.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "tilda-1955087251-3",
+                "date": "2026-09-09",
+                "time": "18:00–20:30",
+                "title": "Консультация Проведение поисковых глубинных интервью JTBD для выявления идей улучшения товара и клиентского опыта",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Онлайн",
+                "url": ""
+              },
+              {
+                "source_id": "tilda-1955087251-4",
+                "date": "2026-10-02",
+                "time": "10:00–19:00",
+                "title": "Система управления продажами",
+                "teacher": "Ивановичев А. И.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "tilda-1955087251-5",
+                "date": "2026-10-03",
+                "time": "10:00–19:00",
+                "title": "Система управления продажами",
+                "teacher": "Ивановичев А. И.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "tilda-1955087251-6",
+                "date": "2026-10-07",
+                "time": "18:00–20:30",
+                "title": "Консультация Проведение поисковых глубинных интервью JTBD для выявления идей улучшения товара и клиентского опыта",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Онлайн",
+                "url": ""
+              },
+              {
+                "source_id": "tilda-1955087251-7",
+                "date": "2026-10-29",
+                "time": "14:00–17:30",
+                "title": "Защита проектной работы 2. Проведение поисковых глубинных интервью JTBD для выявления идей улучшения товара и клиентского опыта",
+                "teacher": "Рублевская Ю. В. Носкова А.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "tilda-1955087251-8",
+                "date": "2026-11-06",
+                "time": "10:00–19:00",
+                "title": "Бизнес-план",
+                "teacher": "Манец Т.В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "tilda-1955087251-9",
+                "date": "2026-11-07",
+                "time": "10:00–19:00",
+                "title": "Интернет-продвижение и оценка эффективности",
+                "teacher": "Рублевский Р. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              },
+              {
+                "source_id": "tilda-1955087251-10",
+                "date": "2026-11-08",
+                "time": "10:00–19:00",
+                "title": "Построение системы маркетинга на предприятии. Выпускной кейс",
+                "teacher": "Рублевская Ю. В.",
+                "module": "",
+                "format": "Очно",
+                "url": ""
+              }
+            ],
+            "show_moscow": false,
+            "collapse_past": true,
+            "source_url": "https://lk.veshk.ru/kd26"
+          }
+        },
+        {
+          "type": "recordings",
+          "data": {
+            "block_id": "kd26-recordings",
+            "title": "Записи занятий",
+            "visible": true,
+            "videos": [
+              {
+                "title": "Консультация №1",
+                "date": "2026-07-29",
+                "module": "Проведение поисковых глубинных интервью JTBD для выявления идей улучшения товара и клиентского опыта",
+                "text": "",
+                "status": "published",
+                "url": "https://disk.yandex.ru/i/81FGUyqZU6t-wA"
+              },
+              {
+                "title": "Консультация №2",
+                "date": "2026-08-04",
+                "module": "Проведение поисковых глубинных интервью JTBD для выявления идей улучшения товара и клиентского опыта",
+                "text": "",
+                "status": "published",
+                "url": "https://disk.yandex.ru/i/KJT7eF__QijlYg"
+              },
+              {
+                "title": "Консультация №3",
+                "date": "2026-10-07",
+                "module": "Проведение поисковых глубинных интервью JTBD для выявления идей улучшения товара и клиентского опыта",
+                "text": "",
+                "status": "published",
+                "url": "https://disk.yandex.ru/i/CMLI028SdmrSuw"
+              }
+            ]
+          }
+        },
+        {
+          "type": "materials",
+          "data": {
+            "block_id": "kd26-materials",
+            "title": "Материалы для обучения",
+            "visible": true,
+            "text": "",
+            "resources": [
+              {
+                "title": "Учебные материалы",
+                "url": "https://drive.google.com/drive/folders/1ffV2X98GW5BfY89YnLt5kXG0cJHZcByk?usp=sharing",
+                "button": "Открыть папку"
+              },
+              {
+                "title": "Книги от Рублевской Ю. В.",
+                "url": "https://drive.google.com/drive/folders/1tS8iSAp5LTrpJUaJkEyKjTHeb-yTSBsk?usp=sharing",
+                "button": "Открыть подборку"
+              }
+            ]
+          }
+        },
+        {
+          "type": "info",
+          "data": {
+            "block_id": "kd26-info",
+            "title": "Фотографии с выпускного",
+            "visible": true,
+            "text": "Вспоминаем наш выпускной.",
+            "url": "https://clck.ru/3Wv3aF",
+            "button": "Смотреть фотографии"
+          }
+        },
+        {
+          "type": "faq",
+          "data": {
+            "block_id": "kd26-faq",
+            "title": "Вопросы об обучении",
+            "visible": true,
+            "questions": [
+              {
+                "question": "Что делать, если я не могу посетить занятие по уважительной причине?",
+                "answer": "Если вы не можете посетить занятие по уважительно причине, напишите об этом администратору, он сориентирует вас по срокам восстановления и обязательно напомнит за неделю до занятия. Пожалуйста, учитывайте , что некоторые темы проходят редко (1-2 раза в год)",
+                "url": "https://t.me/kurator_veshk",
+                "button": "Написать администратору"
+              },
+              {
+                "question": "На сколько открыт доступ к Кабинету студента?",
+                "answer": "Кабинет студента со всеми материалами и видеозаписями доступен в течение всего обучения, а также месяц после окончания обучения.",
+                "url": "",
+                "button": ""
+              },
+              {
+                "question": "Что делать, если мне не пришел счет на оплату программы?",
+                "answer": "У Вас есть несколько вариантов действий:\n• Если по какой-либо причине вы не получили счет, напишите об этом администратору.\n• Вы можете оплатить программу самостоятельно по следующим реквизитам:\nПолное наименование\nАвтономная некоммерческая организация дополнительного профессионального образования \"Высшая экономическая школа\"\nИНН\n6670495960\nКПП\n667001001\nр/с\n40703810102500004499 в ООО \"Банк Точка\"\nк/с\n30101810745374525104\nБИК\n044525104\nВ этом случае в комментарии обязательно укажите свои ФИО и наименование программы!\n3. Также вы всегда можете воспользоваться счетом на оплату за предыдущий месяц.",
+                "url": "https://t.me/kurator_veshk",
+                "button": "Написать администратору"
+              },
+              {
+                "question": "Что необходимо, чтобы получить диплом?",
+                "answer": "Для получения диплома о переподготовке необходимо следующее:\n1. Не иметь финансовой задолженности\n2. Написать и защитить контрольные точки",
+                "url": "",
+                "button": ""
+              },
+              {
+                "question": "Как заказать справку для налогового вычета?",
+                "answer": "Заказать справку Вы можете, подав заявку администратору\nЗапрос обрабатывается от 3 до 7 рабочих дней, по готовности на почту, которую укажете в заявке, Вам придет письмо.",
+                "url": "https://form.asana.com/?k=77t5nCKadOIfzBo2PZEBHA&d=527137460528197",
+                "button": "Заказать справку"
+              }
+            ]
+          }
+        }
+      ]
     }
   },
   "staffNames": {
@@ -678,10 +1142,28 @@ const RealCourseContent = {
       "photo": "https://static.tildacdn.com/tild3863-3663-4164-b363-323039336363/_.jpg"
     }
   },
-  "version": "real-content-20261110-2"
+  "version": "real-content-20261110-2",
+  "academicAdvisors": {
+    "rublevskaya": {
+      "name": "Рублевская Юлия Вячеславовна",
+      "email": "rublevskaya.julia@veshk.ru",
+      "photo": "https://veshk.ru/media/images/Rublevskaia_Du84PbT.original.png"
+    }
+  }
 };
 RealCourseContent.apply = (state, groups, directory) => {
   let changed = false;
+  state.academicAdvisors ??= {};
+  for (const [id, profile] of Object.entries(RealCourseContent.academicAdvisors || {})) {
+    if (!state.academicAdvisors[id]) { state.academicAdvisors[id] = structuredClone(profile); changed = true; }
+  }
+  if (!state.kd26Imported && groups.kd26) {
+    state.groupOverrides ??= {};
+    groups.kd26 = {...groups.kd26, ...structuredClone(RealCourseContent.groups.kd26)};
+    state.groupOverrides.kd26 = groups.kd26;
+    state.kd26Imported = true;
+    changed = true;
+  }
   if (state.realCourseContentVersion !== RealCourseContent.version) {
     state.previousRealCourseContent ??= {};
     state.groupOverrides ??= {};
