@@ -31,6 +31,8 @@ class SchoolProgramCatalogTest extends TestCase
         $this->assertSame(37, Program::whereNotNull('source_id')->count());
         $this->assertDatabaseCount('programs', 38);
         $this->assertSame('Специалист по оценке персонала', $existing->fresh()->title);
+        $this->assertSame('https://veshk.ru/media/images/sorp.original.jpg', $existing->fresh()->coverUrl());
+        $this->assertNull($existing->fresh()->cover_url);
         $this->assertSame($blocks, $existing->fresh()->page_blocks);
         $this->assertSame($before, $group->fresh()->getAttributes());
         $this->assertSame('Собственная программа', $unrelated->fresh()->title);
@@ -73,7 +75,7 @@ class SchoolProgramCatalogTest extends TestCase
     public function test_program_cover_is_group_default_and_custom_group_cover_takes_priority(): void
     {
         $cover = 'https://veshk.ru/media/images/oblozhka_DM_VrRi61H.original.png';
-        $program = Program::factory()->create(['cover_url' => $cover]);
+        $program = Program::factory()->create(['cover_url' => $cover, 'section' => 'HR']);
         $group = StudyGroup::factory()->for($program)->create();
         $enrollment = Enrollment::factory()->create(['study_group_id' => $group->id]);
         $this->actingAs($enrollment->user)->get('/learning/'.$group->id)->assertOk()->assertSee($cover);
@@ -82,7 +84,13 @@ class SchoolProgramCatalogTest extends TestCase
         $this->get('/learning/'.$group->id)->assertOk()->assertSee('/storage/group-covers/personal.jpg')->assertDontSee($cover);
 
         $group->update(['hero_image' => null]);
-        $program->update(['cover_url' => 'https://veshk.ru.attacker.invalid/media/images/image.jpg', 'program_type' => 'Программа проф. переподготовки']);
+        $program->update(['cover_url' => null]);
+        $this->get('/learning/'.$group->id)->assertOk()->assertSee('https://veshk.ru/media/images/sorp.original.jpg')->assertDontSee('has-default-cover');
+        $group->update(['hero_image' => 'group-covers/personal.jpg']);
+        $this->get('/learning/'.$group->id)->assertOk()->assertSee('/storage/group-covers/personal.jpg')->assertDontSee('sorp.original.jpg');
+
+        $group->update(['hero_image' => null]);
+        $program->update(['cover_url' => 'https://veshk.ru.attacker.invalid/media/images/image.jpg', 'section' => 'Финансы', 'program_type' => 'Программа проф. переподготовки']);
         $this->get('/learning/'.$group->id)->assertOk()->assertDontSee('attacker.invalid')->assertSee('/brand/group-placeholder-long.png')->assertSee('has-default-cover');
 
         $program->update(['program_type' => 'Программа повышения квалификации']);

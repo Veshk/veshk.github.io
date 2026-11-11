@@ -33,7 +33,11 @@ class Program extends Model
     {
         $url = parse_url($this->cover_url ?? '');
 
-        return is_array($url) && ($url['scheme'] ?? '') === 'https' && ($url['host'] ?? '') === 'veshk.ru' && ! isset($url['user']) && ! isset($url['pass']) && str_starts_with($url['path'] ?? '', '/media/images/') ? $this->cover_url : null;
+        if (is_array($url) && ($url['scheme'] ?? '') === 'https' && ($url['host'] ?? '') === 'veshk.ru' && ! isset($url['user']) && ! isset($url['pass']) && str_starts_with($url['path'] ?? '', '/media/images/')) {
+            return $this->cover_url;
+        }
+
+        return $this->section === 'HR' ? 'https://veshk.ru/media/images/sorp.original.jpg' : null;
     }
 
     public function defaultCoverPath(): string
