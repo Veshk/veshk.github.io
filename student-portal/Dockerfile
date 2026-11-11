@@ -1,4 +1,4 @@
-FROM php:8.4-fpm-bookworm AS app
+FROM php:8.4-fpm-bookworm AS php-base
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libicu-dev libzip-dev libpq-dev libpng-dev libjpeg62-turbo-dev libfreetype6-dev libwebp-dev unzip \
@@ -20,6 +20,14 @@ RUN printf '[www]\npm = ondemand\npm.max_children = 6\npm.process_idle_timeout =
 COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/portal-entrypoint
 ENTRYPOINT ["portal-entrypoint"]
 CMD ["php-fpm"]
+
+FROM node:24-alpine AS assets
+WORKDIR /var/www/html
+COPY --from=php-base /var/www/html .
+RUN npm ci --ignore-scripts --no-audit --no-fund && npm run build
+
+FROM php-base AS app
+COPY --from=assets /var/www/html/public/build /var/www/html/public/build
 
 FROM caddy:2-alpine AS web
 COPY Caddyfile /etc/caddy/Caddyfile

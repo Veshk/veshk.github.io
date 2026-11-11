@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -26,13 +27,21 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->login(fn () => redirect()->route('login'))
             ->brandName('ВЭШ — Управление обучением')
-            ->font('Inter', url: asset('brand/fonts.css'))
+            ->brandLogo(fn () => view('filament.brand'))
+            ->font('Inter', url: asset('brand/fonts.css'), provider: LocalFontProvider::class)
             ->darkMode(false)
             ->sidebarCollapsibleOnDesktop()
+            ->sidebarWidth('17rem')
             ->colors([
-                'primary' => Color::hex('#226D8D'),
+                'primary' => array_map(Color::convertToOklch(...), [
+                    50 => '#f1f7fa', 100 => '#e6eff3', 200 => '#c9dde6',
+                    300 => '#9dbfce', 400 => '#629bb3', 500 => '#327e9e',
+                    600 => '#226d8d', 700 => '#1c526d', 800 => '#1c3948',
+                    900 => '#182f3c', 950 => '#10212b',
+                ]),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

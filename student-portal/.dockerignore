@@ -11,6 +11,7 @@ tests
 *.sqlite-*
 database/*.sqlite*
 public/hot
+public/build
 public/storage
 bootstrap/cache/*.php
 storage/app/**
