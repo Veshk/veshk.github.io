@@ -14,6 +14,7 @@ use App\Models\User;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -145,7 +146,7 @@ class StudyGroupResource extends Resource
         ])->groups([
             Group::make('administrator.name')->label('Администратор')->collapsible(),
             Group::make('status')->label('Статус')->collapsible(),
-        ])->defaultGroup('administrator.name')->defaultSort('title')->recordUrl(fn (StudyGroup $record): string => static::getUrl('view', ['record' => $record]))
+        ])->defaultGroup('administrator.name')->defaultSort('title')->recordUrl(null)->recordAction('view')
             ->paginated([25, 50, 100])->searchPlaceholder('Название, ТЕГ, номер или администратор')
             ->filters([
                 SelectFilter::make('status')->label('Статус группы')->options(array_combine(StudyGroup::STATUSES, StudyGroup::STATUSES)),
@@ -153,9 +154,17 @@ class StudyGroupResource extends Resource
                 SelectFilter::make('program_id')->label('Программа')->relationship('program', 'tag')->searchable()->preload(),
                 Filter::make('mine')->label('Только мои группы')->query(fn (Builder $query): Builder => $query->where('administrator_id', auth()->id())),
             ])->deferFilters(false)->recordActions([
-                Action::make('student')->label('Зайти в ЛК')->url(fn (StudyGroup $record): string => route('student.group', $record))->openUrlInNewTab(),
-                Action::make('page')->label('Редактор')->visible(fn (StudyGroup $record): bool => auth()->user()->can('update', $record))->url(fn (StudyGroup $record): string => static::getUrl('page', ['record' => $record])),
-                EditAction::make()->label('Настройки группы')->iconButton(),
+                ViewAction::make()->modal()->label('Карточка')->iconButton()->modalWidth('3xl')->stickyModalHeader()->stickyModalFooter(),
+                Action::make('student')->label('ЛК')->button()->color('gray')->url(fn (StudyGroup $record): string => route('student.group', $record))->openUrlInNewTab(),
+                Action::make('page')->label('Редактор')->button()->visible(fn (StudyGroup $record): bool => auth()->user()->can('update', $record))->url(fn (StudyGroup $record): string => static::getUrl('page', ['record' => $record])),
+                EditAction::make()->modal()->label('Настройки группы')->icon('heroicon-o-cog-6-tooth')->iconButton()->modalWidth('3xl')->stickyModalHeader()->stickyModalFooter()->unsavedChangesAlert()
+                    ->mutateDataUsing(function (array $data): array {
+                        if (! auth()->user()->isSenior()) {
+                            unset($data['administrator_id']);
+                        }
+
+                        return $data;
+                    }),
             ]);
     }
 

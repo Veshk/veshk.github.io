@@ -9,6 +9,7 @@ use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -61,25 +62,26 @@ class StaffProfiles extends Page implements HasTable
     public function table(Table $table): Table
     {
         return $table->query(User::query()->whereIn('role', ['admin', 'senior'])->withCount('studyGroups'))->defaultSort('name')->columns([
+            ImageColumn::make('profile_photo')->label('Фото')->disk('public')->circular()->imageSize(36),
             TextColumn::make('name')->label('Администратор')->searchable(['name', 'email'])->sortable()->description(fn (User $record): string => $record->email)->action(fn (User $record) => $this->selectPerson($record->id)),
             TextColumn::make('role')->label('Роль аккаунта')->badge()->formatStateUsing(fn (string $state): string => $state === 'senior' ? 'Старший администратор' : 'Администратор'),
             TextColumn::make('study_groups_count')->label('Группы')->sortable()->url(fn (User $record): string => StudyGroupResource::getUrl('index', ['filters' => ['administrator_id' => ['value' => $record->id]]])),
             TextColumn::make('reviews_unassigned')->label('Заявки без группы')->badge()->formatStateUsing(fn (bool $state): string => $state ? 'Назначен ответственным' : 'Не назначен')->color(fn (bool $state): string => $state ? 'info' : 'gray'),
+            TextColumn::make('contacts')->label('Контакты')->state(fn (User $record): string => filled($record->contact_text) || filled($record->contact_url) ? 'Заполнены' : 'Не заполнены')->color('gray'),
         ])->filters([
             TernaryFilter::make('reviews_unassigned')->label('Разбирает заявки без группы'),
             TernaryFilter::make('has_groups')->label('Есть группы')->queries(true: fn ($query) => $query->has('studyGroups'), false: fn ($query) => $query->doesntHave('studyGroups'), blank: fn ($query) => $query),
         ])->deferFilters(false)->recordActions([
-            Action::make('profile')->label('Профиль')->action(fn (User $record) => $this->selectPerson($record->id)),
-            Action::make('groups')->label('К группам')->url(fn (User $record): string => StudyGroupResource::getUrl('index', ['filters' => ['administrator_id' => ['value' => $record->id]]])),
+            Action::make('profile')->label('Настроить профиль')->button()->color('gray')->action(fn (User $record) => $this->selectPerson($record->id)),
         ])->emptyStateHeading('Администраторы не найдены');
     }
 
     public function mount(): void
     {
-        $this->selectPerson(auth()->id());
+        $this->selectPerson(auth()->id(), false);
     }
 
-    public function selectPerson(int $id): void
+    public function selectPerson(int $id, bool $open = true): void
     {
         abort_unless(static::canAccess(), 403);
         $person = User::whereIn('role', ['admin', 'senior'])->findOrFail($id);
@@ -90,6 +92,9 @@ class StaffProfiles extends Page implements HasTable
         $this->photo = null;
         $this->removePhoto = false;
         $this->resetValidation();
+        if ($open) {
+            $this->dispatch('open-modal', id: 'staff-profile');
+        }
     }
 
     public function save(): void
@@ -113,6 +118,8 @@ class StaffProfiles extends Page implements HasTable
         $this->photo = null;
         $this->removePhoto = false;
         Notification::make()->title('Профиль и настройки сохранены')->success()->send();
+        $this->dispatch('profile-saved');
+        $this->dispatch('close-modal', id: 'staff-profile');
     }
 
     protected function getViewData(): array

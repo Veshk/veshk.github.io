@@ -58,25 +58,26 @@ class StudentDirectoryTest extends TestCase
         $student = User::factory()->create();
         $other = User::factory()->create();
         $event = $student->portalVisits()->create(['visited_at' => '2026-11-05 08:30:00', 'page' => 'Моё обучение']);
-        $otherEvent = $other->portalVisits()->create(['visited_at' => '2026-11-04 09:00:00', 'page' => 'Моё обучение']);
+        $other->portalVisits()->create(['visited_at' => '2026-11-04 09:00:00', 'page' => 'Чужая история посещений']);
         $this->get('/admin/students')->assertRedirect('/admin/login');
         $this->actingAs($student)->get('/admin/students?student='.$other->id)->assertForbidden();
         $staff = User::factory()->create(['role' => 'admin']);
         $this->actingAs($staff);
         Livewire::test(Students::class)->call('selectStudent', $student->id)->assertSee($student->email)
-            ->assertCanSeeTableRecords([$event])->assertCanNotSeeTableRecords([$otherEvent])->assertSee('05.11.2026 08:30:00');
+            ->assertCanSeeTableRecords([$student, $other])->assertDispatched('open-modal', id: 'student-history')
+            ->assertSee('05.11.2026 08:30:00')->assertDontSee('Чужая история посещений');
         Livewire::test(Students::class)->call('selectStudent', $staff->id)->assertNotFound();
     }
 
-    public function test_sample_directory_has_six_active_administrators_with_two_groups_each(): void
+    public function test_sample_directory_preserves_six_administrators_and_thirteen_groups(): void
     {
         $this->seed();
         $staff = User::whereIn('role', ['admin', 'senior'])->withCount('studyGroups')->get();
         $this->assertCount(6, $staff);
-        $this->assertTrue($staff->every(fn ($person) => $person->study_groups_count === 2));
-        $this->assertDatabaseCount('study_groups', 12);
+        $this->assertTrue($staff->every(fn ($person) => $person->study_groups_count === ($person->email === 'admin@vesh.test' ? 3 : 2)));
+        $this->assertDatabaseCount('study_groups', 13);
         $this->assertDatabaseCount('portal_visits', 0);
         $this->seed();
-        $this->assertDatabaseCount('study_groups', 12);
+        $this->assertDatabaseCount('study_groups', 13);
     }
 }

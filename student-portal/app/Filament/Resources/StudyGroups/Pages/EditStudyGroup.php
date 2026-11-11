@@ -8,6 +8,10 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditStudyGroup extends EditRecord
 {
+    public static bool $formActionsAreSticky = true;
+
+    protected ?bool $hasUnsavedDataChangesAlert = true;
+
     protected static string $resource = StudyGroupResource::class;
 
     protected function getHeaderActions(): array

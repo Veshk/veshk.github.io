@@ -60,7 +60,7 @@ class GroupParticipantsTest extends TestCase
             ->assertTableColumnStateSet('access', 'Завершён', $member)
             ->assertTableColumnStateSet('access', 'Открыт', $extended)
             ->searchTable($member->email)->assertCountTableRecords(1)
-            ->call('selectStudent', $member->id)->assertCanSeeTableRecords([$visit])->assertSee('К участникам группы')
+            ->call('selectStudent', $member->id)->assertCanSeeTableRecords([$member])->assertSee($visit->page)->assertDispatched('open-modal', id: 'student-history')
             ->call('selectStudent', null)->assertSet('selectedGroupId', $expired->id)->assertCountTableRecords(1)
             ->searchTable('')->assertCountTableRecords(2);
         Livewire::withQueryParams(['group' => $expired->id, 'student' => $other->id])->test(Students::class)->assertNotFound();

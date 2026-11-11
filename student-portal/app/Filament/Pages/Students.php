@@ -37,6 +37,8 @@ class Students extends Page implements HasTable
     #[Url(as: 'group')]
     public ?int $selectedGroupId = null;
 
+    public int $historyPage = 1;
+
     protected function selectedGroup(): ?StudyGroup
     {
         abort_unless(static::canAccess(), 403);
@@ -60,18 +62,20 @@ class Students extends Page implements HasTable
     {
         $this->selectedStudentId = $id;
         $this->selectedStudent();
-        $this->resetTable();
+        $this->historyPage = 1;
+        $this->dispatch($id ? 'open-modal' : 'close-modal', id: 'student-history');
+    }
+
+    public function changeHistoryPage(int $page): void
+    {
+        $person = $this->selectedStudent();
+        abort_unless($person, 404);
+        $this->historyPage = max(1, min($page, (int) ceil($person->portalVisits()->count() / 25)));
     }
 
     public function table(Table $table): Table
     {
         $group = $this->selectedGroup();
-        if ($person = $this->selectedStudent()) {
-            return $table->query(PortalVisit::where('user_id', $person->id))->defaultSort('visited_at', 'desc')->columns([
-                TextColumn::make('visited_at')->label('Дата и время визита')->dateTime('d.m.Y H:i:s', timezone: 'Asia/Yekaterinburg')->sortable(),
-                TextColumn::make('page')->label('Открытая страница')->wrap(),
-            ])->emptyStateHeading('Посещений пока нет')->emptyStateDescription('История записывается с момента включения журнала.')->paginated([25, 50, 100]);
-        }
 
         return $table->query(User::where('role', 'student')->when($group, fn ($query) => $query->whereHas('enrollments', fn ($query) => $query->where('study_group_id', $group->id)))->with('enrollments.group')->withMax('portalVisits', 'visited_at'))->defaultSort('name')->columns([
             TextColumn::make('name')->label('Слушатель')->searchable(['name', 'email'])->sortable()->description(fn (User $record): string => $record->email)->action(fn (User $record) => $this->selectStudent($record->id)),
@@ -85,12 +89,14 @@ class Students extends Page implements HasTable
             TernaryFilter::make('has_access')->label('Зачислен в группы')->queries(true: fn ($query) => $query->has('enrollments'), false: fn ($query) => $query->doesntHave('enrollments'), blank: fn ($query) => $query),
             TernaryFilter::make('has_visits')->label('Есть посещения ЛК')->queries(true: fn ($query) => $query->has('portalVisits'), false: fn ($query) => $query->doesntHave('portalVisits'), blank: fn ($query) => $query),
         ])->deferFilters(false)->recordActions([
-            Action::make('history')->label('История посещений')->icon('heroicon-o-clock')->action(fn (User $record) => $this->selectStudent($record->id)),
+            Action::make('history')->label('История посещений')->button()->color('gray')->icon('heroicon-o-clock')->action(fn (User $record) => $this->selectStudent($record->id)),
         ])->emptyStateHeading($group ? 'Участники не найдены' : 'Слушатели не найдены')->emptyStateDescription($group ? 'Здесь отображаются зачисленные слушатели. Проверьте поиск и фильтры; заявки на проверке в список не входят.' : null)->paginated([25, 50, 100]);
     }
 
     protected function getViewData(): array
     {
-        return ['person' => $this->selectedStudent(), 'group' => $this->selectedGroup(), 'participantCount' => $this->selectedGroup()?->enrollments()->whereHas('user', fn ($query) => $query->where('role', 'student'))->count()];
+        $person = $this->selectedStudent();
+
+        return ['person' => $person, 'visits' => $person ? PortalVisit::where('user_id', $person->id)->orderByDesc('visited_at')->orderByDesc('id')->paginate(25, ['*'], 'historyPage', max(1, $this->historyPage)) : null, 'group' => $this->selectedGroup(), 'participantCount' => $this->selectedGroup()?->enrollments()->whereHas('user', fn ($query) => $query->where('role', 'student'))->count()];
     }
 }

@@ -13,7 +13,7 @@ class ListStudyGroups extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->label('Добавить группу'),
+            CreateAction::make()->label('Добавить группу')->modalHeading('Добавить группу')->createAnother(false)->modal()->modalWidth('3xl')->stickyModalHeader()->stickyModalFooter()->unsavedChangesAlert(),
         ];
     }
 }

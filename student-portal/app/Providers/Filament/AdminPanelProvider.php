@@ -7,11 +7,11 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
+use Filament\Support\Enums\Width;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -33,8 +33,11 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(fn () => view('filament.brand'))
             ->font('Inter', url: asset('brand/fonts.css'), provider: LocalFontProvider::class)
             ->darkMode(false)
-            ->sidebarCollapsibleOnDesktop()
-            ->sidebarWidth('17rem')
+            ->navigation(false)
+            ->globalSearch(false)
+            ->maxContentWidth(Width::Full)
+            ->renderHook(PanelsRenderHook::PAGE_HEADER_WIDGETS_BEFORE, fn () => view('filament.workspace-tabs'))
+            ->renderHook(PanelsRenderHook::BODY_END, fn () => view('filament.workspace-scripts'))
             ->colors([
                 'primary' => array_map(Color::convertToOklch(...), [
                     50 => '#f1f7fa', 100 => '#e6eff3', 200 => '#c9dde6',
@@ -45,14 +48,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
-            ->pages([
-                Dashboard::class,
-            ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets([
-                AccountWidget::class,
-
-            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

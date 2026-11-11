@@ -12,6 +12,6 @@ class ListPrograms extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('Добавить программу')];
+        return [CreateAction::make()->label('Добавить программу')->modalHeading('Добавить программу')->createAnother(false)->modal()->schema(ProgramResource::settingsFields())->modalWidth('3xl')->stickyModalHeader()->stickyModalFooter()->unsavedChangesAlert()];
     }
 }

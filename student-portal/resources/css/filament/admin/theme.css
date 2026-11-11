@@ -122,3 +122,69 @@
 }
 .fi-sc-actions.fi-sticky { z-index: 30; }
 .fi-sc-actions.fi-sticky > .fi-ac { border: 1px solid var(--portal-line); padding: 14px 18px; box-shadow: 0 -4px 20px #18252a0a; }
+
+/* Workspace layout shared with the published admin prototype. */
+.fi-main { max-width: 1680px; padding-inline: 28px; }
+.fi-page { padding-block: 28px 40px; }
+.fi-page-content { gap: 20px; min-width: 0; }
+.fi-header { gap: 12px; }
+.fi-header-heading { font-size: 34px; }
+.fi-header-subheading { font-size: 13px; line-height: 1.6; }
+.fi-breadcrumbs { font-size: 11px; }
+.portal-workspace-tabs { display: flex; flex-wrap: wrap; gap: 4px 22px; border-bottom: 1px solid var(--portal-line); padding-bottom: 0; }
+.portal-workspace-tabs a { padding: 10px 1px 12px; margin-bottom: -1px; border-bottom: 2px solid transparent; color: var(--portal-muted); font-size: 13px; text-decoration: none; white-space: nowrap; }
+.portal-workspace-tabs a:hover { color: var(--portal-blue); }
+.portal-workspace-tabs a[aria-current=page] { border-color: var(--portal-red); color: var(--portal-navy); font-weight: 600; }
+.fi-ta-ctn { min-width: 0; }
+.fi-ta-header-toolbar, .fi-ta-filters-above-content-ctn { padding: 12px 18px; }
+.fi-ta-filters-heading { font-size: 13px; }
+.fi-ta-table { font-size: 12px; line-height: 1.45; }
+.fi-ta-header-cell { padding: 10px 12px; font-size: 11px; }
+.fi-ta-cell { padding: 0; border-right: 1px solid #edf0f2; }
+.fi-ta-text { padding: 11px 12px; }
+.fi-ta-text-item { font-size: 12px; line-height: 1.45; }
+.fi-ta-text-description { font-size: 11px; line-height: 1.45; }
+.fi-ta-cell:first-child .fi-ta-text { min-width: 190px; max-width: 320px; }
+.fi-ta-text-item.fi-wrapped, .fi-ta-text-description { overflow-wrap: anywhere; }
+.fi-ta-actions { gap: 6px; padding: 10px 12px; }
+.fi-ta-actions .fi-btn { min-height: 30px; font-size: 11px; padding: 5px 9px; }
+.fi-ta-actions .fi-icon-btn { width: 28px; height: 30px; }
+.fi-ta-actions .fi-icon { width: 16px; height: 16px; }
+.fi-ta-group-header { background: #f5f8f9; }
+.fi-ta-group-header-title { font-size: 12px; font-weight: 550; }
+.fi-ta-ctn .fi-badge { font-size: 11px; padding: 4px 7px; }
+.fi-ta-ctn .fi-input, .fi-ta-ctn .fi-select-input, .fi-ta-ctn .fi-fo-field-label-content { font-size: 12px; }
+.fi-ta-content-ctn { max-height: 65vh; }
+.fi-ta-table thead { position: sticky; top: 0; z-index: 2; }
+.fi-ta-cell:has(> .fi-ta-actions), .fi-ta-header-cell:last-child { position: sticky; right: 0; background: white; z-index: 1; }
+.fi-ta-header-cell:last-child { background: #edf2f4; z-index: 3; }
+.fi-modal-window .fi-fo-field-label-content, .fi-modal-window .fi-in-entry-label { font-size: 12px; }
+.fi-modal-window .fi-sc-section { gap: 16px; }
+.fi-modal-window .fi-fo-field-helper-text { font-size: 12px; line-height: 1.5; }
+.portal-filters { padding: 14px 18px; gap: 14px; }
+.portal-field { font-size: 12px; gap: 6px; }
+.portal-field input:not([type=checkbox]):not([type=file]), .portal-field select, .portal-field textarea { min-height: 36px; font-size: 13px; padding: 7px 10px; }
+.portal-table { font-size: 12px; }
+.portal-table td { padding: 11px 12px; }
+.portal-table th { padding: 10px 12px; }
+.portal-admin-form, .portal-admin-form fieldset { gap: 16px; }
+.portal-student-history { display: grid; gap: 14px; font-size: 13px; }
+.portal-history-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.portal-discard-dialog { margin: auto; width: min(440px, calc(100% - 32px)); padding: 24px; border: 1px solid var(--portal-line); border-radius: 8px; color: var(--portal-ink); background: white; box-shadow: 0 12px 48px #18252a33; }
+.portal-discard-dialog::backdrop { background: #18252a66; }
+.portal-discard-dialog h2 { font-size: 18px; font-weight: 550; }
+.portal-discard-dialog p { font-size: 13px; margin: 12px 0 20px; color: var(--portal-muted); }
+.portal-discard-dialog button { display: block; width: 100%; min-height: 38px; margin-top: 8px; border: 1px solid var(--portal-line); border-radius: 5px; padding: 8px 12px; font-size: 13px; cursor: pointer; }
+.portal-discard-dialog button:focus-visible { outline: 2px solid var(--portal-blue); outline-offset: 2px; }
+.portal-discard-dialog .portal-discard-confirm { color: var(--portal-red); }
+@media (max-width: 767px) {
+    .fi-main { padding-inline: 16px; }
+    .fi-page { padding-block: 20px 32px; }
+    .fi-header-heading { font-size: 27px; }
+    .portal-workspace-tabs { gap: 0 16px; }
+    .portal-workspace-tabs a { font-size: 12px; padding-block: 9px; }
+    .fi-ta-header-toolbar, .fi-ta-filters-above-content-ctn { padding: 12px; }
+    .fi-ta-content-ctn { max-height: none; }
+    .fi-ta-cell:has(> .fi-ta-actions), .fi-ta-header-cell:last-child { position: static; }
+    .portal-applications .fi-ta-cell:first-child .fi-ta-text { max-width: none; min-width: 0; }
+}

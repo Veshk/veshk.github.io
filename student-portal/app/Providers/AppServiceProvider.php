@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Table;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Table::configureUsing(fn (Table $table) => $table
+            ->filtersLayout(FiltersLayout::AboveContent)
+            ->filtersFormColumns(['default' => 1, 'sm' => 2, 'lg' => 4])
+            ->recordActionsColumnLabel('Действия'));
     }
 }
