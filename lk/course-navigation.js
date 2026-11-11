@@ -51,7 +51,10 @@ window.CourseNavigation = (() => {
       requestAnimationFrame(() => {
         ticking = false;
         const top = nav.getBoundingClientRect().height + 24;
-        const section = sections.filter(item => item.getBoundingClientRect().top <= top).pop();
+        const reached = sections.map(item => ({item,top:item.getBoundingClientRect().top})).filter(entry => entry.top <= top);
+        const rowTop = reached.at(-1)?.top;
+        const row = reached.filter(entry => Math.abs(entry.top-rowTop)<2).map(entry => entry.item);
+        const section = row.find(item => links.some(link => link.hash === '#'+item.id && link.getAttribute('aria-current') === 'location')) || row[0];
         if (section) select('#'+section.id);
       });
     },{...options,passive:true});

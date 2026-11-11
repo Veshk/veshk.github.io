@@ -97,6 +97,14 @@ window.CoursePages = (() => {
       const source=b.type==='alias'?resolveAlias(b,ctx.groups):{block:b,group:g},compact=source&&['introductions','video','photos'].includes(source.block.type),title=b.data.title||labels[b.type];
       return `<section id="block-${i}" class="section${compact?' welcome-section':''}">${compact?'':`<div class="section-title"><h2>${esc(title)}</h2></div>`}${source?content(source.block,source.group,title):'<div class="empty">Содержимое временно недоступно. Администратор проверит подключение блока.</div>'}</section>`;
     }).join('');
+    main.classList.add('course-content');
+    const sections=[...main.children];
+    for(let i=0;i<sections.length-1;i++){
+      if(sections[i].classList.contains('welcome-section')&&sections[i+1].classList.contains('welcome-section')){
+        sections[i].classList.add('welcome-paired');
+        sections[++i].classList.add('welcome-paired');
+      }
+    }
     window.CourseOverview?.render(ctx,g,blocks.map(b=>{const source=b.type==='alias'?resolveAlias(b,ctx.groups):null;return source?{...source.block,data:{...source.block.data,visible:b.data.visible}}:b;}));
     window.CourseNavigation?.mount();
     if(new URLSearchParams(location.search).has('preview')){
