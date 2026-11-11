@@ -40,7 +40,7 @@
 .welcome-card{display:grid;grid-template-columns:minmax(0,1fr) 164px;align-items:center;gap:24px;padding:22px 28px;border:1px solid #dce6ec;border-radius:8px;overflow:hidden}
 .welcome-intro,.welcome-photos{background:#fff;color:#0e394b}
 .welcome-copy{min-width:0}
-.welcome-card .welcome-handwriting{font-family:'VESH Soul Adventures',cursive;font-size:96px;font-weight:400;line-height:1.05;margin:0;color:#b2272a;overflow-wrap:anywhere}
+.welcome-card .welcome-handwriting{font-family:'VESH Soul Adventures',cursive;font-size:96px;font-weight:400;letter-spacing:normal;line-height:1.05;margin:0;color:#b2272a;overflow-wrap:anywhere}
 .welcome-card .block-text{font-size:14px;line-height:1.55;margin:10px 0 15px;max-width:620px;overflow-wrap:anywhere}
 .welcome-card .welcome-action{min-height:40px;padding:8px 16px;font-size:12px;background:#fff;border-color:#b9ced9;color:#226d8d;max-width:100%;white-space:normal;text-align:center;margin:0}
 .welcome-card .welcome-action:hover{background:#edf4f8;border-color:#226d8d}
