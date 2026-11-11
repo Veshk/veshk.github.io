@@ -68,7 +68,9 @@
 .portal-admin-form > p, .portal-admin-form fieldset > p { color: var(--portal-muted); font-size: 13px; line-height: 1.6; }
 .portal-admin-form fieldset { display: grid; gap: 18px; }
 .portal-admin-form .fi-btn { justify-self: start; }
-.portal-profile-photo { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; }
+.portal-profile-photo { width: 104px; height: 104px; border-radius: 50%; object-fit: cover; object-position: center top; }
+.portal-photo-framing { display: grid; gap: 14px; max-width: 360px; }
+.portal-photo-framing input[type=range] { width: 100%; min-height: 36px; accent-color: var(--portal-blue); }
 .portal-file-input { display: block; font-size: 13px; padding: 10px; border: 1px dashed #cbd6dc; border-radius: 5px; width: 100%; }
 .portal-file-input::file-selector-button { padding: 7px 12px; margin-right: 12px; border: 1px solid #cbd6dc; border-radius: 4px; background: #f4f7f8; color: var(--portal-blue); cursor: pointer; }
 .portal-empty { padding: 26px; color: var(--portal-muted); text-align: center; }

@@ -22,12 +22,13 @@ class StaffProfilesTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $this->actingAs($admin);
         $photo = UploadedFile::fake()->createWithContent('avatar.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+X/WQAAAAASUVORK5CYII='));
-        Livewire::test(StaffProfiles::class)->set('contactText', 'Отвечаю по будням')->set('contactUrl', 'https://example.com/contact')->set('photo', $photo)->call('save')->assertHasNoErrors();
+        Livewire::test(StaffProfiles::class)->set('contactText', 'Отвечаю по будням')->set('contactUrl', 'https://example.com/contact')->set('photo', $photo)->set('photoPosition', 36)->call('save')->assertHasNoErrors();
         $admin->refresh();
         Storage::disk('public')->assertExists($admin->profile_photo);
+        Livewire::test(StaffProfiles::class)->assertSet('photoPosition', 36)->assertSee('object-position: 50% 36%', false);
         $group = StudyGroup::factory()->create(['administrator_id' => $admin->id, 'page_blocks' => [['type' => 'contacts', 'data' => ['title' => 'Контакты', 'visible' => true]]]]);
         $student = Enrollment::factory()->create(['study_group_id' => $group->id])->user;
-        $this->actingAs($student)->get('/learning/'.$group->id)->assertOk()->assertSee('Отвечаю по будням')->assertSee($admin->profile_photo)->assertSee('https://example.com/contact');
+        $this->actingAs($student)->get('/learning/'.$group->id)->assertOk()->assertSee('Отвечаю по будням')->assertSee($admin->profile_photo)->assertSee('https://example.com/contact')->assertSee('object-position:50% 36%', false);
         $other = User::factory()->create(['role' => 'admin', 'contact_text' => 'Новый администратор', 'contact_url' => 'https://example.com/new']);
         $group->update(['administrator_id' => $other->id]);
         $this->get('/learning/'.$group->id)->assertSee('Новый администратор')->assertSee('https://example.com/new')->assertDontSee($admin->profile_photo);
@@ -54,6 +55,8 @@ class StaffProfilesTest extends TestCase
         Livewire::test(StaffProfiles::class)->call('selectPerson', $student->id)->assertNotFound();
         Livewire::test(StaffProfiles::class)->set('contactUrl', 'javascript:alert(1)')->call('save')->assertHasErrors('contactUrl');
         Livewire::test(StaffProfiles::class)->set('photo', UploadedFile::fake()->create('document.txt', 10, 'text/plain'))->call('save')->assertHasErrors('photo');
+        Livewire::test(StaffProfiles::class)->set('photoPosition', 101)->call('save')->assertHasErrors('photoPosition');
+        Livewire::test(StaffProfiles::class)->set('photoPosition', -1)->call('save')->assertHasErrors('photoPosition');
     }
 
     public function test_directory_includes_staff_without_groups_and_only_senior_can_grant_review_permission(): void

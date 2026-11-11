@@ -21,7 +21,7 @@ class User extends Authenticatable implements FilamentUser
 
     protected function casts(): array
     {
-        return ['email_verified_at' => 'datetime', 'password' => 'hashed', 'reviews_unassigned' => 'boolean'];
+        return ['email_verified_at' => 'datetime', 'password' => 'hashed', 'reviews_unassigned' => 'boolean', 'profile_photo_position' => 'integer'];
     }
 
     public function isStaff(): bool

@@ -5,7 +5,12 @@
 <form id="staff-profile-form" wire:submit="save" class="portal-admin-form">
 <h2 class="portal-profile-heading">{{ $person->name }}</h2><p>{{ $person->email }} {{ $person->isSenior() ? 'Старший администратор' : 'Администратор' }}</p>
 <fieldset @disabled(!$canEdit)>
-@if($photo && in_array($photo->getMimeType(), ['image/jpeg','image/png','image/webp']) && !$errors->has('photo'))<img src="{{ $photo->temporaryUrl() }}" alt="Предпросмотр фото" class="portal-profile-photo">@elseif($person->profile_photo && !$removePhoto)<img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($person->profile_photo) }}" alt="Фото администратора" class="portal-profile-photo">@endif
+<div class="portal-photo-framing" x-data="{ position: $wire.entangle('photoPosition') }">
+@if($photo && in_array($photo->getMimeType(), ['image/jpeg','image/png','image/webp']) && !$errors->has('photo'))<img src="{{ $photo->temporaryUrl() }}" alt="Предпросмотр фото" class="portal-profile-photo" style="object-position:50% {{ $photoPosition }}%" :style="'object-position:50% ' + position + '%'">@elseif($person->profile_photo && !$removePhoto)<img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($person->profile_photo) }}" alt="Фото администратора" class="portal-profile-photo" style="object-position:50% {{ $photoPosition }}%" :style="'object-position:50% ' + position + '%'">@endif
+<label class="portal-field">Положение фото по вертикали<input type="range" min="0" max="100" step="1" x-model.number="position" aria-label="Положение фото по вертикали"></label>
+<p>Перемещайте ползунок, чтобы лицо оказалось по центру круга.</p>
+</div>
+@error('photoPosition')<p role="alert">{{ $message }}</p>@enderror
 <label class="portal-field">Фотография администратора<input type="file" wire:model="photo" accept="image/jpeg,image/png,image/webp" class="portal-file-input"></label>
 <p>JPG, PNG или WebP, до 2 МБ.</p>@error('photo')<p role="alert">{{ $message }}</p>@enderror
 <label class="portal-check"><input type="checkbox" wire:model.live="removePhoto"> Убрать текущее фото</label>

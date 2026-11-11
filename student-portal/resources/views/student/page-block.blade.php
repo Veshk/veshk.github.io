@@ -26,7 +26,7 @@
 @endphp
 <div class="contact-panel">
     <div class="contact-person">
-        @if($group->administrator->profile_photo)<img class="staff-photo" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($group->administrator->profile_photo) }}" alt="Фото администратора">@else<span class="avatar staff-photo">{{ mb_substr($group->administrator->name,0,1) }}</span>@endif
+        @if($group->administrator->profile_photo)<img class="staff-photo" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($group->administrator->profile_photo) }}" alt="Фото администратора" style="object-position:50% {{ (int) $group->administrator->profile_photo_position }}%">@else<span class="avatar staff-photo">{{ mb_substr($group->administrator->name,0,1) }}</span>@endif
         <div class="contact-details">
             <div class="eyebrow muted">Администратор группы</div><h3>{{ $group->administrator->name }}</h3>
             <div class="contact-info">@foreach($contactLines as $line)<p class="contact-line{{ $line['linked'] ? '' : ' contact-note' }}">@foreach($line['parts'] as $part)@if($part['href'])<a href="{{ $part['href'] }}">{{ $part['text'] }}</a>@else{{ $part['text'] }}@endif@endforeach</p>@endforeach</div>

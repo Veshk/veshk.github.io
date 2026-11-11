@@ -45,6 +45,8 @@ class StaffProfiles extends Page implements HasTable
 
     public bool $removePhoto = false;
 
+    public int $photoPosition = 0;
+
     public static function canAccess(): bool
     {
         return auth()->user()?->isStaff() ?? false;
@@ -62,7 +64,8 @@ class StaffProfiles extends Page implements HasTable
     public function table(Table $table): Table
     {
         return $table->query(User::query()->whereIn('role', ['admin', 'senior'])->withCount('studyGroups'))->defaultSort('name')->columns([
-            ImageColumn::make('profile_photo')->label('Фото')->disk('public')->circular()->imageSize(36),
+            ImageColumn::make('profile_photo')->label('Фото')->disk('public')->circular()->imageSize(36)
+                ->extraImgAttributes(fn (User $record): array => ['style' => 'object-position: 50% '.(int) $record->profile_photo_position.'%']),
             TextColumn::make('name')->label('Администратор')->searchable(['name', 'email'])->sortable()->description(fn (User $record): string => $record->email)->action(fn (User $record) => $this->selectPerson($record->id)),
             TextColumn::make('role')->label('Роль аккаунта')->badge()->formatStateUsing(fn (string $state): string => $state === 'senior' ? 'Старший администратор' : 'Администратор'),
             TextColumn::make('study_groups_count')->label('Группы')->sortable()->url(fn (User $record): string => StudyGroupResource::getUrl('index', ['filters' => ['administrator_id' => ['value' => $record->id]]])),
@@ -91,6 +94,7 @@ class StaffProfiles extends Page implements HasTable
         $this->contactUrl = $person->contact_url ?? '';
         $this->photo = null;
         $this->removePhoto = false;
+        $this->photoPosition = (int) $person->profile_photo_position;
         $this->resetValidation();
         if ($open) {
             $this->dispatch('open-modal', id: 'staff-profile');
@@ -106,6 +110,7 @@ class StaffProfiles extends Page implements HasTable
             'contactText' => ['string', 'max:2000'],
             'contactUrl' => ['nullable', 'url:http,https', 'max:2000'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048', 'dimensions:max_width=5000,max_height=5000'],
+            'photoPosition' => ['required', 'integer', 'between:0,100'],
         ]);
         $path = $person->profile_photo;
         if ($this->photo) {
@@ -114,7 +119,7 @@ class StaffProfiles extends Page implements HasTable
         } elseif ($this->removePhoto) {
             $path = null;
         }
-        $person->forceFill(['contact_text' => $this->contactText, 'contact_url' => $this->contactUrl ?: null, 'profile_photo' => $path, 'reviews_unassigned' => auth()->user()->isSenior() ? $this->reviewsUnassigned : $person->reviews_unassigned])->save();
+        $person->forceFill(['contact_text' => $this->contactText, 'contact_url' => $this->contactUrl ?: null, 'profile_photo' => $path, 'profile_photo_position' => $path ? $this->photoPosition : 0, 'reviews_unassigned' => auth()->user()->isSenior() ? $this->reviewsUnassigned : $person->reviews_unassigned])->save();
         $this->photo = null;
         $this->removePhoto = false;
         Notification::make()->title('Профиль и настройки сохранены')->success()->send();
