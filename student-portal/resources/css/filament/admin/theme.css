@@ -72,6 +72,34 @@
 .portal-file-input { display: block; font-size: 13px; padding: 10px; border: 1px dashed #cbd6dc; border-radius: 5px; width: 100%; }
 .portal-file-input::file-selector-button { padding: 7px 12px; margin-right: 12px; border: 1px solid #cbd6dc; border-radius: 4px; background: #f4f7f8; color: var(--portal-blue); cursor: pointer; }
 .portal-empty { padding: 26px; color: var(--portal-muted); text-align: center; }
+.portal-applications .fi-ta-table { table-layout: fixed; width: 100%; }
+.portal-applications .fi-ta-header-cell:nth-child(1) { width: 29%; }
+.portal-applications .fi-ta-header-cell:nth-child(2) { width: 29%; }
+.portal-applications .fi-ta-header-cell:nth-child(3) { width: 23%; }
+.portal-applications .fi-ta-header-cell:nth-child(4) { width: 19%; }
+.portal-applications .fi-ta-cell { padding-block: 0; white-space: normal; overflow-wrap: anywhere; }
+.portal-applications .fi-ta-text { padding: 14px 16px; }
+.portal-applications .fi-ta-text-item, .portal-applications .fi-ta-text-description { white-space: normal; overflow-wrap: anywhere; }
+.portal-applications .fi-ta-text-description { font-size: 12px; line-height: 1.5; }
+.portal-applications .fi-badge { white-space: normal; }
+.portal-applications .fi-ta-actions { padding: 12px; }
+.portal-applications .fi-ta-actions .fi-btn { white-space: normal; text-align: center; padding-inline: 12px; }
+.portal-application-details { display: grid; gap: 18px; font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
+.portal-application-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; padding: 16px; background: #f4f7f8; border-radius: 6px; }
+.portal-application-meta dt { font-size: 12px; color: var(--portal-muted); margin-bottom: 4px; }
+@media (max-width: 900px) {
+    .portal-applications .fi-ta-table, .portal-applications .fi-ta-table tbody { display: block; }
+    .portal-applications .fi-ta-table thead { display: none; }
+    .portal-applications .fi-ta-table .fi-ta-row { display: grid; grid-template-columns: 1fr 1fr; padding: 14px; gap: 12px; }
+    .portal-applications .fi-ta-row .fi-ta-cell { display: block; padding: 0; min-width: 0; }
+    .portal-applications .fi-ta-row .fi-ta-cell:first-child, .portal-applications .fi-ta-row .fi-ta-cell:last-child { grid-column: 1 / -1; }
+    .portal-applications .fi-ta-text, .portal-applications .fi-ta-actions { padding: 0; }
+    .portal-applications .fi-ta-actions .fi-btn { width: 100%; }
+}
+@media (max-width: 480px) {
+    .portal-applications .fi-ta-table .fi-ta-row { grid-template-columns: 1fr; }
+    .portal-application-meta { grid-template-columns: 1fr; }
+}
 @media (max-width: 1100px) {
     .portal-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
     .portal-filters .portal-check { grid-column: 1 / -1; min-height: 24px; }
@@ -92,3 +120,5 @@
     .portal-brand img { width: 76px; }
     .portal-brand span { font-size: 11px; }
 }
+.fi-sc-actions.fi-sticky { z-index: 30; }
+.fi-sc-actions.fi-sticky > .fi-ac { border: 1px solid var(--portal-line); padding: 14px 18px; box-shadow: 0 -4px 20px #18252a0a; }

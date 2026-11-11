@@ -12,6 +12,10 @@ use Filament\Schemas\Schema;
 
 class EditGroupPage extends EditRecord
 {
+    public static bool $formActionsAreSticky = true;
+
+    protected ?bool $hasUnsavedDataChangesAlert = true;
+
     protected static string $resource = StudyGroupResource::class;
 
     protected static ?string $title = 'Редактировать страницу ЛК';

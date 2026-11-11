@@ -67,7 +67,10 @@ class CoursePageTest extends TestCase
         $this->actingAs($group->administrator);
         $this->get('/admin/study-groups/'.$group->id.'/page')->assertOk()->assertSee('Редактировать страницу ЛК');
         $blocks = [['type' => 'info', 'data' => ['block_id' => 'own-block', 'title' => 'Свой блок', 'text' => 'Текст', 'visible' => true, 'url' => null, 'button' => null]]];
-        Livewire::test(EditGroupPage::class, ['record' => $group->id])->fillForm(['page_blocks' => $blocks])->call('save')->assertHasNoFormErrors();
+        $editor = Livewire::test(EditGroupPage::class, ['record' => $group->id]);
+        $savedHash = $editor->get('savedDataHash');
+        $editor->fillForm(['page_blocks' => $blocks])->assertSet('savedDataHash', $savedHash)->call('save')->assertHasNoFormErrors();
+        $this->assertNotSame($savedHash, $editor->get('savedDataHash'));
         $this->assertSame($blocks, $group->fresh()->page_blocks);
         $this->assertSame($group->administrator_id, $group->fresh()->administrator_id);
         $this->actingAs(User::factory()->create(['role' => 'senior']))->get('/admin/study-groups/'.$group->id.'/page')->assertOk();

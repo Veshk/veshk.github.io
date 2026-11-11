@@ -11,6 +11,7 @@ use App\Models\MailPreview;
 use App\Models\StudyGroup;
 use App\Models\User;
 use App\Services\Admissions;
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -161,9 +162,54 @@ class AdmissionsTest extends TestCase
     {
         $application = EnrollmentApplication::factory()->create();
         $this->actingAs($application->group->administrator);
-        Livewire::test(ListEnrollmentApplications::class)->callTableAction('approve', $application, ['send_email' => false]);
+        Livewire::test(ListEnrollmentApplications::class)
+            ->callAction([TestAction::make('details')->table($application), 'approve'], data: ['send_email' => false])
+            ->assertHasNoActionErrors();
         $this->assertDatabaseHas('enrollment_applications', ['id' => $application->id, 'status' => 'approved', 'send_email' => false]);
         $this->assertDatabaseCount('mail_previews', 0);
+    }
+
+    public function test_application_card_routes_an_unassigned_request_without_opening_access(): void
+    {
+        $application = EnrollmentApplication::factory()->create(['study_group_id' => null]);
+        $actor = User::factory()->create(['role' => 'admin', 'reviews_unassigned' => true]);
+        $group = StudyGroup::factory()->create();
+        $this->actingAs($actor);
+        Livewire::test(ListEnrollmentApplications::class)
+            ->assertActionHidden([TestAction::make('details')->table($application), 'approve'])
+            ->callAction([TestAction::make('details')->table($application), 'assign'], data: ['study_group_id' => $group->id])
+            ->assertHasNoActionErrors();
+        $this->assertDatabaseHas('enrollment_applications', ['id' => $application->id, 'study_group_id' => $group->id, 'status' => 'pending']);
+        $this->assertDatabaseCount('enrollments', 0);
+        Livewire::test(ListEnrollmentApplications::class)
+            ->assertActionHidden([TestAction::make('details')->table($application), 'assign'])
+            ->assertActionHidden([TestAction::make('details')->table($application), 'approve'])
+            ->assertActionHidden([TestAction::make('details')->table($application), 'reject']);
+    }
+
+    public function test_application_card_rejection_requires_a_reason_and_keeps_access_closed(): void
+    {
+        $application = EnrollmentApplication::factory()->create();
+        $this->actingAs($application->group->administrator);
+        $action = [TestAction::make('details')->table($application), 'reject'];
+        Livewire::test(ListEnrollmentApplications::class)->callAction($action, data: ['note' => ''])->assertHasActionErrors(['note' => 'required']);
+        Livewire::test(ListEnrollmentApplications::class)->callAction($action, data: ['note' => 'Неверная программа'])->assertHasNoActionErrors();
+        $this->assertDatabaseHas('enrollment_applications', ['id' => $application->id, 'status' => 'rejected', 'decision_note' => 'Неверная программа']);
+        $this->assertDatabaseCount('enrollments', 0);
+        Livewire::test(ListEnrollmentApplications::class)
+            ->assertActionHidden([TestAction::make('details')->table($application), 'approve'])
+            ->assertActionHidden([TestAction::make('details')->table($application), 'assign'])
+            ->assertActionHidden([TestAction::make('details')->table($application), 'reject']);
+    }
+
+    public function test_compact_application_list_searches_email_and_group_code_and_filters_status(): void
+    {
+        $first = EnrollmentApplication::factory()->create();
+        $second = EnrollmentApplication::factory()->create(['status' => 'rejected']);
+        $this->actingAs(User::factory()->create(['role' => 'senior']));
+        Livewire::test(ListEnrollmentApplications::class)->searchTable($first->user->email)->assertCanSeeTableRecords([$first])->assertCanNotSeeTableRecords([$second]);
+        Livewire::test(ListEnrollmentApplications::class)->searchTable($first->group->code)->assertCanSeeTableRecords([$first])->assertCanNotSeeTableRecords([$second]);
+        Livewire::test(ListEnrollmentApplications::class)->filterTable('status', 'rejected')->assertCanSeeTableRecords([$second])->assertCanNotSeeTableRecords([$first]);
     }
 
     public function test_senior_can_choose_multiple_responsible_staff(): void

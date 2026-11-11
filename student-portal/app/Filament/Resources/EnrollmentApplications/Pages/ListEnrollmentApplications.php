@@ -11,7 +11,7 @@ class ListEnrollmentApplications extends ListRecords
 
     protected static ?string $title = 'Заявки на обучение';
 
-    protected ?string $subheading = 'Проверьте принадлежность слушателя группе перед открытием доступа. Письма сохраняются только в тестовый перехватчик.';
+    protected ?string $subheading = 'Проверьте группу и откройте доступ. Все действия — в карточке заявки.';
 
     protected function getHeaderActions(): array
     {

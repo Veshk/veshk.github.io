@@ -8,6 +8,10 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditProgram extends EditRecord
 {
+    public static bool $formActionsAreSticky = true;
+
+    protected ?bool $hasUnsavedDataChangesAlert = true;
+
     protected static string $resource = ProgramResource::class;
 
     protected function mutateFormDataBeforeFill(array $data): array
