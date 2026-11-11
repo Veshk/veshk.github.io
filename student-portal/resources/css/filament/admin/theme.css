@@ -126,6 +126,7 @@
 /* Workspace layout shared with the published admin prototype. */
 .fi-main { max-width: 1680px; padding-inline: 28px; }
 .fi-page { padding-block: 28px 40px; }
+.fi-page-header-main-ctn { padding-block: 0; gap: 16px; }
 .fi-page-content { gap: 20px; min-width: 0; }
 .fi-header { gap: 12px; }
 .fi-header-heading { font-size: 34px; }
