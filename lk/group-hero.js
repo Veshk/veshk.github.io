@@ -26,7 +26,7 @@ window.GroupHero = (()=>{
       const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Не удалось прочитать файл.'));reader.readAsDataURL(chosen);});
       const img=new Image();img.src=data;await img.decode();
       if(img.width<1200||img.height<450||img.width>8000||img.height>8000)throw Error('Размер должен быть от 1200 × 450 до 8000 × 8000 px. Рекомендуем 2400 × 900 px.');
-      cover=data;mark();draw();status.textContent=`${img.width} × ${img.height} px · ${Math.round(chosen.size/1024)} КБ. Сохраните страницу.`;
+      cover=data;mark();draw();status.textContent=`${img.width} × ${img.height} px ${Math.round(chosen.size/1024)} КБ. Сохраните страницу.`;
     }catch(e){status.textContent=e.message;file.value='';}finally{busy=false;}};
     text.oninput=()=>{mark();draw();};select.onchange=()=>{position=select.value;mark();draw();};
     section.querySelector('[data-hero-reset]').onclick=()=>{cover='';file.value='';mark();draw();status.textContent='Стандартная обложка. Сохраните страницу.';};
