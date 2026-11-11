@@ -566,6 +566,8 @@
   const types=['Программа проф. переподготовки','Программа повышения квалификации','Семинар-практикум','Специализированный курс'];
   const typeLabel=value=>({'Программа проф. переподготовки':'Профпереподготовка','Программа повышения квалификации':'Повышение квалификации'})[value]||value||'Не указан';
   const safeCover=value=>{try{const u=new URL(value);return u.protocol==='https:'&&u.hostname==='veshk.ru'&&!u.username&&!u.password&&u.pathname.startsWith('/media/images/')?u.href:'';}catch{return '';}};
+  const sectionCovers={HR:'https://veshk.ru/media/images/sorp.original.jpg'};
+  const coverFor=program=>safeCover(program?.cover_url)||sectionCovers[program?.section]||'';
   function apply(state){
     if(state.programCatalogVersion===data.version)return {added:0,updated:0};
     const programs=state.programs;
@@ -582,7 +584,7 @@
     state.programCatalogVersion=data.version;
     return counts;
   }
-  const api={...data,apply,types,typeLabel,safeCover};
+  const api={...data,apply,types,typeLabel,safeCover,coverFor};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   root.SchoolPrograms=api;
 })(typeof window!=='undefined'?window:globalThis);

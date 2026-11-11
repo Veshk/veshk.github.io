@@ -88,7 +88,7 @@ window.CoursePages = (() => {
     return `<div class="card information-block">${image(d)}<p class="block-text">${esc(d.text||(b.type==='join'?'Информация о подключении появится перед занятием.':'Администратор добавит информацию.'))}</p>${b.type==='join'&&d.platform?`<p class="muted">Платформа: ${esc(d.platform)}</p>`:''}${link(d.url,d.button||({join:'Подключиться',video:'Смотреть видео',introductions:'Перейти в Holst'}[b.type]||'Подробнее'))}</div>`;
   };
   const render=(ctx,g)=>{
-    GroupHero.render(document.querySelector('.course-hero'),{...g,program_cover_url:ctx.programs[g.program_id]?.cover_url,program_type:ctx.programs[g.program_id]?.program_type});
+    GroupHero.render(document.querySelector('.course-hero'),{...g,program_cover_url:SchoolPrograms.coverFor(ctx.programs[g.program_id]),program_type:ctx.programs[g.program_id]?.program_type});
     const blocks=getBlocks(g).filter(b=>labels[b.type]&&b.data.visible!==false);
     const nav=document.querySelector('.course-nav-inner');
     nav.innerHTML=blocks.map((b,i)=>`<a href="#block-${i}">${esc(b.data.title||labels[b.type])}</a>`).join('');
@@ -115,9 +115,9 @@ window.CoursePages = (() => {
     const form=root.querySelector('form'),list=root.querySelector('#blocks-list');
     form.noValidate=true;
     const mark=()=>{dirty=true;root.querySelector('#save-state').textContent='Есть несохранённые изменения';};
-    const heroEditor=!isProgram?GroupHero.editor({root:form.querySelector('fieldset'),record,allowed,mark,escape:esc,programCover:ctx.programs[record.program_id]?.cover_url,programType:ctx.programs[record.program_id]?.program_type}):null;
+    const heroEditor=!isProgram?GroupHero.editor({root:form.querySelector('fieldset'),record,allowed,mark,escape:esc,programCover:SchoolPrograms.coverFor(ctx.programs[record.program_id]),programType:ctx.programs[record.program_id]?.program_type}):null;
     const advisorEditor=!isProgram?window.CourseOverview?.editor({root:form.querySelector('fieldset'),record,ctx,mark}):null;
-    if(isProgram){root.querySelector('.editor-toolbar span').textContent='Шаблон содержания для новых групп этой программы.';if(SchoolPrograms.safeCover(record.cover_url)){const cover=document.createElement('div');cover.className='editor-block';cover.innerHTML=`<h2>Обложка программы</h2><img class="program-cover" src="${esc(SchoolPrograms.safeCover(record.cover_url))}" alt="${esc(record.title)}"><p class="form-note">Используется в ЛК группы, пока для неё не загружена собственная обложка.</p>`;form.querySelector('fieldset').prepend(cover);}}
+    if(isProgram){root.querySelector('.editor-toolbar span').textContent='Шаблон содержания для новых групп этой программы.';if(SchoolPrograms.coverFor(record)){const cover=document.createElement('div');cover.className='editor-block';cover.innerHTML=`<h2>Обложка программы</h2><img class="program-cover" src="${esc(SchoolPrograms.coverFor(record))}" alt="${esc(record.title)}"><p class="form-note">Используется в ЛК группы, пока для неё не загружена собственная обложка.</p>`;form.querySelector('fieldset').prepend(cover);}}
     const field=(i,key,label,value,kind='text',attrs='')=>`<label class="field">${label}${kind==='textarea'?`<textarea data-key="${key}" rows="3" maxlength="5000" ${attrs}>${esc(value)}</textarea>`:`<input data-key="${key}" type="${kind}" value="${esc(value)}" ${attrs}>`}</label>`;
     const rowFields={
       chats:[['label','Название чата'],['url','Ссылка','url']],

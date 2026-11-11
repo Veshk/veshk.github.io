@@ -31,3 +31,16 @@ test('approved selection excludes five unresolved records and supplies four site
   assert.equal(catalog.safeCover('javascript:alert(1)'),'');
   assert.equal(catalog.safeCover('https://user@veshk.ru/media/images/x.jpg'),'');
 });
+
+test('HR uses its shared cover without changing catalog data or overriding individual program covers',()=>{
+  const hrCover='https://veshk.ru/media/images/sorp.original.jpg';
+  const spo=catalog.records.find(p=>p.tag==='ОНЛ_СПО');
+  assert.equal(catalog.coverFor(spo),hrCover);
+  assert.equal(spo.cover_url,null);
+  assert.ok(catalog.records.filter(p=>p.section==='HR').every(p=>catalog.coverFor(p)===hrCover));
+  const ownCover='https://veshk.ru/media/images/custom.jpg';
+  assert.equal(catalog.coverFor({section:'HR',cover_url:ownCover}),ownCover);
+  assert.equal(catalog.coverFor({section:'HR',cover_url:'https://veshk.ru.attacker.invalid/media/images/x.jpg'}),hrCover);
+  assert.equal(catalog.coverFor({section:'Финансы'}),'');
+  assert.equal(catalog.coverFor(), '');
+});
