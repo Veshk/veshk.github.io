@@ -6,6 +6,16 @@
 @php($blocks = collect(\App\Support\CoursePage::display($group))->filter(fn ($b) => isset(\App\Support\CoursePage::BLOCKS[$b['type'] ?? '']) && ($b['data']['visible'] ?? true))->values())
 @include('student.learning-overview')
 <nav class="course-nav" aria-label="Разделы курса"><div class="course-nav-inner">@foreach($blocks as $i => $block)<a href="#block-{{ $i }}">{{ $block['data']['title'] ?? \App\Support\CoursePage::BLOCKS[$block['type']] }}</a>@endforeach</div></nav>
-<main class="shell">@foreach($blocks as $i => $block)<section class="section{{ in_array($block['type'], ['introductions', 'video', 'photos'], true) ? ' welcome-section' : '' }}" id="block-{{ $i }}">@if(!in_array($block['type'], ['introductions', 'video', 'photos'], true))<div class="section-title"><h2>{{ $block['data']['title'] ?? \App\Support\CoursePage::BLOCKS[$block['type']] }}</h2></div>@endif@include('student.page-block', ['type' => $block['type'], 'data' => $block['data'], 'group' => $block['source_group_model'] ?? $group, 'isAlias' => isset($block['source_group_model'])])</section>@endforeach
+<main class="shell course-content">
+@php($secondInPair = false)
+@foreach($blocks as $i => $block)
+    @php($compact = in_array($block['type'], ['introductions', 'video', 'photos'], true))
+    @php($paired = $secondInPair || ($compact && in_array($blocks->get($i + 1)['type'] ?? '', ['introductions', 'video', 'photos'], true)))
+    @php($secondInPair = $paired && ! $secondInPair)
+    <section class="section{{ $compact ? ' welcome-section' : '' }}{{ $paired ? ' welcome-paired' : '' }}" id="block-{{ $i }}">
+        @if(! $compact)<div class="section-title"><h2>{{ $block['data']['title'] ?? \App\Support\CoursePage::BLOCKS[$block['type']] }}</h2></div>@endif
+        @include('student.page-block', ['type' => $block['type'], 'data' => $block['data'], 'group' => $block['source_group_model'] ?? $group, 'isAlias' => isset($block['source_group_model'])])
+    </section>
+@endforeach
 </main>
-<script src="{{ asset('course-navigation.js') }}?v=20261110-3" defer></script>@endsection
+<script src="{{ asset('course-navigation.js') }}?v=20261111-4" defer></script>@endsection
