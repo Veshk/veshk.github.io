@@ -59,6 +59,11 @@ class StudyGroup extends Model
         return $this->belongsTo(User::class, 'administrator_id');
     }
 
+    public function academicAdvisor(): BelongsTo
+    {
+        return $this->belongsTo(AcademicAdvisor::class);
+    }
+
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class);

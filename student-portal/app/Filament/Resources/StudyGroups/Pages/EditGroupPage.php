@@ -32,7 +32,7 @@ class EditGroupPage extends EditRecord
     {
         CoursePage::validateAliases($data['page_blocks'] ?? [], $this->getRecord(), auth()->user());
 
-        return ['page_blocks' => $data['page_blocks'] ?? [], 'hero_image' => $data['hero_image'] ?? null, 'hero_position' => $data['hero_position'] ?? 'center', 'description' => $data['description'] ?? null];
+        return ['academic_advisor_id' => $data['academic_advisor_id'] ?? null, 'page_blocks' => $data['page_blocks'] ?? [], 'hero_image' => $data['hero_image'] ?? null, 'hero_position' => $data['hero_position'] ?? 'center', 'description' => $data['description'] ?? null];
     }
 
     protected function getHeaderActions(): array

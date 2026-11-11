@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\AcademicAdvisor;
 use App\Models\Enrollment;
 use App\Models\EnrollmentApplication;
 use App\Models\Program;
@@ -20,6 +21,10 @@ class DatabaseSeeder extends Seeder
         }
         $sample = json_decode(file_get_contents(__DIR__.'/data/portal-directory.json'), true, flags: JSON_THROW_ON_ERROR);
         $courseContent = json_decode(file_get_contents(__DIR__.'/data/course-content.json'), true, flags: JSON_THROW_ON_ERROR);
+        $advisors = [];
+        foreach ($courseContent['academicAdvisors'] ?? [] as $key => $profile) {
+            $advisors[$key] = AcademicAdvisor::firstOrCreate(['name' => $profile['name']], ['email' => $profile['email'] ?: null, 'photo_url' => $profile['photo'] ?: null]);
+        }
         $users = [];
         foreach ($sample['staff'] as $key => $person) {
             $profile = $courseContent['staffProfiles'][$key] ?? [];
@@ -28,7 +33,7 @@ class DatabaseSeeder extends Seeder
         }
         $programs = [];
         foreach ($sample['programs'] as $key => $program) {
-            $programs[$key] = Program::firstOrCreate(['tag' => $program['tag']], ['title' => $program['title'], 'section' => $program['section'] ?: null, 'template_key' => 'short']);
+            $programs[$key] = Program::firstOrCreate(['tag' => $program['tag']], ['title' => $program['title'], 'section' => $program['section'] ?: null, 'template_key' => $program['template_key'] ?? 'short', 'cover_url' => $program['cover_url'] ?? null]);
         }
         $this->call(SchoolProgramSeeder::class);
         $groups = [];
@@ -51,14 +56,16 @@ class DatabaseSeeder extends Seeder
                 'title' => $group['name'], 'number' => $group['number'], 'program_id' => $programs[$group['program_id']]->id,
                 'administrator_id' => $users[$group['id']]->id, 'format' => $group['format'], 'group_type' => $group['group_type'],
                 'status' => $group['status'], 'starts_at' => $group['starts_at'], 'graduates_at' => $group['graduates_at'],
-                'access_days' => 30, 'registration_open' => true, 'page_template' => 'short', 'page_blocks' => $content['page_blocks'] ?? $blocks,
+                'access_days' => 30, 'registration_open' => $group['registration_open'] ?? true, 'page_template' => 'short', 'page_blocks' => $content['page_blocks'] ?? $blocks,
+                'extended_until' => $group['extended_until'] ?? null,
+                'academic_advisor_id' => isset($content['academic_advisor_id']) ? $advisors[$content['academic_advisor_id']]->id : null,
                 'chat_url' => $content['chat_url'] ?? null,
                 'description' => $content['description'] ?? 'Расписание, записи и материалы вашей группы собраны здесь. По вопросам обучения обращайтесь к администратору.',
             ]));
         }
         $names = ['Анна Петрова', 'Иван Соловьёв', 'Софья Новикова', 'Михаил Орлов', 'Анастасия Белова', 'Дмитрий Смирнов', 'Екатерина Соколова', 'Александр Волков', 'Марина Кузьмина', 'Андрей Лебедев', 'Ольга Фролова', 'Павел Крылов'];
         foreach (array_values($groups) as $i => $group) {
-            $student = User::firstOrCreate(['email' => $i === 0 ? 'student@vesh.test' : 'student-'.($i + 1).'@vesh.test'], ['name' => $names[$i], 'password' => Hash::make('VeshDemo2026!')]);
+            $student = User::firstOrCreate(['email' => $i === 0 ? 'student@vesh.test' : 'student-'.($i + 1).'@vesh.test'], ['name' => $names[$i] ?? 'Тестовый слушатель '.($i + 1), 'password' => Hash::make('VeshDemo2026!')]);
             Enrollment::firstOrCreate(['user_id' => $student->id, 'study_group_id' => $group->id]);
         }
         foreach ([['waiting', 'Илья Морозов', $groups['mba']->id], ['unknown', 'Наталья Соколова', null], ['other', 'Олег Крылов', $groups['excel']->id]] as [$key, $name, $groupId]) {

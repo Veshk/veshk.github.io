@@ -106,6 +106,13 @@
       "title": "Директор по качеству-2",
       "section": "Производство",
       "template_key": "short"
+    },
+    "rec0f8BgTHZXCcATJ": {
+      "tag": "КД",
+      "title": "Mini MBA Коммерческий директор",
+      "section": "Продажи",
+      "template_key": "mba",
+      "cover_url": "https://veshk.ru/media/images/oblozhka_KD_YpDaH8r.original.png"
     }
   },
   "groups": {
@@ -300,6 +307,23 @@
       "access_days": 30,
       "registration_open": true,
       "source_record_id": "recS2rmHHPsThSzgy"
+    },
+    "kd26": {
+      "name": "Mini MBA Коммерческий директор",
+      "code": "КД-26",
+      "number": "26",
+      "program_id": "rec0f8BgTHZXCcATJ",
+      "owner": "Дарья Маврина",
+      "id": "admin",
+      "format": "Очно",
+      "group_type": "Сборное ОЧНО",
+      "status": "На закрытии",
+      "starts_at": "2026-04-03",
+      "graduates_at": "2026-11-08",
+      "extended_until": "2026-12-09",
+      "access_days": 30,
+      "registration_open": false,
+      "source_record_id": "rect6dzEQ4gdl5lzP"
     }
   }
 }

@@ -174,6 +174,48 @@ class CoursePage
         return $lines;
     }
 
+    /** @return list<array<string, mixed>> */
+    public static function upcoming(array $blocks, ?Carbon $now = null): array
+    {
+        $clock = ($now ?? now())->copy()->setTimezone('Asia/Yekaterinburg');
+        $today = $clock->toDateString();
+        $minute = $clock->hour * 60 + $clock->minute;
+        $rows = [];
+        foreach ($blocks as $index => $block) {
+            if (($block['type'] ?? '') !== 'schedule' || ! ($block['data']['visible'] ?? true)) {
+                continue;
+            }
+            foreach ($block['data']['lessons'] ?? [] as $lesson) {
+                $date = $lesson['date'] ?? '';
+                if (! preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $date, $parts) || ! checkdate((int) $parts[2], (int) $parts[3], (int) $parts[1])) {
+                    continue;
+                }
+                $rows[] = $lesson + ['show_moscow' => $block['data']['show_moscow'] ?? false, 'section' => $index];
+            }
+        }
+        usort($rows, fn (array $a, array $b): int => strcmp($a['date'], $b['date']) ?: ((self::timeMinutes($a['time'] ?? '')[0] ?? 1440) <=> (self::timeMinutes($b['time'] ?? '')[0] ?? 1440)));
+        $nextDate = null;
+        foreach ($rows as $lesson) {
+            $time = self::timeMinutes($lesson['time'] ?? '');
+            if ($lesson['date'] > $today || ($lesson['date'] === $today && (! $time || $time[1] > $minute))) {
+                $nextDate = $lesson['date'];
+                break;
+            }
+        }
+
+        return array_values(array_filter($rows, fn (array $lesson): bool => $lesson['date'] === $nextDate));
+    }
+
+    /** @return array{int, int}|null */
+    protected static function timeMinutes(string $value): ?array
+    {
+        if (! preg_match('/^(\d{1,2})[:.](\d{2})\s*[-–—]\s*(\d{1,2})[:.](\d{2})$/u', $value, $m) || $m[1] > 23 || $m[3] > 23 || $m[2] > 59 || $m[4] > 59) {
+            return null;
+        }
+
+        return [(int) $m[1] * 60 + (int) $m[2], (int) $m[3] * 60 + (int) $m[4]];
+    }
+
     public static function moscow(string $time): string
     {
         return preg_replace_callback('/(\d{1,2})[:.](\d{2})/', fn (array $m): string => sprintf('%02d:%s', ((int) $m[1] + 22) % 24, $m[2]), $time);

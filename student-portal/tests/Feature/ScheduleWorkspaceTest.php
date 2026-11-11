@@ -80,7 +80,7 @@ class ScheduleWorkspaceTest extends TestCase
     {
         $this->seed();
         $count = StudyGroup::all()->sum(fn ($g) => collect(CoursePage::forGroup($g))->where('type', 'schedule')->sum(fn ($b) => count($b['data']['lessons'] ?? [])));
-        $this->assertSame(177, $count);
+        $this->assertSame(209, $count);
         $monetka = StudyGroup::where('code', 'МОНЕТКА/49586266')->firstOrFail();
         $this->assertEmpty(collect(CoursePage::forGroup($monetka))->firstWhere('type', 'schedule')['data']['lessons']);
         $mba = StudyGroup::where('code', 'МБАстрат-7.1')->firstOrFail();
