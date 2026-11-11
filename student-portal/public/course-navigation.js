@@ -13,7 +13,10 @@ window.CourseNavigation = (() => {
     menu.className = 'course-mobile-nav';
     menu.innerHTML = '<summary><span class="course-menu-caption">Разделы курса</span><span class="course-menu-current"></span></summary><div class="course-mobile-links"></div>';
     const list = menu.querySelector('.course-mobile-links');
-    desktop.querySelectorAll('a').forEach(link => list.append(link.cloneNode(true)));
+    desktop.querySelectorAll('a').forEach(link => {
+      if (link.textContent.trim() === 'О Высшей экономической школе') link.textContent = 'О ВЭШ';
+      list.append(link.cloneNode(true));
+    });
     nav.append(menu);
     nav.classList.add('has-mobile-menu');
     const summary = menu.querySelector('summary'), current = menu.querySelector('.course-menu-current');

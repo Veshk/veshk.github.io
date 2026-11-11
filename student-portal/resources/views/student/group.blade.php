@@ -18,4 +18,4 @@
     </section>
 @endforeach
 </main>
-<script src="{{ asset('course-navigation.js') }}?v=20261111-4" defer></script>@endsection
+<script src="{{ asset('course-navigation.js') }}?v=20261111-5" defer></script>@endsection
