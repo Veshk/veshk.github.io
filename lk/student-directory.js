@@ -3,7 +3,7 @@
 (function (root) {
   const sampleNames = ['Анна Петрова','Иван Соловьёв','Софья Новикова','Михаил Орлов','Анастасия Белова','Дмитрий Смирнов','Екатерина Соколова','Александр Волков','Марина Кузьмина','Андрей Лебедев','Ольга Фролова','Павел Крылов'];
   const create = ({groups, sampleGroups, requests, closes, today = () => new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Yekaterinburg'}).format(new Date())}) => {
-    const fixtures = Object.keys(sampleGroups).map((group,i) => ({id:'student-'+i,name:sampleNames[i],email:`student-${i+1}@vesh.test`,groups:[group],visits:i%4===0?[]:[`2026-11-0${(i%5)+1}T0${(i%3)+6}:15:00Z`,'2026-10-28T09:30:00Z','2026-10-20T05:00:00Z']}));
+    const fixtures = Object.keys(sampleGroups).map((group,i) => ({id:'student-'+i,name:sampleNames[i],email:`student-${i+1}@vesh.test`,groups:i===0&&sampleGroups.kd26&&sampleGroups.mba?['kd26','mba']:[group],visits:i%4===0?[]:[`2026-11-0${(i%5)+1}T0${(i%3)+6}:15:00Z`,'2026-10-28T09:30:00Z','2026-10-20T05:00:00Z']}));
     const statusFor = (person, groupId = '') => {
       const enrolled = person.groups.filter(id => groups[id] && (!groupId || id === groupId));
       return enrolled.length ? (enrolled.some(id => closes(groups[id]) >= today()) ? 'active' : 'closed') : 'pending';

@@ -222,3 +222,5 @@
 .welcome-card .welcome-photo-icon{width:58px;height:48px}
 }
 @media(max-width:480px){.lesson-editor-fields{grid-template-columns:minmax(0,1fr)}.lesson-editor textarea{height:84px}}
+
+.course-tile{display:flex;flex-direction:column}.course-tile .tile-cover{flex:1;min-height:220px}.course-tile .tile-bottom{align-items:flex-start;flex-wrap:wrap}.course-tile .tile-bottom .btn{flex-shrink:0}.learning-dates{margin-top:10px;color:var(--muted)}.learning-access{margin-top:3px;font-size:12px;color:var(--muted)}

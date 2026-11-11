@@ -76,6 +76,20 @@
   const canReview = row => row.group ? senior || groups[row.group]?.id===role : state.reviewers.includes(role);
   const labels={pending:'На проверке',approved:'Доступ открыт',rejected:'Отклонена'};
   const badges={pending:'wait',approved:'',rejected:'rejected'};
+  if(location.pathname.endsWith('courses.html')){
+    const student=StudentDirectory.create({groups,sampleGroups:directory.groups,requests:state.requests,closes}).rows().find(person=>person.id==='student-0');
+    const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Yekaterinburg'}).format(new Date());
+    const cards=document.querySelector('.cards');
+    cards.innerHTML=(student?.groups||[]).map(id=>{
+      const g=groups[id],available=closes(g)>=today,finished=g.graduates_at<today;
+      const status=!available?'Доступ завершён':finished?'Обучение завершено':g.starts_at>today?'Доступ открыт':'Идёт обучение';
+      return `<article class="card course-tile" data-learning-group="${escape(id)}"><div class="tile-cover course-hero"><div class="eyebrow">${escape(g.code)} — ${escape(g.format)}</div><h2>${escape(g.name)}</h2></div><div class="tile-bottom"><div><span class="badge ${!available||finished?'closed':''}">${status}</span><p class="learning-dates">${dateLabel(g.starts_at)} — ${dateLabel(g.graduates_at)}</p>${available?`<p class="learning-access">Материалы доступны до ${dateLabel(closes(g))}</p>`:''}</div>${available?`<a class="btn" href="${groupLink(id)}">Перейти ↗</a>`:''}</div></article>`;
+    }).join('');
+    cards.querySelectorAll('[data-learning-group]').forEach(card=>{
+      const g=groups[card.dataset.learningGroup],program=programs[g.program_id];
+      GroupHero.render(card.querySelector('.tile-cover'),{...g,program_cover_url:SchoolPrograms.coverFor(program),program_type:program?.program_type});
+    });
+  }
   document.querySelector('[data-reset]')?.addEventListener('click',()=>{state=initial();save();notice('Демонстрация сброшена. Все три заявки снова ожидают проверки.');});
   document.querySelectorAll('[data-demo-form]').forEach(form=>{
     form.querySelectorAll('textarea').forEach(el=>{el.value='';el.readOnly=false;});
