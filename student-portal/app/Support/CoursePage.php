@@ -15,6 +15,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Support\HtmlString;
@@ -25,7 +26,7 @@ class CoursePage
 {
     public const TEMPLATES = ['mba' => 'MBA / длительная программа', 'short' => 'Короткая программа', 'corporate' => 'Корпоративная программа'];
 
-    public const BLOCKS = ['contacts' => 'Контакты и чаты', 'schedule' => 'Расписание', 'join' => 'Подключиться к занятию', 'homework' => 'Домашние задания', 'recordings' => 'Записи занятий', 'materials' => 'Материалы для обучения', 'faq' => 'Вопросы об обучении', 'info' => 'Информационный блок', 'video' => 'Видео о школе', 'introductions' => 'Практика «Знакомство»', 'alias' => 'Общий блок из другого ЛК'];
+    public const BLOCKS = ['contacts' => 'Контакты и чаты', 'schedule' => 'Расписание', 'join' => 'Подключиться к занятию', 'homework' => 'Домашние задания', 'recordings' => 'Записи занятий', 'materials' => 'Материалы для обучения', 'faq' => 'Вопросы об обучении', 'info' => 'Информационный блок', 'video' => 'Видео о школе', 'photos' => 'Фотографии с выпускного', 'introductions' => 'Практика «Знакомство»', 'alias' => 'Общий блок из другого ЛК'];
 
     public static function defaults(string $template = 'mba'): array
     {
@@ -71,6 +72,9 @@ class CoursePage
     {
         foreach ($blocks as $i => &$block) {
             $block['data']['block_id'] ??= 'legacy-'.$i;
+            if (($block['type'] ?? '') === 'info' && $block['data']['block_id'] === 'kd26-info') {
+                $block['type'] = 'photos';
+            }
         }
 
         return $blocks;
@@ -250,8 +254,25 @@ class CoursePage
                     }),
                 ],
                 'schedule' => [Toggle::make('show_moscow')->label('Показывать время Москвы рядом с Екатеринбургом'), Toggle::make('collapse_past')->label('Сворачивать полностью прошедшие месяцы')->default(true), self::url('source_url', 'Ссылка на исходное расписание')->helperText('Для загрузки занятий используйте «Обновить расписание из таблицы» над редактором группы. Сначала сохраните изменения страницы.'), Repeater::make('lessons')->label('Занятия')->schema([
-                    TextInput::make('source_id')->label('ID занятия для обновления из таблицы')->maxLength(100), TextInput::make('hours')->label('Академические часы')->maxLength(10), DatePicker::make('date')->label('Дата')->required(), TextInput::make('time')->label('Время ЕКБ')->placeholder('17:00–21:00')->required()->regex('/^([01]?\d|2[0-3])[:.][0-5]\d\s*[-–—]\s*([01]?\d|2[0-3])[:.][0-5]\d$/u'), TextInput::make('title')->label('Занятие')->required()->maxLength(300), TextInput::make('teacher')->label('Преподаватель')->maxLength(180), TextInput::make('module')->label('Модуль')->maxLength(180), TextInput::make('format')->label('Формат занятия')->helperText('Можно указать онлайн для очной группы.')->maxLength(60), self::url('url', 'Ссылка для подключения'),
-                ])->columns(2)->defaultItems(0)->addActionLabel('Добавить занятие')->collapsible()],
+                    DatePicker::make('date')->label('Дата')->required()->live(onBlur: true),
+                    TextInput::make('time')->label('Время ЕКБ')->placeholder('17:00–21:00')->required()->regex('/^([01]?\d|2[0-3])[:.][0-5]\d\s*[-–—]\s*([01]?\d|2[0-3])[:.][0-5]\d$/u')->live(onBlur: true),
+                    Textarea::make('title')->label('Занятие')->required()->maxLength(300)->rows(2)->columnSpanFull()->live(onBlur: true),
+                    TextInput::make('teacher')->label('Преподаватель')->maxLength(180),
+                    TextInput::make('format')->label('Формат занятия')->maxLength(60),
+                    self::url('url', 'Ссылка для подключения')->columnSpanFull(),
+                    Section::make('Дополнительно')->schema([
+                        TextInput::make('module')->label('Модуль')->maxLength(180),
+                        TextInput::make('hours')->label('Академические часы')->maxLength(10),
+                        TextInput::make('source_id')->label('ID для обновления из таблицы')->maxLength(100),
+                    ])->columns(2)->columnSpanFull()->compact()->collapsed(),
+                ])->columns(2)->defaultItems(0)->addActionLabel('Добавить занятие')->itemLabel(function (array $state): string {
+                    $date = $state['date'] ?? '';
+                    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                        $date = implode('.', array_reverse(explode('-', $date)));
+                    }
+
+                    return implode(' · ', array_filter([$date, $state['time'] ?? '', $state['title'] ?? ''])) ?: 'Новое занятие';
+                })->collapsed()],
                 'homework' => [Text::make('Статус общий для группы, а не персональная отметка выполнения.'), Repeater::make('tasks')->label('Задания')->schema([
                     TextInput::make('module')->label('Модуль')->maxLength(300), DatePicker::make('deadline')->label('Срок'), Select::make('status')->label('Статус задания')->options(['upcoming' => 'Предстоит', 'past' => 'Прошедшее'])->default('upcoming')->required(), Textarea::make('title')->label('Задание')->required()->maxLength(5000), self::url('url', 'Ссылка на материалы'), TextInput::make('button')->label('Текст ссылки')->maxLength(100),
                 ])->defaultItems(0)->addActionLabel('Добавить задание')->collapsible()],
@@ -264,7 +285,7 @@ class CoursePage
                 'materials' => [Textarea::make('text')->label('Описание')->maxLength(5000), self::url('url', 'Ссылка на папку группы (необязательно)'), Repeater::make('resources')->label('Материалы')->schema([
                     TextInput::make('title')->label('Название материала')->required()->maxLength(300), Textarea::make('text')->label('Описание')->maxLength(5000), self::url('url', 'Ссылка на материал')->required(), TextInput::make('button')->label('Текст кнопки')->maxLength(100),
                 ])->defaultItems(0)->addActionLabel('Добавить материал')->collapsible()],
-                'video', 'introductions' => [Textarea::make('text')->label('Текст')->maxLength(5000), self::url('url', 'Ссылка'), TextInput::make('button')->label('Текст кнопки')->maxLength(100), self::url('image_url', 'Ссылка на изображение (необязательно)'), TextInput::make('image_alt')->label('Описание изображения')->maxLength(300)],
+                'video', 'introductions', 'photos' => [Textarea::make('text')->label('Текст')->maxLength(5000), self::url('url', 'Ссылка'), TextInput::make('button')->label('Текст кнопки')->maxLength(100), self::url('image_url', 'Ссылка на изображение (необязательно)'), TextInput::make('image_alt')->label('Описание изображения')->maxLength(300)],
                 'join' => [TextInput::make('platform')->label('Платформа')->maxLength(100), Textarea::make('text')->label('Текст')->maxLength(5000), self::url('url', 'Ссылка для подключения'), TextInput::make('button')->label('Текст кнопки')->maxLength(100)],
                 default => [Textarea::make('text')->label('Текст')->maxLength(5000), self::url('url', 'Ссылка'), TextInput::make('button')->label('Текст кнопки')->maxLength(100)],
             });

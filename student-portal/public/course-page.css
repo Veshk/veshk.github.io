@@ -38,16 +38,15 @@
 /* Compact invitations: editable content, decorative handwritten accents. */
 .welcome-section{margin-bottom:24px}
 .welcome-card{display:grid;grid-template-columns:minmax(0,1fr) 164px;align-items:center;gap:24px;padding:22px 28px;border:1px solid #dce6ec;border-radius:8px;overflow:hidden}
-.welcome-intro{background:#fff;color:#0e394b}
+.welcome-intro,.welcome-photos{background:#fff;color:#0e394b}
 .welcome-copy{min-width:0}
-.welcome-handwriting{font-family:'VESH Soul Adventures',cursive;font-size:48px;font-weight:400;line-height:1;margin:0 0 10px;color:#b2272a}
-.welcome-card h2{font-size:23px;line-height:1.25;margin:0;font-weight:550;overflow-wrap:anywhere}
+.welcome-card .welcome-handwriting{font-family:'VESH Soul Adventures',cursive;font-size:96px;font-weight:400;line-height:1.05;margin:0;color:#b2272a;overflow-wrap:anywhere}
 .welcome-card .block-text{font-size:14px;line-height:1.55;margin:10px 0 15px;max-width:620px;overflow-wrap:anywhere}
 .welcome-card .welcome-action{min-height:40px;padding:8px 16px;font-size:12px;background:#fff;border-color:#b9ced9;color:#226d8d;max-width:100%;white-space:normal;text-align:center;margin:0}
 .welcome-card .welcome-action:hover{background:#edf4f8;border-color:#226d8d}
 .welcome-art{position:relative;display:flex;align-items:center;justify-content:center;justify-self:center;width:120px;height:104px;isolation:isolate;text-decoration:none}
 .welcome-art .block-image{width:100%;height:100%;max-height:none;margin:0;object-fit:cover;object-position:center;border-radius:6px}
-.welcome-dialogue{display:block;width:112px;height:90px}
+.welcome-dialogue,.welcome-photo-icon{display:block;width:112px;height:90px}
 .welcome-video{background:#f2f7fb;border-color:#dce6ec;color:#0e394b}
 .welcome-video .welcome-handwriting{color:#b2272a}
 .welcome-video .block-text{color:#5f7286}
@@ -62,8 +61,7 @@
 @media(max-width:720px){
   .welcome-card{grid-template-columns:minmax(0,1fr) 76px;gap:0 14px;padding:20px}
   .welcome-copy{display:contents}
-  .welcome-handwriting{grid-column:1/-1;grid-row:1;font-size:42px;margin:0 0 9px}
-  .welcome-card h2{grid-column:1/-1;grid-row:2;font-size:20px;margin-top:8px}
+  .welcome-card .welcome-handwriting{grid-column:1/-1;grid-row:1;font-size:76px;line-height:1.08;margin:0 0 8px;padding-right:0}
   .welcome-card .block-text{grid-column:1/-1;grid-row:3;font-size:13px;margin:12px 0 14px}
   .welcome-card .welcome-action{grid-column:1/-1;grid-row:4;justify-self:start;min-height:42px}
   .welcome-card .welcome-art{grid-column:2;grid-row:1;width:66px;height:54px;align-self:center}
@@ -165,3 +163,46 @@
 @media(max-width:900px){.learning-overview.has-advisor{grid-template-columns:1fr}.advisor-card{padding:20px}.advisor-person h2{font-size:18px}}
 @media(max-width:720px){.learning-overview{padding:18px 20px;gap:16px}.upcoming-card{padding:20px}.upcoming-heading{gap:10px}.upcoming-heading h2{font-size:10px;letter-spacing:.08em}.upcoming-heading time{font-size:12px}.upcoming-lesson h3{font-size:18px}.upcoming-meta{gap:5px 12px;font-size:11px}.upcoming-schedule{margin-top:14px}.advisor-person>img,.advisor-initials{width:64px;height:64px;flex-basis:64px}.course-hero.has-learning-overview .course-hero-inner{padding-top:20px;padding-bottom:24px}.course-hero.has-learning-overview .breadcrumb{margin-bottom:18px}.course-hero.has-learning-overview .hero-layout{gap:12px}.course-hero.has-learning-overview .hero-layout h1{font-size:29px}.course-hero.has-learning-overview .hero-side{padding-top:0}.advisor-directory-header{align-items:flex-start;flex-direction:column}}
 @media(max-width:720px){.topbar:has(~ .learning-overview) .topbar-inner{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;padding:10px 20px}.topbar:has(~ .learning-overview) .brand{grid-column:1;grid-row:1}.topbar:has(~ .learning-overview) .logout{grid-column:2;grid-row:1;justify-self:end}.topbar:has(~ .learning-overview) .top-nav{grid-column:1/-1;grid-row:2;margin:0;justify-content:flex-start;font-size:11px;gap:14px}.page-edit-banner:has(~ .learning-overview){padding:10px 20px;gap:4px;font-size:11px}.course-hero.has-learning-overview .course-hero-inner{padding:16px 20px 20px}.course-hero.has-learning-overview .breadcrumb{margin-bottom:14px}.course-hero.has-learning-overview .hero-layout{gap:12px}.course-hero.has-learning-overview .hero-layout h1{font-size:26px;margin:10px 0 16px}.course-hero.has-learning-overview .hero-side{padding-top:10px}.course-hero.has-learning-overview .hero-side p{font-size:12px;margin-top:10px}.course-hero.has-learning-overview .hero-meta strong{font-size:13px}}
+/* Schedule editor: one compact row per lesson. */
+#blocks-form fieldset{min-width:0}
+#blocks-form .editor-add select{min-width:0;max-width:100%}
+.editor-row.lesson-editor{padding:0;margin:0;background:#fff;border:1px solid #dce5e9;border-radius:0;border-bottom:0}
+.lesson-editor:first-of-type{border-radius:6px 6px 0 0}
+.lesson-editor:last-of-type{border-bottom:1px solid #dce5e9;border-radius:0 0 6px 6px}
+.lesson-editor>summary{list-style:none;display:grid;grid-template-columns:115px minmax(0,1fr) 22px;align-items:center;gap:18px;padding:12px 16px;font-size:13px;line-height:1.45}
+.lesson-editor>summary::-webkit-details-marker,.lesson-editor-extra>summary::-webkit-details-marker{display:none}
+.lesson-editor>summary:hover,.lesson-editor[open]>summary{background:#f2f7fb}
+.lesson-editor>summary:focus-visible{outline:2px solid #226d8d;outline-offset:-2px}
+.lesson-editor-when,.lesson-editor-topic{display:flex;flex-direction:column;min-width:0;gap:2px}
+.lesson-editor-when{white-space:nowrap}.lesson-editor-when span,.lesson-editor-topic span{font-size:12px;color:#6d7d85}
+.lesson-editor-topic strong{font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lesson-editor-action{width:8px;height:8px;border-right:1.5px solid #226d8d;border-bottom:1.5px solid #226d8d;transform:rotate(45deg);justify-self:center}
+.lesson-editor[open] .lesson-editor-action{transform:rotate(225deg)}
+.lesson-editor-body{padding:16px;border-top:1px solid #dce5e9}
+.lesson-editor-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}
+.lesson-editor-fields>div,.lesson-editor-fields .field{min-width:0}
+.lesson-editor-fields .lesson-field-wide{grid-column:1/-1}
+.lesson-editor .field{margin:0;font-size:12px;gap:5px}
+.lesson-editor input,.lesson-editor textarea{min-height:38px;padding:8px 10px;font-size:14px;line-height:1.4;border-radius:4px}
+.lesson-editor textarea{height:62px;resize:vertical}
+.lesson-editor-extra{margin-top:14px;padding:10px 0 0;border-top:1px solid #e3e9ed;background:transparent}
+.lesson-editor-extra>summary{font-size:12px;color:#536f7d}
+.lesson-editor-extra .lesson-editor-fields{padding-top:12px}
+.lesson-editor-controls{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:16px}
+.lesson-editor-controls .btn{padding:7px 16px;min-height:38px;font-size:12px}
+.lesson-editor-controls .text-button{margin:0;font-size:12px}
+@media(max-width:720px){
+.lesson-editor>summary{grid-template-columns:minmax(0,1fr) 18px;gap:6px 10px;padding:12px}
+.lesson-editor-when{flex-direction:row;gap:12px;grid-column:1;grid-row:1}
+.lesson-editor-topic{grid-column:1;grid-row:2}
+.lesson-editor-action{grid-column:2;grid-row:1/3}
+.lesson-editor-body{padding:12px}
+.lesson-editor-fields{gap:12px}
+.lesson-editor input,.lesson-editor textarea{font-size:16px}
+.lesson-editor-extra .field{grid-column:1/-1}
+.welcome-card{position:relative}
+.welcome-card .welcome-art{position:absolute;right:18px;bottom:20px;grid-row:auto;pointer-events:auto}
+.welcome-card .welcome-action{max-width:calc(100% - 70px)}
+.welcome-card .welcome-photo-icon{width:58px;height:48px}
+}
+@media(max-width:480px){.lesson-editor-fields{grid-template-columns:minmax(0,1fr)}.lesson-editor textarea{height:84px}}

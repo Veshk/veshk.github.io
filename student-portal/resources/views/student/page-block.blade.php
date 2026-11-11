@@ -1,19 +1,21 @@
 @php
     $safe = fn ($url) => \App\Support\CoursePage::safeUrl($url);
 @endphp
-@if(in_array($type, ['introductions', 'video'], true))
+@if(in_array($type, ['introductions', 'video', 'photos'], true))
 @php
     $isVideo = $type === 'video';
+    $isPhotos = $type === 'photos';
     $title = ($data['title'] ?? '') ?: \App\Support\CoursePage::BLOCKS[$type];
     $actionUrl = $safe($data['url'] ?? null);
     $imageUrl = $safe($data['image_url'] ?? null);
-    $actionLabel = ($data['button'] ?? '') ?: ($isVideo ? 'Смотреть видео' : 'Перейти в Holst');
+    $actionLabel = ($data['button'] ?? '') ?: ($isPhotos ? 'Смотреть фотографии' : ($isVideo ? 'Смотреть видео' : 'Перейти в Holst'));
+    $handwrittenTitle = $isPhotos ? $title : ($isVideo ? (in_array($title, ['О Высшей экономической школе', 'Видео о школе'], true) ? 'Это ВЭШ' : $title) : ($title === 'Практика «Знакомство»' ? 'Давайте знакомиться!' : $title));
 @endphp
-<div class="welcome-card {{ $isVideo ? 'welcome-video' : 'welcome-intro' }}">
-    <div class="welcome-copy"><p class="welcome-handwriting">{{ $isVideo ? 'Это ВЭШ' : 'Давайте знакомиться!' }}</p><h2>{{ $title }}</h2><p class="block-text">{{ ($data['text'] ?? '') ?: ($isVideo ? 'Познакомьтесь со школой в коротком видео.' : 'Расскажите о себе и познакомьтесь с коллегами по обучению.') }}</p>@if($actionUrl)<a class="btn welcome-action" href="{{ $actionUrl }}" target="_blank" rel="noopener noreferrer">{{ $actionLabel }} ↗</a>@endif</div>
+<div class="welcome-card {{ $isVideo ? 'welcome-video' : ($isPhotos ? 'welcome-photos' : 'welcome-intro') }}">
+    <div class="welcome-copy"><h2 class="welcome-handwriting">{{ $handwrittenTitle }}</h2><p class="block-text">{{ ($data['text'] ?? '') ?: ($isPhotos ? 'Вспоминаем наш выпускной.' : ($isVideo ? 'Познакомьтесь со школой в коротком видео.' : 'Расскажите о себе и познакомьтесь с коллегами по обучению.')) }}</p>@if($actionUrl)<a class="btn welcome-action" href="{{ $actionUrl }}" target="_blank" rel="noopener noreferrer">{{ $actionLabel }} ↗</a>@endif</div>
     @if($isVideo && $actionUrl)<a class="welcome-art{{ $imageUrl ? ' has-image' : '' }}" href="{{ $actionUrl }}" target="_blank" rel="noopener noreferrer" aria-label="{{ $actionLabel }}: {{ $title }}">@else<div class="welcome-art{{ $imageUrl ? ' has-image' : '' }}">@endif
         @if($imageUrl)<img class="block-image" src="{{ $imageUrl }}" alt="{{ $data['image_alt'] ?? '' }}" loading="lazy" referrerpolicy="no-referrer">@endif
-        @if($isVideo)<span class="welcome-play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 5.5 19 12 9 18.5Z"/></svg></span>@elseif(!$imageUrl)<svg class="welcome-dialogue" viewBox="0 0 120 96" fill="none" aria-hidden="true"><path d="M58 38h34a14 14 0 0 1 14 14v20a14 14 0 0 1-14 14h-3l-13 9v-9H63a14 14 0 0 1-14-14V51" stroke="#b2272a" stroke-width="2.5" stroke-linejoin="round"/><path d="M22 8h42a14 14 0 0 1 14 14v23a14 14 0 0 1-14 14H43L25 72V59h-3A14 14 0 0 1 8 45V22A14 14 0 0 1 22 8Z" fill="#fff" stroke="#226d8d" stroke-width="2.5" stroke-linejoin="round"/><path d="M25 29h35M25 40h24" stroke="#226d8d" stroke-width="2.5" stroke-linecap="round"/></svg>@endif
+        @if($isVideo)<span class="welcome-play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 5.5 19 12 9 18.5Z"/></svg></span>@elseif(!$imageUrl && $isPhotos)<svg class="welcome-photo-icon" viewBox="0 0 120 96" fill="none" aria-hidden="true"><path d="M15 20V9h90v63H94" stroke="#b2272a" stroke-width="2.5" stroke-linejoin="round"/><rect x="7" y="24" width="88" height="63" rx="5" stroke="#226d8d" stroke-width="2.5"/><circle cx="70" cy="42" r="6" stroke="#b2272a" stroke-width="2.5"/><path d="m18 74 22-25 18 18 12-11 14 18" stroke="#226d8d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>@elseif(!$imageUrl)<svg class="welcome-dialogue" viewBox="0 0 120 96" fill="none" aria-hidden="true"><path d="M58 38h34a14 14 0 0 1 14 14v20a14 14 0 0 1-14 14h-3l-13 9v-9H63a14 14 0 0 1-14-14V51" stroke="#b2272a" stroke-width="2.5" stroke-linejoin="round"/><path d="M22 8h42a14 14 0 0 1 14 14v23a14 14 0 0 1-14 14H43L25 72V59h-3A14 14 0 0 1 8 45V22A14 14 0 0 1 22 8Z" fill="#fff" stroke="#226d8d" stroke-width="2.5" stroke-linejoin="round"/><path d="M25 29h35M25 40h24" stroke="#226d8d" stroke-width="2.5" stroke-linecap="round"/></svg>@endif
     @if($isVideo && $actionUrl)</a>@else</div>@endif
 </div>
 @elseif($type === 'contacts')

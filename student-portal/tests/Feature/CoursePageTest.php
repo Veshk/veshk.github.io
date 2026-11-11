@@ -84,6 +84,20 @@ class CoursePageTest extends TestCase
         $this->actingAs($enrollment->user)->get('/learning/'.$group->id)->assertOk()->assertSeeInOrder(['Второй блок первым', 'Папка группы'])->assertDontSee('Скрытый блок')->assertDontSee('javascript:alert(1)', false)->assertDontSee('<script>alert(1)</script>', false)->assertSee('&lt;script&gt;', false)->assertSee('https://example.com/folder')->assertSee('target="_blank"', false);
     }
 
+    public function test_collapsed_lesson_editor_preserves_import_fields_and_rejects_invalid_time(): void
+    {
+        $lesson = ['source_id' => 'sheet-42', 'date' => '2026-11-16', 'time' => '10:00–13:00', 'title' => 'Занятие', 'teacher' => 'Преподаватель', 'format' => 'Очно', 'url' => 'https://example.com/lesson', 'module' => 'Модуль', 'hours' => '4'];
+        $blocks = [['type' => 'schedule', 'data' => ['block_id' => 'schedule', 'title' => 'Расписание', 'visible' => true, 'show_moscow' => true, 'collapse_past' => true, 'source_url' => null, 'lessons' => [$lesson, array_replace($lesson, ['source_id' => 'sheet-43', 'time' => '14:00–17:00'])]]]];
+        $group = StudyGroup::factory()->create(['page_blocks' => $blocks]);
+        $this->actingAs($group->administrator);
+        $blocks[0]['data']['lessons'][0]['title'] = 'Уточнённая тема';
+        Livewire::test(EditGroupPage::class, ['record' => $group->id])->fillForm(['page_blocks' => $blocks])->call('save')->assertHasNoFormErrors();
+        $this->assertSame($blocks[0]['data']['lessons'], $group->fresh()->page_blocks[0]['data']['lessons']);
+        $blocks[0]['data']['lessons'][0]['time'] = '25:00–30:00';
+        Livewire::test(EditGroupPage::class, ['record' => $group->id])->fillForm(['page_blocks' => $blocks])->call('save')->assertHasFormErrors();
+        $this->assertSame('10:00–13:00', $group->fresh()->page_blocks[0]['data']['lessons'][0]['time']);
+    }
+
     public function test_legacy_contacts_render_safe_email_phone_and_multiple_chats_without_duplicate_name(): void
     {
         $group = StudyGroup::factory()->make();
