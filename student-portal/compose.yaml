@@ -1,0 +1,103 @@
+name: vesh-portal
+
+x-app: &app
+  image: vesh-portal-app:${PORTAL_RELEASE:-local}
+  build:
+    context: .
+    target: app
+  user: "33:33"
+  environment:
+    APP_NAME: "Личный кабинет ВЭШ"
+    APP_ENV: production
+    APP_DEBUG: "false"
+    DEMO_MODE: "false"
+    APP_KEY: ${APP_KEY:?Set APP_KEY in the private .env}
+    APP_URL: https://${PORTAL_DOMAIN:?Set PORTAL_DOMAIN}
+    DB_CONNECTION: pgsql
+    DB_HOST: db
+    DB_PORT: "5432"
+    DB_DATABASE: ${DB_DATABASE:-vesh_portal}
+    DB_USERNAME: ${DB_USERNAME:-vesh_portal}
+    DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in the private .env}
+    SESSION_DRIVER: database
+    SESSION_SECURE_COOKIE: "true"
+    CACHE_STORE: database
+    QUEUE_CONNECTION: database
+    MAIL_MAILER: log
+    LOG_CHANNEL: stderr
+  volumes:
+    - app_storage:/var/www/html/storage
+    - public_uploads:/var/www/html/storage/app/public
+  depends_on:
+    db:
+      condition: service_healthy
+  restart: unless-stopped
+  networks: [web, database]
+  logging: &logging
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  app:
+    <<: *app
+
+  queue:
+    <<: *app
+    command: [php, artisan, queue:work, --sleep=3, --tries=3, --timeout=60, --max-time=3600]
+
+  scheduler:
+    <<: *app
+    command: [php, artisan, schedule:work]
+
+  web:
+    image: vesh-portal-web:${PORTAL_RELEASE:-local}
+    build:
+      context: .
+      target: web
+    environment:
+      PORTAL_DOMAIN: ${PORTAL_DOMAIN:?Set PORTAL_DOMAIN}
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes:
+      - public_uploads:/var/www/html/storage/app/public:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [app]
+    restart: unless-stopped
+    networks: [web]
+    logging: *logging
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_ADMIN_PASSWORD:?Set DB_ADMIN_PASSWORD in the private .env}
+      DB_DATABASE: ${DB_DATABASE:-vesh_portal}
+      DB_USERNAME: ${DB_USERNAME:-vesh_portal}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in the private .env}
+    volumes:
+      - database_data:/var/lib/postgresql/data
+      - ./database-init.sh:/docker-entrypoint-initdb.d/10-portal.sh:ro
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+    networks: [database]
+    logging: *logging
+
+networks:
+  web:
+  database:
+    internal: true
+
+volumes:
+  database_data:
+  app_storage:
+  public_uploads:
+  caddy_data:
+  caddy_config:

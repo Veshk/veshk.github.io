@@ -1,0 +1,17 @@
+{$PORTAL_DOMAIN} {
+    root * /var/www/html/public
+    encode zstd gzip
+    header X-Content-Type-Options nosniff
+
+    # Only Laravel's front controller is executable; uploads stay static.
+    @otherPhp {
+        path *.php *.php/*
+        not path /index.php /index.php/*
+    }
+    route {
+        respond @otherPhp 404
+        php_fastcgi app:9000
+        file_server
+    }
+}
+
