@@ -271,7 +271,7 @@ class CoursePage
                         $date = implode('.', array_reverse(explode('-', $date)));
                     }
 
-                    return implode(' · ', array_filter([$date, $state['time'] ?? '', $state['title'] ?? ''])) ?: 'Новое занятие';
+                    return implode(' ', array_filter([$date, $state['time'] ?? '', $state['title'] ?? ''])) ?: 'Новое занятие';
                 })->collapsed()],
                 'homework' => [Text::make('Статус общий для группы, а не персональная отметка выполнения.'), Repeater::make('tasks')->label('Задания')->schema([
                     DatePicker::make('deadline')->label('Срок')->live(onBlur: true),
@@ -291,7 +291,7 @@ class CoursePage
                     $status = ($state['status'] ?? 'upcoming') === 'past' ? 'Прошедшее' : 'Предстоит';
                     $title = Str::limit($state['title'] ?? 'Новое задание', 100);
 
-                    return implode(' · ', [$date ?: 'Без срока', $status, $title]);
+                    return implode(' ', [$date ?: 'Без срока', $status, $title]);
                 })->collapsed()],
                 'faq' => [Repeater::make('questions')->label('Вопросы и ответы')->schema([
                     TextInput::make('question')->label('Вопрос')->required()->maxLength(500), Textarea::make('answer')->label('Ответ')->required()->maxLength(5000), self::url('url', 'Ссылка в ответе'), TextInput::make('button')->label('Текст ссылки')->maxLength(100),

@@ -17,7 +17,7 @@
             <h2>{{ $group->title }} / {{ $group->code }}</h2>
             <a href="{{ route('student.group', $group) }}" target="_blank" rel="noopener" class="portal-link">Открыть ЛК группы ↗</a>
             @foreach($blocks as $block)
-                <details open><summary>{{ $block['data']['title'] ?? 'Расписание' }} — {{ count($block['data']['lessons'] ?? []) }} занятий{{ ($block['data']['visible'] ?? true) === false ? ' · Скрыто в ЛК' : '' }}</summary>
+                <details open><summary>{{ $block['data']['title'] ?? 'Расписание' }} — {{ count($block['data']['lessons'] ?? []) }} занятий{{ ($block['data']['visible'] ?? true) === false ? ' Скрыто в ЛК' : '' }}</summary>
                     <div class="portal-table-scroll" style="max-height:440px"><table class="portal-table"><thead><tr>@foreach(['Дата','Время ЕКБ','Тема','Преподаватель','Часы'] as $heading)<th>{{ $heading }}</th>@endforeach</tr></thead><tbody>@forelse(collect($block['data']['lessons'] ?? [])->sortBy(fn($lesson) => ($lesson['date'] ?? '').($lesson['time'] ?? '')) as $lesson)<tr>@foreach(['date','time','title','teacher','hours'] as $field)<td>{{ $lesson[$field] ?? '' }}</td>@endforeach</tr>@empty<tr><td colspan="5" class="portal-empty">Расписание ещё не опубликовано.</td></tr>@endforelse</tbody></table></div>
                 </details>
             @endforeach

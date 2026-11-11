@@ -101,7 +101,7 @@ class ProgramResource extends Resource
             ImageColumn::make('cover_url')->label('Обложка')->state(fn (Program $record): ?string => $record->coverUrl())->imageHeight(40),
             TextColumn::make('title')->label('Название программы')->searchable()->sortable()->wrap(),
             TextColumn::make('program_type')->label('Тип и формат')->formatStateUsing(fn (?string $state): string => Program::TYPES[$state] ?? $state ?? 'Не указан')->wrap()
-                ->description(fn (Program $record): string => collect($record->formats ?? [])->map(fn (string $format): string => $format === 'онлайн' ? 'Онлайн' : 'Очно')->push($record->hours ? $record->hours.' ак. ч.' : null)->filter()->join(' · ')),
+                ->description(fn (Program $record): string => collect($record->formats ?? [])->map(fn (string $format): string => $format === 'онлайн' ? 'Онлайн' : 'Очно')->push($record->hours ? $record->hours.' ак. ч.' : null)->filter()->join(' ')),
             TextColumn::make('section')->label('Раздел')->badge(),
             TextColumn::make('tag')->label('ТЕГ программы')->searchable()->sortable(),
             TextColumn::make('study_groups_count')->counts('studyGroups')->label('Групп')->sortable()->url(fn (Program $record): string => StudyGroupResource::getUrl('index', ['filters' => ['program_id' => ['value' => $record->id]]])),

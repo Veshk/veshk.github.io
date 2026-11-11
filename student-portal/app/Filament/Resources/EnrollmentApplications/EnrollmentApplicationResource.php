@@ -46,9 +46,9 @@ class EnrollmentApplicationResource extends Resource
                 TextColumn::make('user.name')->label('Слушатель')->searchable(['name', 'email'])->sortable()->wrap()
                     ->description(fn (EnrollmentApplication $record) => $record->user->email),
                 TextColumn::make('group.title')->label('Группа')->placeholder('Группа не выбрана')->searchable(['title', 'code'])->wrap()
-                    ->description(fn (EnrollmentApplication $record) => $record->group ? $record->group->code.' · '.$record->group->administrator?->name : 'Нужна помощь с выбором'),
+                    ->description(fn (EnrollmentApplication $record) => $record->group ? $record->group->code.' '.$record->group->administrator?->name : 'Нужна помощь с выбором'),
                 TextColumn::make('status')->label('Статус')->badge()->wrap()
-                    ->description(fn (EnrollmentApplication $record) => 'Подана '.$record->created_at->format('d.m.Y H:i').(auth()->user()->can('review', $record) ? '' : ' · Только просмотр'))
+                    ->description(fn (EnrollmentApplication $record) => 'Подана '.$record->created_at->format('d.m.Y H:i').(auth()->user()->can('review', $record) ? '' : ' Только просмотр'))
                     ->formatStateUsing(fn ($state, EnrollmentApplication $record) => $record->statusLabel())->color(fn ($state) => match ($state) {
                         'approved' => 'success', 'rejected' => 'danger', default => 'warning'
                     }),

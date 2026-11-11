@@ -3,7 +3,7 @@
 <x-filament::modal id="staff-profile" heading="Аккаунт и профиль администратора" width="3xl" sticky-footer sticky-header>
 <p class="portal-intro mb-5">Фото и контакты показываются во всех группах сотрудника. Аккаунт может существовать без групп.</p>
 <form id="staff-profile-form" wire:submit="save" class="portal-admin-form">
-<h2 class="portal-profile-heading">{{ $person->name }}</h2><p>{{ $person->email }} · {{ $person->isSenior() ? 'Старший администратор' : 'Администратор' }}</p>
+<h2 class="portal-profile-heading">{{ $person->name }}</h2><p>{{ $person->email }} {{ $person->isSenior() ? 'Старший администратор' : 'Администратор' }}</p>
 <fieldset @disabled(!$canEdit)>
 @if($photo && in_array($photo->getMimeType(), ['image/jpeg','image/png','image/webp']) && !$errors->has('photo'))<img src="{{ $photo->temporaryUrl() }}" alt="Предпросмотр фото" class="portal-profile-photo">@elseif($person->profile_photo && !$removePhoto)<img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($person->profile_photo) }}" alt="Фото администратора" class="portal-profile-photo">@endif
 <label class="portal-field">Фотография администратора<input type="file" wire:model="photo" accept="image/jpeg,image/png,image/webp" class="portal-file-input"></label>

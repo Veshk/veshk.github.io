@@ -110,7 +110,7 @@ class StudyGroupResource extends Resource
             TextEntry::make('extended_until')->label('До какого числа продлён доступ')->date('d.m.Y')->placeholder('Без продления'),
             TextEntry::make('closes')->label('Доступ до включительно')->state(fn (StudyGroup $record): string => $record->closesAt()->format('d.m.Y')),
             TextEntry::make('registration_open')->label('Приём заявок')->formatStateUsing(fn ($state): string => $state ? 'Открыт' : 'Закрыт'),
-            TextEntry::make('students')->label('Участники')->state(fn (StudyGroup $record): int => $record->enrollments()->whereHas('user', fn (Builder $query): Builder => $query->where('role', 'student'))->count())->formatStateUsing(fn (int $state): string => $state.' · Открыть список →')->url(fn (StudyGroup $record): string => Students::getUrl(['group' => $record->id])),
+            TextEntry::make('students')->label('Участники')->state(fn (StudyGroup $record): int => $record->enrollments()->whereHas('user', fn (Builder $query): Builder => $query->where('role', 'student'))->count())->formatStateUsing(fn (int $state): string => $state.' Открыть список →')->url(fn (StudyGroup $record): string => Students::getUrl(['group' => $record->id])),
             TextEntry::make('setup_completed')->label('Заполнение завершено')->formatStateUsing(fn ($state): string => $state ? 'Да' : 'Нет'),
             TextEntry::make('admin_notes')->label('Комментарий администратора')->columnSpanFull(),
             TextEntry::make('description')->label('Приветствие')->columnSpanFull(),
@@ -130,7 +130,7 @@ class StudyGroupResource extends Resource
                 'Продление доступа' => 'primary',
                 default => 'gray',
             }),
-            TextColumn::make('enrollments_count')->counts(['enrollments' => fn (Builder $query): Builder => $query->whereHas('user', fn (Builder $query): Builder => $query->where('role', 'student'))])->label('Участники')->sortable()->color('primary')->formatStateUsing(fn (int $state): string => $state.' · Список →')->url(fn (StudyGroup $record): string => Students::getUrl(['group' => $record->id])),
+            TextColumn::make('enrollments_count')->counts(['enrollments' => fn (Builder $query): Builder => $query->whereHas('user', fn (Builder $query): Builder => $query->where('role', 'student'))])->label('Участники')->sortable()->color('primary')->formatStateUsing(fn (int $state): string => $state.' Список →')->url(fn (StudyGroup $record): string => Students::getUrl(['group' => $record->id])),
             TextColumn::make('code')->label('ТЕГ группы')->sortable()->copyable(),
             TextColumn::make('number')->label('№')->sortable()->placeholder('—'),
             TextColumn::make('administrator.name')->label('Администратор')->searchable()->sortable()
