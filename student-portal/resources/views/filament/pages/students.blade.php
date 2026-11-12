@@ -13,10 +13,19 @@
 <div class="portal-student-history" x-data x-init="$nextTick(() => $dispatch('open-modal', {id: 'student-history'}))">
 <h2 class="portal-profile-heading">{{ $person->name }}</h2>
 <p>{{ $person->email }}</p>
-<h3>Группы и доступ</h3>
+<h3>Программы обучения</h3>
 @forelse($person->enrollments as $enrollment)
 <p><a class="portal-link" href="{{ \App\Filament\Resources\StudyGroups\StudyGroupResource::getUrl('view', ['record' => $enrollment->group]) }}">{{ $enrollment->group->title }} {{ $enrollment->group->code }}</a> — {{ $enrollment->group->availableTo($person) ? 'Доступ открыт' : 'Доступ завершён' }}</p>
 @empty<p>Доступ к группам ещё не открыт.</p>@endforelse
+<h3>Бесплатные курсы и курсы в записи</h3>
+@forelse($person->selfStudyEnrollments as $access)
+<p><strong>{{ $access->course->title }}</strong><br>{{ $access->course->kindLabel() }}<br>{{ $access->statusLabel() }} до {{ $access->expires_at->timezone('Asia/Yekaterinburg')->format('d.m.Y H:i') }}<br>Прогресс {{ $access->progress() }}%
+@if($access->course->canManage(auth()->user()))<br><a class="portal-link" href="{{ \App\Filament\Pages\CourseAccesses::getUrl(['course' => $access->self_study_course_id]) }}">Управление доступом</a>@endif</p>
+@empty<p>Зачислений на курсы пока нет</p>@endforelse
+@if($person->courseOrders->isNotEmpty())
+<h3>Заказы курсов в записи</h3>
+@foreach($person->courseOrders as $order)<p>{{ $order->course->title }} — {{ $order->statusLabel() }}</p>@endforeach
+@endif
 <h3>История посещений Екатеринбург</h3>
 <div class="portal-table-scroll"><table class="portal-table">
 <thead><tr><th>Дата и время</th><th>Открытая страница</th></tr></thead>

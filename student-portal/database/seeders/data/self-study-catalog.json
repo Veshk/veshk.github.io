@@ -1,0 +1,318 @@
+[
+  {
+    "title": "Обратная связь сотрудникам: как не обидеть и получить результат",
+    "slug": "feedback",
+    "kind": "free",
+    "expert": "Яна Жилякова",
+    "landing_url": "https://lk.veshk.ru/lk-demo-feedback",
+    "access_days": 30,
+    "price_minor": 0,
+    "lessons": [
+      {
+        "title": "Понятие обратной связи и её преимущества",
+        "position": 1,
+        "duration_minutes": 5,
+        "video_url": "https://disk.yandex.ru/i/YG9C3naeJqXVNw",
+        "is_published": true
+      },
+      {
+        "title": "Виды обратной связи",
+        "position": 2,
+        "duration_minutes": 7,
+        "video_url": "https://disk.yandex.ru/i/dGDZZv35e2l3Nw",
+        "is_published": true
+      },
+      {
+        "title": "Стандарты и регламенты. Причины неисполнения",
+        "position": 3,
+        "duration_minutes": 16,
+        "video_url": "https://disk.yandex.ru/i/n2sO3NtMTvNgaw",
+        "is_published": true
+      },
+      {
+        "title": "Типичные ошибки обратной связи",
+        "position": 4,
+        "duration_minutes": 9,
+        "video_url": "https://disk.yandex.ru/i/GK4yDLYCfCfVLA",
+        "is_published": true
+      },
+      {
+        "title": "Что делает обратную связь эффективной?",
+        "position": 5,
+        "duration_minutes": 6,
+        "video_url": "https://disk.yandex.ru/i/7h_FDx9cVV2kyw",
+        "is_published": true
+      },
+      {
+        "title": "Подготовка к выдаче обратной связи. Принципы конструктивной ОС",
+        "position": 6,
+        "duration_minutes": 7,
+        "video_url": "https://disk.yandex.ru/i/V8-4YipxKA1AEA",
+        "is_published": true
+      },
+      {
+        "title": "Алгоритм предоставления обратной связи",
+        "position": 7,
+        "duration_minutes": 10,
+        "video_url": "https://disk.yandex.ru/i/4earXuOS7YX5NA",
+        "is_published": true
+      },
+      {
+        "title": "Оценка эффективности обратной связи",
+        "position": 8,
+        "duration_minutes": 2,
+        "video_url": "https://disk.yandex.ru/i/9RQNv8cwYImmIA",
+        "is_published": true
+      }
+    ]
+  },
+  {
+    "title": "Power Query: настраиваем автоматизированный сбор данных",
+    "slug": "power-query",
+    "kind": "free",
+    "expert": "Татьяна Каримова",
+    "landing_url": "https://lk.veshk.ru/lk-demo-power-query",
+    "access_days": 30,
+    "price_minor": 0,
+    "lessons": [
+      {
+        "title": "Power Query в Excel: что это и какие задачи решает?",
+        "position": 1,
+        "duration_minutes": 11,
+        "video_url": "https://kinescope.io/xAH7YfbuDEctEWDC1hvVVq",
+        "is_published": true
+      },
+      {
+        "title": "Создание запроса в PQ (подключение к файлу)",
+        "position": 2,
+        "duration_minutes": 8,
+        "video_url": "https://kinescope.io/nfC3xTuG9x1Xo6Yaq7HFqH",
+        "is_published": true
+      },
+      {
+        "title": "Обработка данных в Power Query",
+        "position": 3,
+        "duration_minutes": 7,
+        "video_url": "https://kinescope.io/sCZkrS8fBJvMCnMWPLgvTz",
+        "is_published": true
+      },
+      {
+        "title": "Как выгрузить данные и добавить срезы?",
+        "position": 4,
+        "duration_minutes": 3,
+        "video_url": "https://kinescope.io/fR7ySqExyZHb13tstyhvYi",
+        "is_published": true
+      },
+      {
+        "title": "Обновление и добавление данных",
+        "position": 5,
+        "duration_minutes": 12,
+        "video_url": "https://kinescope.io/cATWnw6mzfq4jzhTjQ7ok9",
+        "is_published": true
+      },
+      {
+        "title": "Создание запроса в PQ (подключение к папке с несколькими файлами)",
+        "position": 6,
+        "duration_minutes": 8,
+        "video_url": "https://kinescope.io/mPoR46gDihDWYeZDd1YhUX",
+        "is_published": true
+      }
+    ]
+  },
+  {
+    "title": "Динамические дашборды в Excel для руководителя",
+    "slug": "dashboards",
+    "kind": "recorded",
+    "expert": "Татьяна Каримова",
+    "landing_url": "https://edu.veshk.ru/online-course-dashbordy",
+    "access_days": 90,
+    "price_minor": 300000,
+    "lessons": [
+      {
+        "title": "Введение в дашборды и инструменты Excel",
+        "position": 1,
+        "duration_minutes": 7,
+        "is_published": false
+      },
+      {
+        "title": "Отчёт по продажам: работа с одной выгрузкой — часть 1",
+        "position": 2,
+        "duration_minutes": 5,
+        "is_published": false
+      },
+      {
+        "title": "Отчёт по продажам: работа с одной выгрузкой — часть 2",
+        "position": 3,
+        "duration_minutes": 16,
+        "is_published": false
+      },
+      {
+        "title": "Отчёт по продажам: работа с одной выгрузкой — часть 3",
+        "position": 4,
+        "duration_minutes": 18,
+        "is_published": false
+      },
+      {
+        "title": "Отчёт по продажам: работа с одной выгрузкой — часть 4",
+        "position": 5,
+        "duration_minutes": 16,
+        "is_published": false
+      },
+      {
+        "title": "Управленческий баланс: объединение двух таблиц — часть 1",
+        "position": 6,
+        "duration_minutes": 13,
+        "is_published": false
+      },
+      {
+        "title": "Управленческий баланс: объединение двух таблиц — часть 2",
+        "position": 7,
+        "duration_minutes": 22,
+        "is_published": false
+      },
+      {
+        "title": "Управленческий баланс: объединение двух таблиц — часть 3",
+        "position": 8,
+        "duration_minutes": 15,
+        "is_published": false
+      },
+      {
+        "title": "Управленческий баланс: объединение двух таблиц — часть 4",
+        "position": 9,
+        "duration_minutes": 11,
+        "is_published": false
+      },
+      {
+        "title": "Отчёт о прибылях и убытках: сбор данных из папок — часть 1",
+        "position": 10,
+        "duration_minutes": 16,
+        "is_published": false
+      },
+      {
+        "title": "Отчёт о прибылях и убытках: сбор данных из папок — часть 2",
+        "position": 11,
+        "duration_minutes": 13,
+        "is_published": false
+      },
+      {
+        "title": "Отчёт о прибылях и убытках: сбор данных из папок — часть 3",
+        "position": 12,
+        "duration_minutes": 33,
+        "is_published": false
+      },
+      {
+        "title": "Отчёт о простоях оборудования: сбор данных с листов — часть 1",
+        "position": 13,
+        "duration_minutes": 7,
+        "is_published": false
+      },
+      {
+        "title": "Отчёт о простоях оборудования: сбор данных с листов — часть 2",
+        "position": 14,
+        "duration_minutes": 8,
+        "is_published": false
+      },
+      {
+        "title": "Отчёт о простоях оборудования: сбор данных с листов — часть 3",
+        "position": 15,
+        "duration_minutes": 27,
+        "is_published": false
+      },
+      {
+        "title": "Отчёт о простоях оборудования: сбор данных с листов — часть 4",
+        "position": 16,
+        "duration_minutes": 8,
+        "is_published": false
+      }
+    ]
+  },
+  {
+    "title": "Разработка рыночной стратегии: как бизнесу найти точки роста",
+    "slug": "market-strategy",
+    "kind": "recorded",
+    "expert": "Юлия Рублевская",
+    "landing_url": "https://edu.veshk.ru/online-course-strategiya",
+    "access_days": 90,
+    "price_minor": 300000,
+    "lessons": [
+      {
+        "title": "Новые подходы к разработке стратегии — часть 1",
+        "position": 1,
+        "duration_minutes": 8,
+        "is_published": false
+      },
+      {
+        "title": "Новые подходы к разработке стратегии — часть 2",
+        "position": 2,
+        "duration_minutes": 13,
+        "is_published": false
+      },
+      {
+        "title": "Новые подходы к разработке стратегии — часть 3",
+        "position": 3,
+        "duration_minutes": 9,
+        "is_published": false
+      },
+      {
+        "title": "Информация для разработки стратегии",
+        "position": 4,
+        "duration_minutes": 4,
+        "is_published": false
+      },
+      {
+        "title": "Причины низких продаж и маркетинговые воронки",
+        "position": 5,
+        "duration_minutes": 21,
+        "is_published": false
+      },
+      {
+        "title": "Потребности и удовлетворённость клиентов — часть 1",
+        "position": 6,
+        "duration_minutes": 5,
+        "is_published": false
+      },
+      {
+        "title": "Потребности и удовлетворённость клиентов — часть 2",
+        "position": 7,
+        "duration_minutes": 15,
+        "is_published": false
+      },
+      {
+        "title": "Потребности и удовлетворённость клиентов — часть 3",
+        "position": 8,
+        "duration_minutes": 5,
+        "is_published": false
+      },
+      {
+        "title": "Удержание клиентов и воспринимаемое качество",
+        "position": 9,
+        "duration_minutes": 14,
+        "is_published": false
+      },
+      {
+        "title": "Сегментация потребителей — часть 1",
+        "position": 10,
+        "duration_minutes": 12,
+        "is_published": false
+      },
+      {
+        "title": "Сегментация потребителей — часть 2",
+        "position": 11,
+        "duration_minutes": 8,
+        "is_published": false
+      },
+      {
+        "title": "Сегментация потребителей — часть 3",
+        "position": 12,
+        "duration_minutes": 19,
+        "is_published": false
+      },
+      {
+        "title": "Сегментация потребителей — часть 4",
+        "position": 13,
+        "duration_minutes": 9,
+        "is_published": false
+      }
+    ]
+  }
+]

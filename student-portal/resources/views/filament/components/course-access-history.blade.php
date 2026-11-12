@@ -1,0 +1,1 @@
+@forelse($history as $event)<p>{{ \Carbon\Carbon::parse($event["at"])->timezone("Asia/Yekaterinburg")->format("d.m.Y H:i") }} — {{ $event["action"] }}<br>{{ $event["reason"] ?? "" }}</p>@empty<p>История пока пуста</p>@endforelse

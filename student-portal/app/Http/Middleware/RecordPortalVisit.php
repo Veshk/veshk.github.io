@@ -15,6 +15,7 @@ class RecordPortalVisit
             $page = match ($request->route()->getName()) {
                 'student.group' => 'Группа: '.$request->route('group')->title,
                 'student.apply' => 'Новая заявка на обучение',
+                'student.course', 'student.lesson' => 'Курс: '.$request->route('course')->title,
                 default => 'Моё обучение',
             };
             $request->user()->portalVisits()->create(['visited_at' => now(), 'page' => $page]);

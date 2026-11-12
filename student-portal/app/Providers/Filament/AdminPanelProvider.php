@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\LearningManagement;
 use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -27,6 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->homeUrl(fn (): string => LearningManagement::getUrl())
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login(fn () => redirect()->route('login'))
             ->brandName('ВЭШ — Управление обучением')

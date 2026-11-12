@@ -55,7 +55,7 @@ class Students extends Page implements HasTable
     {
         abort_unless(static::canAccess(), 403);
 
-        return $this->selectedStudentId ? User::where('role', 'student')->when($this->selectedGroupId, fn ($query) => $query->whereHas('enrollments', fn ($query) => $query->where('study_group_id', $this->selectedGroupId)))->with('enrollments.group')->findOrFail($this->selectedStudentId) : null;
+        return $this->selectedStudentId ? User::where('role', 'student')->when($this->selectedGroupId, fn ($query) => $query->whereHas('enrollments', fn ($query) => $query->where('study_group_id', $this->selectedGroupId)))->with(['enrollments.group', 'selfStudyEnrollments.course.lessons', 'courseOrders.course'])->findOrFail($this->selectedStudentId) : null;
     }
 
     public function selectStudent(?int $id): void
@@ -77,19 +77,21 @@ class Students extends Page implements HasTable
     {
         $group = $this->selectedGroup();
 
-        return $table->query(User::where('role', 'student')->when($group, fn ($query) => $query->whereHas('enrollments', fn ($query) => $query->where('study_group_id', $group->id)))->with('enrollments.group')->withMax('portalVisits', 'visited_at'))->defaultSort('name')->columns([
+        return $table->query(User::where('role', 'student')->when($group, fn ($query) => $query->whereHas('enrollments', fn ($query) => $query->where('study_group_id', $group->id)))->with(['enrollments.group', 'selfStudyEnrollments.course.lessons', 'courseOrders.course'])->withMax('portalVisits', 'visited_at'))->defaultSort('name')->columns([
             TextColumn::make('name')->label('Слушатель')->searchable(['name', 'email'])->sortable()->description(fn (User $record): string => $record->email)->action(fn (User $record) => $this->selectStudent($record->id)),
-            TextColumn::make('access')->label('Доступ')->state(fn (User $record): string => $record->enrollments->isEmpty() ? 'Не открыт' : (($group ? $group->availableTo($record) : $record->enrollments->contains(fn ($enrollment): bool => $enrollment->group->availableTo($record))) ? 'Открыт' : 'Завершён'))->badge()->color(fn (string $state): string => match ($state) {
+            TextColumn::make('access')->label('Доступ')->state(fn (User $record): string => $record->enrollments->isEmpty() && $record->selfStudyEnrollments->isEmpty() ? 'Не открыт' : (($group ? $group->availableTo($record) : $record->enrollments->contains(fn ($enrollment): bool => $enrollment->group->availableTo($record)) || $record->selfStudyEnrollments->contains(fn ($enrollment): bool => $enrollment->available())) ? 'Открыт' : 'Завершён'))->badge()->color(fn (string $state): string => match ($state) {
                 'Открыт' => 'success', 'Не открыт' => 'warning', default => 'gray',
             }),
             TextColumn::make('enrollments.group.code')->label('Группы')->listWithLineBreaks()->placeholder('Нет доступа к группам'),
+            TextColumn::make('selfStudyEnrollments.course.title')->label('Курсы')->listWithLineBreaks()->placeholder('Курсов пока нет'),
             TextColumn::make('portal_visits_max_visited_at')->label('Последний визит в ЛК')->dateTime('d.m.Y H:i', timezone: 'Asia/Yekaterinburg')->sortable()->placeholder('Ещё не посещал'),
         ])->filters([
+            SelectFilter::make('learning_kind')->label('Вид обучения')->options(['program' => 'Программа обучения', 'free' => 'Бесплатный курс', 'recorded' => 'Курс в записи'])->query(fn ($query, array $data) => $query->when($data['value'] ?? null, fn ($query, $kind) => $kind === 'program' ? $query->has('enrollments') : $query->whereHas('selfStudyEnrollments.course', fn ($query) => $query->where('kind', $kind)))),
             SelectFilter::make('group')->label('Группа')->visible(! $group)->options(fn () => StudyGroup::orderBy('code')->pluck('code', 'id')->all())->searchable()->query(fn ($query, array $data) => $query->when($data['value'] ?? null, fn ($query, $id) => $query->whereHas('enrollments', fn ($query) => $query->where('study_group_id', $id)))),
             TernaryFilter::make('has_access')->label('Зачислен в группы')->queries(true: fn ($query) => $query->has('enrollments'), false: fn ($query) => $query->doesntHave('enrollments'), blank: fn ($query) => $query),
             TernaryFilter::make('has_visits')->label('Есть посещения ЛК')->queries(true: fn ($query) => $query->has('portalVisits'), false: fn ($query) => $query->doesntHave('portalVisits'), blank: fn ($query) => $query),
         ])->deferFilters(false)->recordActions([
-            Action::make('history')->label('История посещений')->button()->color('gray')->icon('heroicon-o-clock')->action(fn (User $record) => $this->selectStudent($record->id)),
+            Action::make('history')->label('Карточка слушателя')->button()->color('gray')->icon('heroicon-o-clock')->action(fn (User $record) => $this->selectStudent($record->id)),
         ])->emptyStateHeading($group ? 'Участники не найдены' : 'Слушатели не найдены')->emptyStateDescription($group ? 'Здесь отображаются зачисленные слушатели. Проверьте поиск и фильтры; заявки на проверке в список не входят.' : null)->paginated([25, 50, 100]);
     }
 

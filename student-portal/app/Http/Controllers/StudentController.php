@@ -21,12 +21,14 @@ class StudentController extends Controller
         }
         $enrollments = $request->user()->enrollments()->with(['group.administrator', 'group.program'])->get();
         $applications = $request->user()->applications()->with('group')->latest()->get();
+        $courses = $request->user()->selfStudyEnrollments()->with('course.lessons')->get();
+        $orders = $request->user()->courseOrders()->where('status', 'pending')->with('course')->latest()->get();
         $available = $enrollments->filter(fn ($enrollment) => $enrollment->group->availableTo($request->user()));
-        if ($available->count() === 1 && ! $request->boolean('list') && ! $applications->contains('status', 'pending')) {
+        if ($available->count() === 1 && $courses->isEmpty() && $orders->isEmpty() && ! $request->boolean('list') && ! $applications->contains('status', 'pending')) {
             return redirect()->route('student.group', $available->first()->group);
         }
 
-        return view('student.home', compact('enrollments', 'applications'));
+        return view('student.home', compact('enrollments', 'applications', 'courses', 'orders'));
     }
 
     public function applicationForm(Request $request): View

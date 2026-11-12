@@ -1,0 +1,1 @@
+<x-filament-panels::page>@if($course)<x-filament::section :heading="$course->title"><p>{{ $course->kindLabel() }}. Прогресс и срок доступа каждого слушателя.</p></x-filament::section>@endif<p class="portal-intro">Продление сохраняет прогресс и заметки. Закрытие доступа не удаляет историю обучения.</p>{{ $this->table }}</x-filament-panels::page>
