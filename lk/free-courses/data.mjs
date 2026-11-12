@@ -1,4 +1,4 @@
-import {recordedContent} from './course-content.mjs?v=20261112-courses-3';
+import {recordedContent} from './course-content.mjs?v=20261112-courses-4';
 
 export const courses = [
   {

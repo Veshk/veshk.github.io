@@ -1,4 +1,4 @@
-import { courses, seed } from './data.mjs?v=20261112-courses-3';
+import { courses, seed } from './data.mjs?v=20261112-courses-4';
 export { courses, seed };
 export const normalizeEmail = value => String(value).trim().toLowerCase();
 export const id = prefix => `${prefix}-${globalThis.crypto.randomUUID()}`;
@@ -66,9 +66,21 @@ export function retryMail(state,mailId) {
   state.audit.push({id:id('audit'),enrollmentId:mail.enrollmentId,at:state.now,text:'Повтор письма подготовлен. Срок доступа не изменён.'});
   return true;
 }
-export function markLesson(state,enrollmentId,index) {
+function accessibleLesson(state,enrollmentId,index) {
   const e=state.enrollments.find(e=>e.id===enrollmentId && e.userId===state.userId);
   if (!active(state,e) || !Number.isInteger(index) || index<0 || index>=getCourse(e.courseId).lessons.length) throw new Error('Урок недоступен.');
+  return e;
+}
+export function markLesson(state,enrollmentId,index) {
+  const e=accessibleLesson(state,enrollmentId,index);
   e.done=e.done.includes(index)?e.done.filter(i=>i!==index):[...e.done,index].sort((a,b)=>a-b);
   e.lastVisit=state.now;
+}
+// Playback events are idempotent: a repeated start must never toggle completion off.
+export function completeLesson(state,enrollmentId,index) {
+  const e=accessibleLesson(state,enrollmentId,index);
+  if(e.done.includes(index))return false;
+  e.done=[...e.done,index].sort((a,b)=>a-b);
+  e.lastVisit=state.now;
+  return true;
 }

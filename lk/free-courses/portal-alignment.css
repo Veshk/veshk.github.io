@@ -43,7 +43,9 @@
 .portal-view .lesson-heading h1{font-weight:400}
 .lesson-body{min-width:0}
 .portal-view .lesson-heading{margin:0 0 24px}
-.lesson-player{aspect-ratio:16/9;background:#18252a;overflow:hidden;border-radius:5px}
+.lesson-player{position:relative;aspect-ratio:16/9;background:#18252a;overflow:hidden;border-radius:5px}
+.player-loading{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:13px;pointer-events:none}
+.player-loading[hidden]{display:none}
 .lesson-player iframe{display:block;width:100%;height:100%;border:0}
 .media-caption{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin:12px 0 0}
 .lesson-duration{display:block;color:var(--muted);font-size:10px;margin-top:5px}

@@ -11,7 +11,7 @@ export function lessonMedia(course, index) {
   const lesson = course.content?.lessons[index];
   if (!lesson) return '<div class="video-placeholder"><div class="video-message"><span class="play-circle" aria-hidden="true">▷</span><strong>Место для видеоурока</strong><p>Материалы этого курса ещё не перенесены. Можно проверить навигацию и заметки.</p></div></div>';
   const embed = kinescopeEmbed(lesson.url);
-  if (embed) return `<div class="lesson-player"><iframe src="${h(embed)}" title="${h(lesson.title)} — видеоурок" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe></div><div class="media-caption"><span>${lesson.minutes} мин · Kinescope</span>${external(lesson.url,'Открыть видео отдельно')}</div>`;
+  if (embed) return `<div class="lesson-player"><iframe data-kinescope-url="${h(lesson.url)}" data-embed-src="${h(embed)}" title="${h(lesson.title)} — видеоурок" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe><span class="player-loading" data-player-status role="status">Загружаем видео…</span></div><div class="media-caption"><span>${lesson.minutes} мин · Kinescope</span>${external(lesson.url,'Открыть видео отдельно')}</div>`;
   return `<div class="video-placeholder external-video"><div class="video-message"><span class="play-circle" aria-hidden="true">▷</span><strong>Видеоурок · ${lesson.minutes} мин</strong><p>Запись откроется в плеере Яндекс Диска.</p>${external(lesson.url,'Смотреть урок','btn')}</div></div>`;
 }
 

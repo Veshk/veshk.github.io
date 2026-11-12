@@ -1,11 +1,13 @@
-import {lessonMedia,courseMaterials,courseAbout} from './course-view.mjs?v=20261112-courses-3';
-import {courses,seed,getCourse,active,pending,findEnrollment,percent,shortDate,fullDate,suggestedExtension,register,requestExtension,extend,retryMail,markLesson} from './domain.mjs?v=20261112-courses-3';
-import {logicPage} from './logic.mjs?v=20261112-courses-3';
-import {intakePage} from './intake.mjs?v=20261112-courses-3';
+import {mountKinescope} from './lesson-player.mjs?v=20261112-courses-4';
+import {lessonMedia,courseMaterials,courseAbout} from './course-view.mjs?v=20261112-courses-4';
+import {courses,seed,getCourse,active,pending,findEnrollment,percent,shortDate,fullDate,suggestedExtension,register,requestExtension,extend,retryMail,markLesson,completeLesson} from './domain.mjs?v=20261112-courses-4';
+import {logicPage} from './logic.mjs?v=20261112-courses-4';
+import {intakePage} from './intake.mjs?v=20261112-courses-4';
 
 const KEY='vesh.free-courses.prototype.v1';
 let state;
 try { const saved=JSON.parse(localStorage.getItem(KEY)); state=saved?.version===1 && Array.isArray(saved.enrollments) ? saved : seed(); } catch { state=seed(); }
+let disposeVideo=async()=>{},renderVersion=0;
 let adminTab='enrollments', adminQuery='', adminCourse='all', adminStatus='all', learnFilter='all', toastTimer;
 const app=document.querySelector('#app'), dialog=document.querySelector('#dialog');
 export const h=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -23,7 +25,7 @@ const routeLink=(path,label,selected)=>`<a href="#${path}" ${selected?'aria-curr
 
 function shell(content,section='overview') {
   const person=user();
-  return `<div class="review-bar"><div class="wrap review-inner"><div class="review-label"><b>ПРОТОТИП</b><span>Версия 3 · ${shortDate(state.now)} ${new Date(state.now).getUTCFullYear()}</span></div><nav class="review-nav" aria-label="Разделы прототипа">${routeLink('/overview','Обзор',section==='overview')}${routeLink('/admin','Управление',section==='admin')}${routeLink('/intake/feedback','Связь с Tilda',section==='intake')}${routeLink('/learn','Кабинет',section==='learn')}${routeLink('/logic','Логика',section==='logic')}</nav></div></div>
+  return `<div class="review-bar"><div class="wrap review-inner"><div class="review-label"><b>ПРОТОТИП</b><span>Версия 4 · ${shortDate(state.now)} ${new Date(state.now).getUTCFullYear()}</span></div><nav class="review-nav" aria-label="Разделы прототипа">${routeLink('/overview','Обзор',section==='overview')}${routeLink('/admin','Управление',section==='admin')}${routeLink('/intake/feedback','Связь с Tilda',section==='intake')}${routeLink('/learn','Кабинет',section==='learn')}${routeLink('/logic','Логика',section==='logic')}</nav></div></div>
   <header class="site-header ${section==='learn'?'portal-header':''}"><div class="wrap site-head"><a class="brand" href="#/overview"><img src="../brand/vesh-logo.svg" alt="ВЭШ"><span>${section==='learn'?'Пространство<br>вашего обучения':'Высшая<br>экономическая школа'}</span></a>${section==='admin'?'<div class="row"><span class="chip">Администратор</span><a class="btn secondary sm" href="../admin.html">Основные группы ↗</a></div>':section==='intake'?'<div class="row"><a class="btn secondary" href="#/learn">Мой кабинет</a></div>':`<a class="profile-link" href="#/learn"><span class="avatar">${h(initials(person.name))}</span><span class="name">${h(person.name.split(' ')[0])}<small class="muted" style="display:block">Учебный кабинет</small></span></a>`}</div></header>
   <main id="main" class="${section==='learn'?'portal-view':''}" tabindex="-1">${content}</main><footer class="footer"><div class="wrap row between"><p>ВЭШ · Концепт бесплатных курсов. Все слушатели вымышлены. Действия сохраняются только в этом браузере. Письма не отправляются.</p><div class="row flex-wrap"><a href="#/logic">Что уже работает в прототипе</a><button class="text-button" data-action="reset">Сбросить демо</button></div></div></footer>`;
 }
@@ -88,7 +90,7 @@ function coursePage(c,index=0,preview=false) {
   const isActive=preview||active(state,e),request=preview?null:pending(state,e.id),noteKey=`${e.id}:${index}`,base=`#/${preview?'preview':'course'}/${c.id}`;
   if(isActive&&!preview){e.lastVisit=state.now;save();}
   const notes=preview?'':`<section class="card practice"><h3>Мои заметки</h3><form id="note-form" data-key="${h(noteKey)}" data-enrollment="${h(e.id)}"><label class="field">Что хочу применить в работе<textarea name="note" maxlength="5000" placeholder="Главная мысль и следующий шаг…">${h(state.notes[noteKey]||'')}</textarea></label><div class="row between flex-wrap" style="margin-top:15px"><button class="btn secondary sm" type="submit">Сохранить заметку</button><button class="text-button" type="button" data-action="download-template">Шаблон заметок (.txt) ↓</button></div></form></section>`;
-  const lesson=isActive?`<div class="lesson-heading"><span class="eyebrow">Урок ${index+1} из ${c.lessons.length}${c.content?' · '+c.content.lessons[index].minutes+' мин':''}</span><h1>${h(c.lessons[index])}</h1><p class="small muted">${h(c.expert)} · Курс для самостоятельного изучения</p></div>${lessonMedia(c,index)}<div class="lesson-actions">${preview?'':`<button class="btn ${e.done.includes(index)?'secondary':''}" data-action="mark-lesson" data-id="${h(e.id)}" data-index="${index}">${e.done.includes(index)?'✓ Урок пройден · отменить':'Отметить урок пройденным'}</button>`}${index<c.lessons.length-1?`<a class="btn secondary" href="${base}/${index+1}">Следующий урок →</a>`:`<a class="btn secondary" href="#/${preview?'admin':'learn'}">${preview?'К управлению':'К моему обучению'} →</a>`}</div>${preview?'':'<p class="small muted" style="margin-top:13px">Прогресс отражает ваши отметки, а не время просмотра видео.</p>'}${courseMaterials(c)}${notes}${courseAbout(c)}`:'';
+  const lesson=isActive?`<div class="lesson-heading"><span class="eyebrow">Урок ${index+1} из ${c.lessons.length}${c.content?' · '+c.content.lessons[index].minutes+' мин':''}</span><h1>${h(c.lessons[index])}</h1><p class="small muted">${h(c.expert)} · Курс для самостоятельного изучения</p></div>${lessonMedia(c,index)}<div class="lesson-actions">${preview?'':`<button class="btn ${e.done.includes(index)?'secondary':''}" data-action="mark-lesson" data-id="${h(e.id)}" data-index="${index}">${e.done.includes(index)?'✓ Урок пройден · отменить':'Отметить урок пройденным'}</button>`}${index<c.lessons.length-1?`<a class="btn secondary" href="${base}/${index+1}">Следующий урок →</a>`:`<a class="btn secondary" href="#/${preview?'admin':'learn'}">${preview?'К управлению':'К моему обучению'} →</a>`}</div>${preview?'':`<p class="small muted" data-progress-hint style="margin-top:13px">${c.content?.lessons[index]?.provider==='Kinescope'?'Урок отметится пройденным, когда начнётся видео. Можно также поставить или снять отметку вручную.':'После просмотра видео отметьте урок пройденным.'}</p>`}${courseMaterials(c)}${notes}${courseAbout(c)}`:'';
   return `<div class="wrap"><div class="breadcrumb"><a href="#/${preview?'admin':'learn'}">${preview?'Управление курсами':'Моё обучение'}</a><span>›</span><span>${c.short}</span></div>${preview?'<div class="notice preview-notice"><strong>Предпросмотр кабинета курса</strong><span>Проверка содержания для администратора. Доступы, прогресс и заметки слушателей не меняются.</span><a href="#/admin">Вернуться к управлению →</a></div>':''}<button class="btn secondary full mobile-course-menu" data-action="toggle-lessons" aria-expanded="false">Программа курса · ${c.lessons.length} ${word(c.lessons.length,'урок','урока','уроков')} ↓</button><div class="course-layout"><aside class="course-sidebar"><div class="sidebar-head"><span class="eyebrow">Бесплатный курс</span><h3>${c.short}</h3>${preview?`<small class="muted">${c.lessons.length} уроков${c.content?' · '+c.content.lessons.reduce((sum,l)=>sum+l.minutes,0)+' мин':''}</small>`:`<div id="course-progress">${progress(e)}</div><small class="muted">Доступ до ${fullDate(e.until)}</small>`}</div><ol class="course-menu">${c.lessons.map((title,i)=>`<li><a href="${base}/${i}" ${i===index?'aria-current="page"':''}><span class="lesson-num" data-lesson-num="${i}">${e.done.includes(i)?'✓':String(i+1).padStart(2,'0')}</span><span>${h(title)}${c.content?`<small class="lesson-duration">${c.content.lessons[i].minutes} мин</small>`:''}</span></a></li>`).join('')}</ol></aside><section class="lesson-body">${isActive?lesson:`<div class="locked"><div class="symbol">◷</div><span class="chip gray">Срок доступа истёк</span><h1 style="margin-top:22px">Продолжим, когда будете готовы</h1><p class="muted">Доступ к курсу закончился ${fullDate(e.until)}. Вы прошли ${e.done.length} из ${c.lessons.length} уроков. Прогресс и заметки сохранены.</p>${request?'<div class="notice warm">Запрос на продление отправлен. Решение появится в кабинете.</div>':`<button class="btn" data-action="request-extension" data-id="${h(e.id)}">Попросить продление</button>`}<p class="small muted" style="margin-top:24px">Доступ к остальным вашим курсам и основной программе определяется их собственными сроками.</p><a class="btn secondary" href="#/learn">Моё обучение →</a></div>`}</section></div></div>`;
 }
 
@@ -97,7 +99,10 @@ function programPage() {
   return `<div class="wrap section"><div class="program-preview"><span class="chip">Основная программа · пример</span><h1 style="margin-top:25px">MBA · Стратегия</h1><p>Добро пожаловать, ${h(user().name.split(' ')[0])}. Ваше обучение продолжается.</p><div class="row flex-wrap"><span class="chip">Расписание</span><span class="chip">Записи занятий</span><span class="chip">Материалы</span></div></div><div class="notice space">Окончание или продление бесплатного курса не меняет доступ к этой программе. В рабочем ЛК здесь открывается существующая страница учебной группы.</div><div class="row space flex-wrap"><a class="btn" href="../index.html">Открыть действующий прототип ЛК ↗</a><a class="btn secondary" href="#/learn">Моё обучение</a></div></div>`;
 }
 
-function render() {
+async function render() {
+  const version=++renderVersion;
+  await disposeVideo();
+  if(version!==renderVersion)return;
   const path=route(),parts=path.split('/');let content,section;
   if(path==='/admin'){content=adminPage();section='admin';}
   else if(['intake','landing'].includes(parts[1])){content=intakePage(getCourse(parts[2])||courses[0],courseOptions,word);section='intake';}
@@ -109,7 +114,37 @@ function render() {
   else if(['receipt','mail'].includes(parts[1])){const receipt=state.submissions.find(s=>s.id===parts[2]);content=receipt?(parts[1]==='receipt'?receiptPage(receipt):mailPage(receipt)):overview();section='intake';}
   else{content=overview();section='overview';}
   app.innerHTML=shell(content,section);
+  connectLessonPlayer(path);
   document.title=`${{overview:'Бесплатные курсы',admin:'Управление курсами',intake:'Запись на Tilda — новый ЛК',learn:'Моё обучение',logic:'Логика и подключение'}[section]} — концепт ВЭШ`;
+}
+
+function refreshLessonProgress(enrollmentId,index) {
+  const e=state.enrollments.find(item=>item.id===enrollmentId);
+  const button=app.querySelector('[data-action="mark-lesson"]'),done=e.done.includes(index);
+  if(button){button.classList.toggle('secondary',done);button.textContent=done?'✓ Урок пройден · отменить':'Отметить урок пройденным';}
+  const meter=app.querySelector('#course-progress'),number=app.querySelector(`[data-lesson-num="${index}"]`);
+  if(meter)meter.innerHTML=progress(e);
+  if(number)number.textContent=done?'✓':String(index+1).padStart(2,'0');
+}
+
+function connectLessonPlayer(path) {
+  const iframe=app.querySelector('[data-kinescope-url]');
+  if(!iframe){disposeVideo=async()=>{};return;}
+  const button=app.querySelector('[data-action="mark-lesson"]');
+  const personId=state.userId,enrollmentId=button?.dataset.id,index=Number(button?.dataset.index);
+  disposeVideo=mountKinescope(iframe,()=>{
+    // The same video can be open in an admin preview or another person's demo.
+    if(!button||route()!==path||state.userId!==personId)return;
+    try{
+      if(completeLesson(state,enrollmentId,index)){
+        save();refreshLessonProgress(enrollmentId,index);
+        toast('Видео началось — урок отмечен пройденным.');
+      }
+    }catch{ /* Access was revoked or expired before the playback event. */ }
+  },{onUnavailable:()=>{
+    const hint=app.querySelector('[data-progress-hint]');
+    if(hint)hint.textContent='Автоматическая отметка сейчас недоступна. После просмотра отметьте урок вручную.';
+  }});
 }
 
 function openDialog(html) {dialog.innerHTML=html;dialog.showModal();}
@@ -135,7 +170,7 @@ document.addEventListener('click',event=>{
   if(action==='person'){personDialog(id);return;}
   if(action==='retry-mail'){retryMail(state,id);save();render();toast('Повтор письма подготовлен в демо. Срок доступа сохранён.');return;}
   if(action==='request-extension'){openDialog(`${dialogHead('Попросить продление')}<p class="small muted">Напишите, почему нужно больше времени. Администратор рассмотрит запрос. До его решения срок доступа не изменится.</p><form id="request-form" data-id="${h(id)}"><label class="field">Ваш комментарий<textarea name="reason" required maxlength="500" placeholder="Хочу закончить оставшиеся уроки"></textarea></label><p class="form-error" role="alert"></p><div class="dialog-actions"><button type="button" class="btn secondary" data-action="close-dialog">Отмена</button><button class="btn" type="submit">Отправить запрос</button></div></form>`);return;}
-  if(action==='mark-lesson'){try{markLesson(state,id,Number(button.dataset.index));save();const e=state.enrollments.find(item=>item.id===id),i=Number(button.dataset.index),done=e.done.includes(i);button.classList.toggle('secondary',done);button.textContent=done?'✓ Урок пройден · отменить':'Отметить урок пройденным';document.querySelector('#course-progress').innerHTML=progress(e);document.querySelector('[data-lesson-num="'+i+'"]').textContent=done?'✓':String(i+1).padStart(2,'0');toast('Прогресс сохранён в демо.');}catch(error){toast(error.message);}return;}
+  if(action==='mark-lesson'){try{markLesson(state,id,Number(button.dataset.index));save();refreshLessonProgress(id,Number(button.dataset.index));toast('Прогресс сохранён в демо.');}catch(error){toast(error.message);}return;}
   if(action==='toggle-lessons'){const sidebar=document.querySelector('.course-sidebar');sidebar.classList.toggle('open');button.setAttribute('aria-expanded',String(sidebar.classList.contains('open')));return;}
   if(action==='download-template'){const blob=new Blob(['ВЭШ — заметки к уроку\n\nГлавная мысль:\n\nЧто применю в работе:\n\nПервый шаг и срок:\n\nПример шаблона для прототипа.'],{type:'text/plain;charset=utf-8'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='vesh-lesson-notes.txt';link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);return;}
   if(action==='jump-section'){event.preventDefault();document.getElementById(button.dataset.target)?.scrollIntoView({behavior:'smooth'});if(button.dataset.target==='main')document.getElementById('main').focus({preventScroll:true});return;}
