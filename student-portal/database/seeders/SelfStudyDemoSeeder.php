@@ -22,6 +22,7 @@ class SelfStudyDemoSeeder extends Seeder
         $student = User::where('email', 'student@vesh.test')->firstOrFail();
         foreach (SelfStudyCourse::all() as $course) {
             $course->update(['administrator_id' => $admin->id, 'is_published' => true]);
+            $course->lessons()->update(['is_published' => true]);
             if ($course->kind === 'free') {
                 app(SelfStudyAccess::class)->grantFree($course, $student, $admin);
             }

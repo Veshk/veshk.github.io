@@ -1,6 +1,9 @@
 @extends('layouts.portal')
 @section('title', $course->title)
 @section('content')
+@if($course->kind === 'recorded')
+@include('student.recorded-course')
+@else
 <link rel="stylesheet" href="{{ asset('self-study/course.css') }}?v=20261112-1">
 <main class="shell self-study">
 <a class="text-link" href="{{ auth()->user()->isStaff() ? \App\Filament\Pages\CourseCatalog::getUrl(['kind' => $course->kind]) : route('student.home', ['list' => 1]) }}">← {{ auth()->user()->isStaff() ? 'К управлению курсами' : 'Моё обучение' }}</a>
@@ -37,4 +40,5 @@
 </section></div>
 @else<section class="card"><h2>Курс готовится</h2><p>Опубликованных уроков пока нет</p></section>@endif
 </main><script type="module" src="{{ asset('self-study/course.mjs') }}?v=20261112-1"></script>
+@endif
 @endsection

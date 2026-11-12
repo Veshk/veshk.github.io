@@ -179,4 +179,38 @@ class SelfStudyTest extends TestCase
         $this->assertDatabaseCount('self_study_enrollments', 0);
         $this->assertFalse($course->fresh()->is_published);
     }
+
+    public function test_recorded_page_navigates_only_published_lessons_and_keeps_notes_on_the_selected_lesson(): void
+    {
+        $course = SelfStudyCourse::factory()->create(['kind' => 'recorded']);
+        $access = SelfStudyEnrollment::factory()->create(['self_study_course_id' => $course->id]);
+        $first = SelfStudyLesson::factory()->create(['self_study_course_id' => $course->id, 'position' => 1, 'module_title' => 'Первая тема']);
+        $hidden = SelfStudyLesson::factory()->create(['self_study_course_id' => $course->id, 'position' => 2, 'title' => 'Неопубликованный урок', 'is_published' => false]);
+        $last = SelfStudyLesson::factory()->create(['self_study_course_id' => $course->id, 'position' => 3, 'module_title' => 'Вторая тема']);
+        $access->update(['completed_lessons' => [$first->id]]);
+
+        $this->actingAs($access->user)->get(route('student.lesson', [$course, $first]))
+            ->assertOk()->assertSee('Первая тема')->assertSee('Вторая тема')
+            ->assertSee(route('student.lesson', [$course, $last]).'#rc-learning', false)
+            ->assertDontSee('Неопубликованный урок')->assertDontSee('Предыдущий урок');
+        $this->get(route('student.course', $course))->assertOk()->assertSee('Урок 2 из 2')
+            ->assertSee('Предыдущий урок')->assertDontSee('Следующий урок');
+        $this->post(route('student.lesson.note', [$course, $last]), ['note' => 'Применить в отчёте'])
+            ->assertRedirect(route('student.lesson', [$course, $last]));
+        $this->get(route('student.lesson', [$course, $last]))->assertOk()->assertSee('Применить в отчёте');
+        $this->get(route('student.lesson', [$course, $first]))->assertOk()->assertDontSee('Применить в отчёте');
+        $this->get(route('student.lesson', [$course, $hidden]))->assertNotFound();
+    }
+
+    public function test_assigned_staff_can_preview_draft_paid_lessons_without_opening_them_to_students(): void
+    {
+        $course = SelfStudyCourse::factory()->create(['kind' => 'recorded']);
+        $lesson = SelfStudyLesson::factory()->create(['self_study_course_id' => $course->id, 'is_published' => false]);
+        $access = SelfStudyEnrollment::factory()->create(['self_study_course_id' => $course->id]);
+        $this->actingAs($course->administrator)->get(route('student.course', $course))->assertOk()->assertSee($lesson->title)->assertSee('Черновик урока');
+        $this->get(route('student.lesson', [$course, $lesson]))->assertOk()->assertDontSee('data-progress-form', false);
+        $this->actingAs(User::factory()->create(['role' => 'admin']))->get(route('student.lesson', [$course, $lesson]))->assertForbidden();
+        $this->actingAs($access->user)->get(route('student.lesson', [$course, $lesson]))->assertNotFound();
+        $this->postJson(route('student.lesson.progress', [$course, $lesson]), ['completed' => true])->assertNotFound();
+    }
 }

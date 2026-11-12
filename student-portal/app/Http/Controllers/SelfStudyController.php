@@ -18,9 +18,9 @@ class SelfStudyController extends Controller
     public function show(Request $request, SelfStudyCourse $course, ?SelfStudyLesson $lesson = null): View
     {
         $enrollment = $this->access($request, $course);
-        $course->load(['lessons' => fn ($query) => $query->where('is_published', true)]);
+        $course->load(['lessons' => fn ($query) => $query->when($enrollment !== null, fn ($query) => $query->where('is_published', true))]);
         if ($lesson) {
-            abort_unless($lesson->self_study_course_id === $course->id && $lesson->is_published, 404);
+            abort_unless($lesson->self_study_course_id === $course->id && ($enrollment === null || $lesson->is_published), 404);
         } else {
             $lesson = $course->lessons->first(fn (SelfStudyLesson $item): bool => ! in_array($item->id, $enrollment?->completed_lessons ?? [])) ?? $course->lessons->first();
         }

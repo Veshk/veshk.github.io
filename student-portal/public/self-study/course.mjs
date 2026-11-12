@@ -1,5 +1,7 @@
 import {mountKinescope} from './lesson-player.mjs';
 const form=document.querySelector('[data-progress-form]');
+const programme=document.querySelector('.rc-program');
+if(programme)programme.open=!matchMedia('(max-width: 860px)').matches;
 let busy=false;
 async function saveProgress(completed) {
   if(!form||busy)return;
@@ -12,7 +14,16 @@ async function saveProgress(completed) {
     document.querySelector('[data-progress]').textContent=data.progress+'%';
     form.elements.completed.value=data.completed?'0':'1';
     form.querySelector('[data-complete-button]').textContent=data.completed?'Снять отметку о прохождении':'Отметить пройденным';
-    document.querySelector('[data-lesson-check="'+form.dataset.lessonId+'"]').textContent=data.completed?'✓':'';
+    const check=document.querySelector('[data-lesson-check="'+form.dataset.lessonId+'"]');
+    check.textContent=data.completed?'✓':(check.dataset.number||'');
+    check.dataset.completed=String(data.completed);
+    const meter=document.querySelector('[data-rc-meter]');
+    if(meter){meter.setAttribute('aria-valuenow',data.progress);meter.querySelector('span').style.width=data.progress+'%';}
+    const count=document.querySelector('[data-rc-completed]');
+    if(count)count.textContent=document.querySelectorAll('[data-lesson-check][data-completed="true"]').length;
+    document.querySelectorAll('.rc-module').forEach(module=>{
+      module.querySelector('[data-module-progress]').textContent=module.querySelectorAll('[data-completed="true"]').length+' из '+module.querySelectorAll('[data-lesson-check]').length+' пройдено';
+    });
     status.textContent=data.completed?'Урок отмечен как пройденный':'Отметка снята';
   }catch{
     status.textContent='Не удалось сохранить отметку. Проверьте соединение и попробуйте ещё раз.';
