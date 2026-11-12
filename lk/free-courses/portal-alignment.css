@@ -1,5 +1,23 @@
 /* Shared visual values and course-cover treatment from ../portal.css. */
 :root{--ink:#18252a;--muted:#68777d;--navy:#1c3948;--blue:#226d8d;--red:#b2272a;--line:#dce3e6;--paper:#f4f6f6}
+.management-nav{display:flex;gap:24px;flex-wrap:wrap;padding-top:25px;font-size:13px}
+.management-nav a{color:var(--muted);text-decoration:none;padding-bottom:10px;border-bottom:2px solid transparent}
+.management-nav a[aria-current=page]{color:var(--ink);border-color:var(--red)}
+.paid-admin .card,.paid-admin .stat,.paid-admin .notice{border-radius:5px}
+.paid-admin h1{font-size:40px;font-weight:350;letter-spacing:-.035em}
+.paid-admin h2{font-weight:400}
+.paid-admin .btn{border-radius:3px}
+.paid-flow h3{font-size:20px}
+.migration-steps{padding-left:25px;line-height:1.8}
+.migration-steps li{padding:8px 0 8px 8px}
+.order-summary{max-width:800px;margin:auto}
+.order-summary h1{font-size:36px;font-weight:400}
+.paid-placeholder .video-message{max-width:540px;padding:30px}
+.paid-placeholder small{display:block;line-height:1.65;color:#c8d5dd}
+.course-module{border-bottom:1px solid var(--line)}
+.course-module summary{cursor:pointer;padding:15px 18px;font-size:12px;line-height:1.6;font-weight:500}
+.course-module .course-menu{border-top:1px solid var(--line)}
+@media(max-width:720px){.management-nav{gap:14px;font-size:11px}.paid-admin h1{font-size:32px}.paid-placeholder{aspect-ratio:auto;min-height:290px}.paid-placeholder .video-message{padding:25px}.paid-flow{grid-template-columns:1fr}.order-summary h1{font-size:30px}}
 .portal-header .site-head{width:min(1200px,calc(100% - 80px));height:80px}
 .portal-header .brand{gap:22px}
 .portal-header .brand img{width:112px;height:48px;object-fit:contain;filter:brightness(0)}

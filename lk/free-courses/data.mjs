@@ -1,4 +1,5 @@
-import {recordedContent} from './course-content.mjs?v=20261112-courses-4';
+import {paidCourses} from './paid-catalog.mjs?v=20261112-courses-5';
+import {recordedContent} from './course-content.mjs?v=20261112-courses-5';
 
 export const courses = [
   {
@@ -34,7 +35,7 @@ export const courses = [
 ].map(course => {
   const content = recordedContent[course.id];
   return content ? {...course, title:content.title, expert:content.expert, expertRole:content.expertRole, lessons:content.lessons.map(lesson=>lesson.title), practice:null, content} : course;
-});
+}).concat(paidCourses);
 
 export const catalog = ['Компетенции: какие бывают и как описать', 'Как провести SEO-аудит сайта', 'Стандарты и регламенты на производстве', 'Инициация проекта', 'Сложности в работе руководителя проекта', 'Шесть способов усилить отдел продаж', 'Обратная связь сотрудникам', 'Тесты в управлении персоналом', 'Индивидуальный план развития', 'Power Query', 'Индекс CSI', 'Разработка рыночной стратегии', 'Внутренние эксперты-тренеры', 'Lean-подход: потери и процессы', 'Разные поколения в управлении', 'Пять шагов отдела закупок', 'Методы оценки персонала', 'Страх холодного звонка', 'Поломки производственного оборудования', 'Целеполагание и планирование', 'Задания для оценки компетенций', 'Стратегические сессии', 'Управление изменениями', 'Эффективные управленческие решения'];
 

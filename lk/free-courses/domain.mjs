@@ -1,9 +1,10 @@
-import { courses, seed } from './data.mjs?v=20261112-courses-4';
+import {isPaidCourse} from './paid-catalog.mjs?v=20261112-courses-5';
+import { courses, seed } from './data.mjs?v=20261112-courses-5';
 export { courses, seed };
 export const normalizeEmail = value => String(value).trim().toLowerCase();
 export const id = prefix => `${prefix}-${globalThis.crypto.randomUUID()}`;
 export const getCourse = courseId => courses.find(c => c.id === courseId);
-export const active = (state, enrollment) => Boolean(enrollment && Date.parse(enrollment.until) > Date.parse(state.now));
+export const active = (state, enrollment) => Boolean(enrollment && enrollment.accessStatus!=='revoked' && Date.parse(enrollment.until) > Date.parse(state.now));
 export const pending = (state, enrollmentId) => state.requests.find(r => r.enrollmentId === enrollmentId && r.status === 'pending');
 export const findEnrollment = (state, userId, courseId) => state.enrollments.find(e => e.userId === userId && e.courseId === courseId);
 export const percent = enrollment => Math.round(enrollment.done.length / getCourse(enrollment.courseId).lessons.length * 100);
@@ -23,6 +24,7 @@ export function suggestedExtension(state, enrollment) {
 }
 export function register(state, {name,email,job,courseId,consent,marketing=false,submissionId=id('submission')}) {
   email = normalizeEmail(email);
+  if (isPaidCourse(getCourse(courseId))) throw new Error('Платный курс открывается после подтверждения оплаты.');
   if (!getCourse(courseId) || !name.trim() || !job.trim() || !/^[^\s@]+@example\.test$/.test(email) || !consent) throw new Error('Заполните имя, должность и тестовый email вида name@example.test. Подтвердите согласие.');
   const repeat = state.submissions.find(s => s.id === submissionId);
   if (repeat) return repeat;
@@ -43,7 +45,7 @@ export function register(state, {name,email,job,courseId,consent,marketing=false
 }
 export function requestExtension(state,enrollmentId,reason) {
   const enrollment = state.enrollments.find(e=>e.id===enrollmentId && e.userId===state.userId);
-  if (!enrollment || !String(reason).trim()) throw new Error('Укажите причину продления.');
+  if (!enrollment || enrollment.accessStatus==='revoked' || !String(reason).trim()) throw new Error('Укажите причину продления.');
   if (pending(state,enrollmentId)) return false;
   state.requests.push({id:id('request'),enrollmentId,reason:String(reason).trim(),status:'pending',at:state.now});
   return true;
@@ -51,7 +53,7 @@ export function requestExtension(state,enrollmentId,reason) {
 export function extend(state,enrollmentId,date,reason) {
   const e = state.enrollments.find(item=>item.id===enrollmentId);
   const until = new Date(`${date}T23:59:59.999+05:00`);
-  if (!e || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(until.getTime()) || until.getTime() <= Math.max(Date.parse(state.now),Date.parse(e.until)) || !reason.trim()) throw new Error('Выберите дату позже текущего срока и сегодняшнего дня. Укажите причину.');
+  if (!e || e.accessStatus==='revoked' || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(until.getTime()) || until.getTime() <= Math.max(Date.parse(state.now),Date.parse(e.until)) || !reason.trim()) throw new Error('Выберите дату позже текущего срока и сегодняшнего дня. Укажите причину.');
   if (new Date(until.getTime()+5*3600000).toISOString().slice(0,10)!==date) throw new Error('Укажите существующую календарную дату.');
   const oldUntil = e.until; e.until = until.toISOString();
   state.requests.filter(r=>r.enrollmentId===e.id&&r.status==='pending').forEach(r=>{r.status='approved';r.resolvedAt=state.now;});

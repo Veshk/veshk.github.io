@@ -1,9 +1,9 @@
-import {catalog} from './data.mjs?v=20261112-courses-4';
-import {fullDate} from './domain.mjs?v=20261112-courses-4';
+import {catalog} from './data.mjs?v=20261112-courses-5';
+import {fullDate} from './domain.mjs?v=20261112-courses-5';
 
 export function logicPage(state,h) {
   const sections=[['principles','01 · Основные правила'],['journey','02 · Путь слушателя'],['management','03 · Управление'],['integration','04 · Связь с лендингами'],['identity','05 · Данные и доступ'],['migration','06 · Перенос с Tilda'],['scope','07 · Готовность и границы'],['sources','08 · Источники']];
-  return `<div class="wrap"><div class="page-title"><p class="eyebrow">Предлагаемая логика · 12 ноября 2026</p><h1>Как это будет работать</h1><p class="lead">Личные кабинеты бесплатных курсов становятся частью общего ЛК ВЭШ. Продающие лендинги и формы записи остаются на Tilda как есть.</p></div><div class="logic-grid"><nav class="logic-nav" aria-label="Разделы концепции">${sections.map(([id,title])=>`<a href="#${id}" data-action="jump-section" data-target="${id}">${title}</a>`).join('')}</nav><div>
+  return `<div class="wrap"><div class="notice space">Добавлен отдельный концепт платных курсов: оплата, 90 дней доступа, единый профиль и переезд без Airtable. <a href="#/paid-logic">Посмотреть механику →</a></div><div class="page-title"><p class="eyebrow">Предлагаемая логика · 12 ноября 2026</p><h1>Как это будет работать</h1><p class="lead">Личные кабинеты бесплатных курсов становятся частью общего ЛК ВЭШ. Продающие лендинги и формы записи остаются на Tilda как есть.</p></div><div class="logic-grid"><nav class="logic-nav" aria-label="Разделы концепции">${sections.map(([id,title])=>`<a href="#${id}" data-action="jump-section" data-target="${id}">${title}</a>`).join('')}</nav><div>
   <section class="logic-section" id="principles"><h2>Один человек. Несколько независимых доступов.</h2><p>В текущей Tilda бесплатный курс — отдельная группа участников со страницей уроков. В новом ЛК сохраняем понятный список участников, а срок храним персонально для каждого зачисления.</p>${[
     ['Один аккаунт на email','Если слушатель уже учится в ВЭШ, новый курс добавляется в его существующий кабинет. Имя и телефон не используются для автоматического объединения людей.'],
     ['Один календарный месяц с записи','Начало — момент успешного зачисления. Например, 12 ноября в 12:00 → 12 декабря в 12:00, время Екатеринбурга. 31 января → последний день февраля в то же время.'],

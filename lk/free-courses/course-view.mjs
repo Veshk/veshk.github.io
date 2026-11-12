@@ -8,6 +8,7 @@ export function kinescopeEmbed(url) {
 }
 
 export function lessonMedia(course, index) {
+  if(course.kind==='paid-recorded')return `<div class="video-placeholder paid-placeholder"><div class="video-message"><span class="play-circle" aria-hidden="true">▷</span><strong>Видеоурок · ${course.minutes[index]} мин</strong><p>Здесь будет запись урока внутри ЛК.</p><small>В публичном прототипе показана структура курса. Платное видео доступно только в защищённом кабинете.</small></div></div>`;
   const lesson = course.content?.lessons[index];
   if (!lesson) return '<div class="video-placeholder"><div class="video-message"><span class="play-circle" aria-hidden="true">▷</span><strong>Место для видеоурока</strong><p>Материалы этого курса ещё не перенесены. Можно проверить навигацию и заметки.</p></div></div>';
   const embed = kinescopeEmbed(lesson.url);
@@ -17,6 +18,7 @@ export function lessonMedia(course, index) {
 
 export function courseMaterials(course) {
   const content = course.content;
+  if(course.kind==='paid-recorded')return '<section class="card practice"><h3>Материалы и задание к уроку</h3><p class="muted">В рабочем кабинете здесь будут презентация, файлы и задание выбранного урока. Они хранятся в новой системе и выдаются после проверки доступа.</p></section>';
   if (!content) return `<div class="card practice"><h3>Попробуйте на практике</h3><p>${h(course.practice)}</p><p class="small muted">Пример задания для концепта. Без отправки на проверку.</p></div>`;
   if (!content.practice) return '';
   return `<section class="card practice" aria-labelledby="practice-title"><p class="eyebrow">Самостоятельная работа</p><h2 id="practice-title">Практическое задание</h2><p>${h(content.practice.intro)}</p><div class="resource-files">${content.materials.map(file=>external(file.url,file.name,'resource-file')).join('')}</div>${external(content.materialsFolder,'Открыть папку со всеми файлами','small')}<ol class="practice-steps">${content.practice.steps.map(step=>`<li><strong>${h(step.title)}</strong><p>${h(step.text)}</p></li>`).join('')}</ol></section>`;
