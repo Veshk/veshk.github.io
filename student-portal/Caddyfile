@@ -3,6 +3,10 @@
     encode zstd gzip
     header X-Content-Type-Options nosniff
 
+    # Sandboxed previews have an opaque origin; these public fonts need CORS.
+    @previewFonts path /brand/inter-cyrillic.woff2 /brand/inter-latin.woff2 /brand/soul-adventures-cyr-script.woff2
+    header @previewFonts Access-Control-Allow-Origin "*"
+
     # Only Laravel's front controller is executable; uploads stay static.
     @otherPhp {
         path *.php *.php/*

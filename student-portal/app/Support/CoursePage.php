@@ -353,7 +353,7 @@ class CoursePage
             $blocks[] = Block::make($type)->label($label)->schema($fields);
         }
 
-        return Builder::make('page_blocks')->label('Блоки страницы')->blocks($blocks)->addActionLabel('Добавить блок')->reorderableWithButtons()->collapsible()->blockNumbers(false)->columnSpanFull()->extraItemActions([
+        return Builder::make('page_blocks')->label('Блоки страницы')->blocks($blocks)->addActionLabel('Добавить блок')->reorderableWithButtons()->collapsed()->blockNumbers(false)->columnSpanFull()->extraItemActions([
             Action::make('previewBlock')->label('Предпросмотр')->icon('heroicon-o-eye')->modalHeading('Предпросмотр блока')->modalWidth('7xl')->modalSubmitAction(false)->modalCancelActionLabel('Продолжить редактирование')
                 ->visible(fn ($record): bool => $record instanceof StudyGroup && auth()->user()?->can('update', $record))
                 ->modalContent(function (array $arguments, Builder $component, StudyGroup $record): HtmlString {

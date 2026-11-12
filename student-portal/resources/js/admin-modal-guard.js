@@ -67,7 +67,7 @@ window.addEventListener('beforeunload', (event) => {
 // Both the editor overview and a block link reveal the same form section.
 function revealCourseBlock(selected) {
     const marker = [...document.querySelectorAll('[data-course-block]')].find(el => el.dataset.courseBlock === selected);
-    const target = selected === 'hero' ? document.getElementById('course-editor-hero') : marker?.closest('.fi-fo-builder-item');
+    const target = selected === 'hero' ? document.querySelector('#course-editor-hero .fi-section') : marker?.closest('.fi-fo-builder-item');
     if (!target) return false;
     target.dispatchEvent(new CustomEvent('expand'));
     requestAnimationFrame(() => {

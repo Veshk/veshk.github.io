@@ -11,9 +11,12 @@ use App\Models\Program;
 use App\Models\StudyGroup;
 use App\Models\User;
 use App\Support\CoursePage;
+use App\Support\GroupHero;
 use Carbon\Carbon;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
@@ -328,6 +331,37 @@ class CoursePageTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'admin']));
         $this->expectException(HttpException::class);
         CoursePage::previewBlock($group, $draft);
+    }
+
+    public function test_hero_preview_reflects_draft_upload_position_and_clear_without_saving(): void
+    {
+        Storage::fake('public');
+        $group = StudyGroup::factory()->create(['description' => 'Сохранённое приветствие', 'hero_image' => 'group-covers/saved.jpg', 'hero_position' => 'center']);
+        $this->actingAs($group->administrator);
+        $form = Livewire::test(EditGroupPage::class, ['record' => $group->id]);
+        $form->fillForm(['description' => 'Черновик <script>опасно</script>', 'hero_position' => 'top', 'hero_image' => UploadedFile::fake()->image('draft.jpg', 2400, 900)]);
+        $html = GroupHero::preview($group, $form->get('data'));
+        $this->assertStringContainsString('/preview-file/', $html);
+        $this->assertStringContainsString('object-position:top', $html);
+        $this->assertStringContainsString('Черновик &lt;script&gt;', $html);
+        $this->assertStringNotContainsString('/storage/group-covers/saved.jpg', $html);
+        $form->assertSee('Предпросмотр главного экрана');
+        $cleared = GroupHero::preview($group, ['hero_image' => [], 'hero_position' => 'invalid', 'description' => '']);
+        $this->assertStringContainsString('object-position:center', $cleared);
+        $this->assertStringNotContainsString('Сохранённое приветствие', $cleared);
+        $this->assertStringNotContainsString('/storage/group-covers/saved.jpg', $cleared);
+        $this->assertSame('Сохранённое приветствие', $group->fresh()->description);
+        $this->assertSame('group-covers/saved.jpg', $group->fresh()->hero_image);
+        $this->assertSame('center', $group->fresh()->hero_position);
+        Storage::disk('public')->assertDirectoryEmpty('group-covers');
+    }
+
+    public function test_hero_preview_requires_permission_to_edit_group(): void
+    {
+        $group = StudyGroup::factory()->create();
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        $this->expectException(HttpException::class);
+        GroupHero::preview($group, ['description' => 'Чужая группа']);
     }
 
     public function test_pencil_targets_alias_in_current_group_and_is_hidden_from_students(): void
