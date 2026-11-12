@@ -274,3 +274,15 @@
 .course-hero.has-long-title .breadcrumb{margin-bottom:28px}
 @media(max-width:900px){.recording-row{grid-template-columns:160px minmax(0,1fr);gap:14px 20px}.recording-action,.recording-row>.muted{grid-column:2;justify-self:start}.recording-row .recording-meta{grid-row:1/3}.preparation-step{padding:20px}}
 @media(max-width:600px){.preparation-steps{grid-template-columns:1fr;gap:12px}.preparation-step{gap:14px;padding:18px}.preparation-step h3{font-size:17px}.recording-row{display:flex;flex-direction:column;align-items:stretch;gap:14px;padding:18px}.recording-row .recording-meta{flex-direction:row-reverse;justify-content:space-between;align-items:center;gap:10px}.recording-action{align-self:flex-start}.recording-copy h3{font-size:17px}.block-preview-heading{flex-wrap:wrap}.block-preview-dialog{padding:12px}.course-block-anchor{top:-90px}.block-edit-tools{margin-bottom:8px}}
+
+/* Editor overview and compact recordings. */
+.editor-block-nav{margin:24px 0;padding:20px 24px;border:1px solid #d4e0e5;border-radius:8px;background:#fff}
+.editor-block-nav h2{font-size:18px;margin:0 0 6px}.editor-block-nav p{font-size:13px;color:#68777d;margin:0 0 14px}
+.editor-block-nav [data-editor-links]{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.editor-block-nav button{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;border:1px solid #dce3e6;border-radius:5px;padding:10px 12px;background:#f4f7f8;color:#1c3948;font:inherit;font-size:13px;overflow-wrap:anywhere}
+.editor-block-nav button:hover{background:#e6eef1}.editor-block-nav button:focus-visible{outline:2px solid #226d8d;outline-offset:2px}.editor-block-nav small{color:#68777d;font-size:11px;white-space:nowrap}
+#blocks-list>.editor-block,#main-screen,.advisor-editor{scroll-margin-top:24px}
+.recording-editor .lesson-editor-when span{white-space:normal}.recording-editor select{min-height:38px;padding:8px 10px;font-size:14px}
+.editor-save-actions{flex-wrap:wrap}
+@media(max-width:800px){.editor-block-nav [data-editor-links]{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.editor-block-nav{padding:16px}.editor-block-nav [data-editor-links]{grid-template-columns:1fr}.editor-save-actions .btn{flex:auto}.editor-save-actions button[value=portal]{order:3;flex-basis:100%}.recording-editor select{font-size:16px}}
