@@ -64,13 +64,15 @@ class SelfStudyController extends Controller
 
     public function material(Request $request, SelfStudyCourse $course, SelfStudyLesson $lesson, int $index): StreamedResponse
     {
-        $this->access($request, $course);
-        abort_unless($lesson->self_study_course_id === $course->id && $lesson->is_published, 404);
+        $enrollment = $this->access($request, $course);
+        abort_unless($lesson->self_study_course_id === $course->id && ($enrollment === null || $lesson->is_published), 404);
         $material = $lesson->materials[$index] ?? [];
         $path = $material['path'] ?? '';
         abort_unless(str_starts_with($path, 'course-materials/') && ! str_contains($path, '..') && Storage::disk('local')->exists($path), 404);
 
-        return Storage::disk('local')->download($path);
+        $filename = basename(str_replace('\\', '/', $material['filename'] ?? $path));
+
+        return Storage::disk('local')->download($path, $filename, ['Cache-Control' => 'private, no-store']);
     }
 
     private function access(Request $request, SelfStudyCourse $course, bool $studentOnly = false): ?SelfStudyEnrollment
