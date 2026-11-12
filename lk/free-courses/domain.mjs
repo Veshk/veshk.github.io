@@ -1,5 +1,5 @@
-import {isPaidCourse} from './paid-catalog.mjs?v=20261112-courses-5';
-import { courses, seed } from './data.mjs?v=20261112-courses-5';
+import {isPaidCourse} from './paid-catalog.mjs?v=20261112-courses-6';
+import { courses, seed } from './data.mjs?v=20261112-courses-6';
 export { courses, seed };
 export const normalizeEmail = value => String(value).trim().toLowerCase();
 export const id = prefix => `${prefix}-${globalThis.crypto.randomUUID()}`;

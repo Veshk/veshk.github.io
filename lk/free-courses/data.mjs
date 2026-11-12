@@ -1,5 +1,5 @@
-import {paidCourses} from './paid-catalog.mjs?v=20261112-courses-5';
-import {recordedContent} from './course-content.mjs?v=20261112-courses-5';
+import {paidCourses} from './paid-catalog.mjs?v=20261112-courses-6';
+import {recordedContent} from './course-content.mjs?v=20261112-courses-6';
 
 export const courses = [
   {

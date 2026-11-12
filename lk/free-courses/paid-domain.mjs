@@ -1,5 +1,5 @@
-import {getCourse,id,findEnrollment} from './domain.mjs?v=20261112-courses-5';
-import {isPaidCourse} from './paid-catalog.mjs?v=20261112-courses-5';
+import {getCourse,id,findEnrollment} from './domain.mjs?v=20261112-courses-6';
+import {isPaidCourse} from './paid-catalog.mjs?v=20261112-courses-6';
 
 export const paymentLabels={pending:'Ждёт оплаты',paid:'Оплачен',failed:'Оплата не прошла',review:'Нужна сверка',refunded:'Возврат подтверждён'};
 // A local simulation of the server's verified event contract, never a live payment receiver.
@@ -29,7 +29,7 @@ export function applyDemoPayment(state,event) {
       state.paymentEvents.push({...event,result:'review'});log(order.issue);return {review:true,order};
     }
     order.status='paid';order.paidAt=event.paidAt;order.transactionId=event.transactionId;delete order.issue;
-    const e={id:id('paid-enrollment'),orderId:order.id,userId:order.userId,courseId:order.courseId,start:event.paidAt,until:new Date(time+order.accessDays*86400000).toISOString(),done:[],lastVisit:null,source:'Оплата · демо',accessStatus:'active'};
+    const e={id:id('paid-enrollment'),orderId:order.id,userId:order.userId,courseId:order.courseId,start:event.paidAt,until:new Date(time+order.accessDays*86400000).toISOString(),done:[],lastVisit:null,source:'Оплата — демо',accessStatus:'active'};
     state.enrollments.push(e);
     state.mail.push({id:id('mail'),enrollmentId:e.id,status:'prepared',attempts:1,at:state.now});
     log('Подтверждена полная оплата. Открыт доступ на 90 дней со дня оплаты. Письмо подготовлено в демо.');
