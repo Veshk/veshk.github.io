@@ -32,10 +32,10 @@ window.CourseOverview = (()=>{
     hero.insertAdjacentHTML('afterend',markup(blocks,group,ctx.state?.academicAdvisors));
   }
   function editor({root,record,ctx,mark}){
-    const section=document.createElement('section');section.className='editor-block advisor-editor';
-    section.innerHTML=`<h2>Научный руководитель</h2><p>Компактная карточка на первом экране. Выберите профиль из справочника.</p><label class="field">Руководитель группы<select data-advisor-select><option value="">Не показывать</option>${Object.entries(ctx.state.academicAdvisors||{}).map(([id,p])=>`<option value="${esc(id)}">${esc(p.name)}</option>`).join('')}</select></label><a class="text-link" href="admin.html?role=${encodeURIComponent(ctx.role)}&panel=advisors" target="_blank" rel="noopener">Открыть справочник научных руководителей ↗</a>`;
+    const section=document.createElement('details');section.className='editor-block advisor-editor';
+    section.innerHTML=`<summary>Научный руководитель</summary><div class="editor-block-body"><p>Компактная карточка на первом экране. Выберите профиль из справочника.</p><label class="field">Руководитель группы<select data-advisor-select><option value="">Не показывать</option>${Object.entries(ctx.state.academicAdvisors||{}).map(([id,p])=>`<option value="${esc(id)}">${esc(p.name)}</option>`).join('')}</select></label><a class="text-link" href="admin.html?role=${encodeURIComponent(ctx.role)}&panel=advisors" target="_blank" rel="noopener">Открыть справочник научных руководителей ↗</a></div>`;
     root.prepend(section);const select=section.querySelector('select');select.value=record.academic_advisor_id||'';select.addEventListener('change',mark);
-    const refresh=document.createElement('button');refresh.type='button';refresh.className='text-button';refresh.textContent='Обновить список';refresh.addEventListener('click',()=>document.dispatchEvent(new CustomEvent('refresh-academic-advisors')));section.append(refresh);
+    const refresh=document.createElement('button');refresh.type='button';refresh.className='text-button';refresh.textContent='Обновить список';refresh.addEventListener('click',()=>document.dispatchEvent(new CustomEvent('refresh-academic-advisors')));section.querySelector('.editor-block-body').append(refresh);
     document.addEventListener('academic-advisors-changed',()=>{const chosen=select.value;select.innerHTML='<option value="">Не показывать</option>'+Object.entries(ctx.state.academicAdvisors||{}).map(([id,p])=>`<option value="${esc(id)}">${esc(p.name)}</option>`).join('');select.value=chosen;});
     return {save(){record.academic_advisor_id=select.value||null;}};
   }
