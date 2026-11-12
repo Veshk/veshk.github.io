@@ -64,29 +64,31 @@ window.addEventListener('beforeunload', (event) => {
 });
 
 
-// A block link opens the matching editor item, including after Livewire navigation.
+// Both the editor overview and a block link reveal the same form section.
+function revealCourseBlock(selected) {
+    const marker = [...document.querySelectorAll('[data-course-block]')].find(el => el.dataset.courseBlock === selected);
+    const target = selected === 'hero' ? document.getElementById('course-editor-hero') : marker?.closest('.fi-fo-builder-item');
+    if (!target) return false;
+    target.dispatchEvent(new CustomEvent('expand'));
+    requestAnimationFrame(() => {
+        target.scrollIntoView({block: 'start'});
+        const input = target.querySelector('input:not([type="hidden"]):not([type="file"]), textarea, button');
+        input?.focus({preventScroll: true});
+    });
+    return true;
+}
+
+window.addEventListener('course-editor-focus', event => revealCourseBlock(event.detail.block));
+
 function focusCourseBlock() {
     const selected = new URLSearchParams(location.search).get('block');
     if (!selected) return;
-    let done = false;
-    const focus = () => {
-        if (done) return;
-        const marker = [...document.querySelectorAll('[data-course-block]')].find(el => el.dataset.courseBlock === selected);
-        const target = marker?.closest('.fi-fo-builder-item');
-        if (!target) return;
-        done = true;
-        target.dispatchEvent(new CustomEvent('expand'));
-        requestAnimationFrame(() => {
-            target.scrollIntoView({block: 'start'});
-            const input = target.querySelector('input:not([type="hidden"]), textarea');
-            input?.focus({preventScroll: true});
-        });
-        observer.disconnect();
-    };
-    const observer = new MutationObserver(focus);
+    const observer = new MutationObserver(() => {
+        if (revealCourseBlock(selected)) observer.disconnect();
+    });
     observer.observe(document.body, {childList: true, subtree: true});
     setTimeout(() => observer.disconnect(), 10000);
-    focus();
+    if (revealCourseBlock(selected)) observer.disconnect();
 }
 document.addEventListener('livewire:navigated', focusCourseBlock);
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', focusCourseBlock); else focusCourseBlock();

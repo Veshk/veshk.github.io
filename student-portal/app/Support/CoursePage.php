@@ -324,9 +324,25 @@ class CoursePage
                 'faq', 'preparation' => [Repeater::make('questions')->label('Вопросы и ответы')->schema([
                     TextInput::make('question')->label('Вопрос')->required()->maxLength(500), Textarea::make('answer')->label('Ответ')->required()->maxLength(5000), self::url('url', 'Ссылка в ответе'), TextInput::make('button')->label('Текст ссылки')->maxLength(100),
                 ])->defaultItems(0)->addActionLabel('Добавить вопрос')->collapsible()],
-                'recordings' => [Repeater::make('videos')->label('Записи')->schema([
-                    TextInput::make('module')->label('Модуль')->maxLength(300), TextInput::make('title')->label('Название записи')->required()->maxLength(300), DatePicker::make('date')->label('Дата занятия'), Select::make('status')->label('Статус записи')->options(['pending' => 'Видео ещё не опубликовано', 'published' => 'Запись опубликована'])->default('pending')->required()->live(), Textarea::make('text')->label('Описание')->maxLength(5000), self::url('url', 'Ссылка на запись')->required(fn (Get $get): bool => $get('status') === 'published'),
-                ])->defaultItems(0)->addActionLabel('Добавить запись')->collapsible()],
+                'recordings' => [Repeater::make('videos')->label('Записи')->helperText('Нажмите на нужную запись, чтобы изменить её.')->schema([
+                    DatePicker::make('date')->label('Дата занятия')->live(onBlur: true),
+                    Select::make('status')->label('Статус записи')->options(['pending' => 'Видео ещё не опубликовано', 'published' => 'Запись опубликована'])->default('pending')->required()->live(),
+                    Textarea::make('title')->label('Название записи')->required()->maxLength(300)->rows(2)->columnSpanFull()->live(onBlur: true),
+                    self::url('url', 'Ссылка на запись')->required(fn (Get $get): bool => $get('status') === 'published')->columnSpanFull(),
+                    Section::make('Дополнительно')->schema([
+                        TextInput::make('module')->label('Модуль')->maxLength(300),
+                        Textarea::make('text')->label('Описание')->maxLength(5000)->rows(3),
+                    ])->columnSpanFull()->compact()->collapsed(),
+                ])->columns(2)->defaultItems(0)->addActionLabel('Добавить запись')->itemLabel(function (array $state): string {
+                    $date = $state['date'] ?? '';
+                    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                        $date = implode('.', array_reverse(explode('-', $date)));
+                    }
+
+                    $status = ($state['status'] ?? 'pending') === 'published' ? 'Опубликована' : 'Ожидает видео';
+
+                    return implode(' ', [$date ?: 'Без даты', $status, Str::limit($state['title'] ?? 'Новая запись', 120)]);
+                })->collapsed()],
                 'materials' => [Textarea::make('text')->label('Описание')->maxLength(5000), self::url('url', 'Ссылка на папку группы (необязательно)'), Repeater::make('resources')->label('Материалы')->schema([
                     TextInput::make('title')->label('Название материала')->required()->maxLength(300), Textarea::make('text')->label('Описание')->maxLength(5000), self::url('url', 'Ссылка на материал')->required(), TextInput::make('button')->label('Текст кнопки')->maxLength(100),
                 ])->defaultItems(0)->addActionLabel('Добавить материал')->collapsible()],

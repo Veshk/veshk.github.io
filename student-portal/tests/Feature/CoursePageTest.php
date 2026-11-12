@@ -12,6 +12,7 @@ use App\Models\StudyGroup;
 use App\Models\User;
 use App\Support\CoursePage;
 use Carbon\Carbon;
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Livewire\Livewire;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -77,6 +78,33 @@ class CoursePageTest extends TestCase
         $this->assertSame($blocks, $group->fresh()->page_blocks);
         $this->assertSame($group->administrator_id, $group->fresh()->administrator_id);
         $this->actingAs(User::factory()->create(['role' => 'senior']))->get('/admin/study-groups/'.$group->id.'/page')->assertOk();
+    }
+
+    public function test_save_and_open_validates_recordings_before_redirecting_and_preserves_details(): void
+    {
+        $video = ['title' => 'Разбор кейса', 'date' => '2026-11-16', 'status' => 'published', 'url' => 'https://example.com/recording', 'module' => 'Модуль 1', 'text' => 'Описание занятия'];
+        $blocks = [['type' => 'recordings', 'data' => ['block_id' => 'videos', 'title' => 'Записи занятий', 'visible' => true, 'videos' => [$video]]]];
+        $group = StudyGroup::factory()->create(['page_blocks' => $blocks]);
+        $this->actingAs($group->administrator);
+        $blocks[0]['data']['videos'][0]['title'] = 'Уточнённая тема';
+
+        Livewire::test(EditGroupPage::class, ['record' => $group->id])
+            ->assertSee('Блоки для редактирования')->assertSee('16.11.2026 Опубликована Разбор кейса')
+            ->set('block', 'videos')->fillForm(['page_blocks' => $blocks])
+            ->callAction(TestAction::make('saveAndOpen')->schemaComponent('form-actions', 'content'))->assertHasNoFormErrors()
+            ->assertRedirect(route('student.group', $group).'#course-block-videos');
+        $this->assertSame($blocks, $group->fresh()->page_blocks);
+
+        $blocks[0]['data']['videos'][0]['url'] = null;
+        Livewire::test(EditGroupPage::class, ['record' => $group->id])
+            ->fillForm(['page_blocks' => $blocks])->callAction(TestAction::make('saveAndOpen')->schemaComponent('form-actions', 'content'))
+            ->assertHasFormErrors()->assertNoRedirect();
+        $this->assertSame('https://example.com/recording', $group->fresh()->page_blocks[0]['data']['videos'][0]['url']);
+
+        Livewire::test(EditGroupPage::class, ['record' => $group->id])
+            ->call('save')->assertHasNoFormErrors()->assertNoRedirect();
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        Livewire::test(EditGroupPage::class, ['record' => $group->id])->assertForbidden();
     }
 
     public function test_student_page_renders_visible_blocks_in_order_and_escapes_links_and_text(): void

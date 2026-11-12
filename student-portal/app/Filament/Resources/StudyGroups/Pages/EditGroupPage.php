@@ -8,6 +8,7 @@ use App\Support\CoursePage;
 use App\Support\GroupHero;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Livewire\Attributes\Url;
 
@@ -18,6 +19,8 @@ class EditGroupPage extends EditRecord
 
     public static bool $formActionsAreSticky = true;
 
+    protected bool $redirectToPortal = false;
+
     protected ?bool $hasUnsavedDataChangesAlert = true;
 
     protected static string $resource = StudyGroupResource::class;
@@ -26,7 +29,7 @@ class EditGroupPage extends EditRecord
 
     public function form(Schema $schema): Schema
     {
-        return $schema->components([...GroupHero::fields(), CoursePage::builder()->helperText('У каждого блока есть предпросмотр без сохранения. После сохранения можно вернуться к странице слушателя.')]);
+        return $schema->components([View::make('filament.components.course-editor-navigation')->columnSpanFull(), ...GroupHero::fields(), CoursePage::builder()->helperText('У каждого блока есть предпросмотр без сохранения. После сохранения можно вернуться к странице слушателя.')]);
     }
 
     protected function mutateFormDataBeforeFill(array $data): array
@@ -41,6 +44,25 @@ class EditGroupPage extends EditRecord
         CoursePage::validateAliases($data['page_blocks'] ?? [], $this->getRecord(), auth()->user());
 
         return ['academic_advisor_id' => $data['academic_advisor_id'] ?? null, 'page_blocks' => $data['page_blocks'] ?? [], 'hero_image' => $data['hero_image'] ?? null, 'hero_position' => $data['hero_position'] ?? 'center', 'description' => $data['description'] ?? null];
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getSaveFormAction(),
+            Action::make('saveAndOpen')->label('Сохранить и открыть ЛК')->color('gray')->action(function (): void {
+                $this->redirectToPortal = true;
+                $this->save();
+            }),
+            $this->getCancelFormAction(),
+        ];
+    }
+
+    protected function getRedirectUrl(): ?string
+    {
+        return $this->redirectToPortal
+            ? route('student.group', $this->getRecord()).($this->block ? '#course-block-'.rawurlencode($this->block) : '')
+            : parent::getRedirectUrl();
     }
 
     protected function getHeaderActions(): array

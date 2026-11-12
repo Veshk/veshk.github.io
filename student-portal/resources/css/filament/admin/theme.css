@@ -191,3 +191,15 @@
     .fi-ta-cell:has(> .fi-ta-actions), .fi-ta-header-cell:last-child { position: static; }
     .portal-applications .fi-ta-cell:first-child .fi-ta-text { max-width: none; min-width: 0; }
 }
+
+.course-editor-navigation { padding: 20px 24px; background: white; border: 1px solid var(--portal-line); border-radius: 8px; }
+.course-editor-navigation h2 { font-size: 18px; font-weight: 550; color: var(--portal-navy); margin-bottom: 6px; }
+.course-editor-navigation p { font-size: 13px; color: var(--portal-muted); margin-bottom: 14px; }
+.course-editor-navigation-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.course-editor-navigation button { display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left; padding: 10px 12px; border: 1px solid var(--portal-line); border-radius: 5px; background: #f4f7f8; color: var(--portal-navy); font-size: 13px; cursor: pointer; overflow-wrap: anywhere; }
+.course-editor-navigation button:hover { background: #e6eef1; }
+.course-editor-navigation button:focus-visible { outline: 2px solid var(--portal-blue); outline-offset: 2px; }
+.course-editor-navigation small { font-size: 11px; color: var(--portal-muted); white-space: nowrap; }
+.fi-fo-builder-item, #course-editor-hero { scroll-margin-top: 80px; }
+@media (max-width: 800px) { .course-editor-navigation-links { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .course-editor-navigation { padding: 16px; } .course-editor-navigation-links { grid-template-columns: minmax(0, 1fr); } }
