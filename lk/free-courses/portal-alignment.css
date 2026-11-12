@@ -1,0 +1,45 @@
+/* Shared visual values and course-cover treatment from ../portal.css. */
+:root{--ink:#18252a;--muted:#68777d;--navy:#1c3948;--blue:#226d8d;--red:#b2272a;--line:#dce3e6;--paper:#f4f6f6}
+.portal-header .site-head{width:min(1200px,calc(100% - 80px));height:80px}
+.portal-header .brand{gap:22px}
+.portal-header .brand img{width:112px;height:48px;object-fit:contain;filter:brightness(0)}
+.portal-header .brand span{color:var(--muted);padding-left:24px;line-height:1.6}
+.portal-header .profile-link{font-size:12px}
+.portal-header .avatar{background:#e8eff2;color:var(--blue)}
+.portal-view>.wrap{width:min(1120px,calc(100% - 80px))}
+.portal-view .page-title{padding:44px 0 32px}
+.portal-view .page-title h1{font-size:42px;line-height:1.12;font-weight:350;letter-spacing:-.035em;margin:12px 0}
+.portal-view .eyebrow{font-size:11px;font-weight:550;letter-spacing:.03em}
+.portal-view h2{font-size:28px;line-height:1.25;font-weight:400;letter-spacing:-.025em}
+.portal-view h3{font-weight:500}
+.portal-view .page-title p:not(.eyebrow){font-size:15px}
+.portal-view .btn{border-radius:3px;min-height:48px;padding:13px 22px;font-size:13px;font-weight:500;gap:20px}
+.portal-view .btn.secondary{border-color:#bccbd2;background:transparent}
+.portal-view .card{border-radius:5px}
+.portal-view .grid.three{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.portal-view .chip{border-radius:3px;font-weight:400}
+.portal-view .identity-bar{border-radius:4px;background:#edf4f6;border:0;padding:12px 16px}
+.portal-view .identity-bar select{border-radius:3px}
+.portal-view .tabs{gap:30px;margin:0 0 26px}
+.portal-view .tabs button{font-size:13px;font-weight:400}
+.portal-view .tabs button[aria-selected=true]{color:var(--navy);font-weight:500}
+.portal-view .learning-card{padding:0;border:1px solid var(--line);box-shadow:none}
+.portal-view .learning-card .course-strip{padding:28px;min-height:220px;color:white;background:linear-gradient(90deg,#17323bdb,#17323b55),url('../brand/mountains.webp') center/cover;display:flex;flex-direction:column;align-items:start;justify-content:space-between}
+.portal-view .learning-card .course-strip.blue{background-position:center 62%}
+.portal-view .learning-card .course-strip.sand{background-position:center 35%}
+.portal-view .learning-card .course-strip.navy{background-position:center 75%}
+.portal-view .learning-card .course-strip .chip{background:transparent;color:#fff;padding:0;letter-spacing:.03em;text-transform:uppercase;font-size:11px;font-weight:550}
+.portal-view .learning-card .course-strip h3{font-size:28px;font-weight:400;line-height:1.25;letter-spacing:-.025em;max-width:460px;margin:28px 0 0}
+.portal-view .learning-card.expired .course-strip{filter:grayscale(.65)}
+.portal-view .learning-card .body{padding:24px}
+.portal-view .learning-card .body>p{font-size:13px;margin-bottom:16px}
+.portal-view .learning-card .bottom{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding-top:18px}
+.portal-view .learning-card .bottom small{margin:0;max-width:240px}
+.portal-view .learning-card .bottom .btn{width:auto;margin-left:auto}
+.portal-view .learning-card .bottom>a.small{flex-basis:100%}
+.portal-view .section .link-card{background:white;border-color:var(--line);border-radius:5px;padding:24px}
+.portal-view .link-card:hover{transform:none;border-color:#9fb5c0}
+.portal-view .course-sidebar,.portal-view .video-placeholder,.portal-view .locked,.portal-view .program-preview{border-radius:5px}
+.portal-view .lesson-heading h1{font-weight:400}
+@media(max-width:1000px){.portal-header .site-head{width:calc(100% - 48px)}.portal-header .brand span{display:none}}
+@media(max-width:720px){.portal-header .site-head{width:calc(100% - 40px);height:72px}.portal-header .brand img{width:84px;height:36px}.portal-view>.wrap{width:calc(100% - 40px)}.portal-view .page-title{padding:28px 0 24px}.portal-view .page-title h1{font-size:34px}.portal-view .grid.three{grid-template-columns:1fr}.portal-view .learning-card .course-strip{padding:24px;min-height:200px}.portal-view .learning-card .course-strip h3{font-size:26px}.portal-view .tabs{gap:20px}.portal-view .tabs button{font-size:12px}.portal-view .learning-card .bottom{align-items:start}.portal-view .learning-card .bottom .btn{margin-left:0}.portal-view .identity-bar{margin-bottom:24px}}
