@@ -49,6 +49,7 @@ class EditGroupPage extends EditRecord
     protected function getFormActions(): array
     {
         return [
+            Action::make('chooseBlock')->label('К выбору блока ↑')->color('gray')->alpineClickHandler("const nav = document.querySelector('.course-editor-navigation'); nav?.scrollIntoView({ block: 'start' }); nav?.focus({ preventScroll: true });"),
             $this->getSaveFormAction(),
             Action::make('saveAndOpen')->label('Сохранить и открыть ЛК')->color('gray')->action(function (): void {
                 $this->redirectToPortal = true;

@@ -1,4 +1,4 @@
-<nav class="course-editor-navigation" aria-label="Блоки для редактирования" x-data="{ labels: @js(\App\Support\CoursePage::BLOCKS) }">
+<nav class="course-editor-navigation" tabindex="-1" style="scroll-margin-top:80px" aria-label="Блоки для редактирования" x-data="{ labels: @js(\App\Support\CoursePage::BLOCKS) }">
     <h2>Блоки страницы</h2>
     <p>Выберите блок, который хотите изменить.</p>
     <div class="course-editor-navigation-links">
