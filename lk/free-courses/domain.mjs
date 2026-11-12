@@ -1,4 +1,4 @@
-import { courses, seed } from './data.mjs';
+import { courses, seed } from './data.mjs?v=20261112-courses-3';
 export { courses, seed };
 export const normalizeEmail = value => String(value).trim().toLowerCase();
 export const id = prefix => `${prefix}-${globalThis.crypto.randomUUID()}`;
