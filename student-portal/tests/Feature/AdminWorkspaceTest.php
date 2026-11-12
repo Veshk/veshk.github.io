@@ -6,6 +6,7 @@ use App\Filament\Pages\Students;
 use App\Filament\Resources\Programs\Pages\EditProgramTemplate;
 use App\Filament\Resources\Programs\Pages\ListPrograms;
 use App\Filament\Resources\StudyGroups\Pages\ListStudyGroups;
+use App\Filament\Resources\StudyGroups\StudyGroupResource;
 use App\Models\Program;
 use App\Models\StudyGroup;
 use App\Models\User;
@@ -83,5 +84,25 @@ class AdminWorkspaceTest extends TestCase
         $table = Livewire::test(ListStudyGroups::class)->instance()->getTable();
         $this->assertNull($table->getAction('edit')->record($group)->getUrl());
         $this->assertNull($table->getAction('view')->record($group)->getUrl());
+    }
+
+    public function test_group_card_has_portal_link_and_edit_link_only_for_authorized_admin(): void
+    {
+        $group = StudyGroup::factory()->create();
+        $this->actingAs($group->administrator);
+        $component = Livewire::test(ListStudyGroups::class)
+            ->mountAction(TestAction::make('view')->table($group))
+            ->assertActionMounted(TestAction::make('view')->table($group));
+        $actions = $component->instance()->getMountedAction()->getVisibleModalFooterActions();
+        $this->assertSame(route('student.group', $group), $actions['openPortal']->getUrl());
+        $this->assertSame(StudyGroupResource::getUrl('page', ['record' => $group]), $actions['editPortal']->getUrl());
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        $component = Livewire::test(ListStudyGroups::class)
+            ->mountAction(TestAction::make('view')->table($group))
+            ->assertActionMounted(TestAction::make('view')->table($group));
+        $actions = $component->instance()->getMountedAction()->getVisibleModalFooterActions();
+        $this->assertSame(route('student.group', $group), $actions['openPortal']->getUrl());
+        $this->assertArrayNotHasKey('editPortal', $actions);
     }
 }

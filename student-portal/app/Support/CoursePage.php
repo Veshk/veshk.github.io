@@ -6,6 +6,7 @@ use App\Filament\Resources\StudyGroups\StudyGroupResource;
 use App\Models\StudyGroup;
 use App\Models\User;
 use Carbon\Carbon;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\DatePicker;
@@ -26,7 +27,7 @@ class CoursePage
 {
     public const TEMPLATES = ['mba' => 'MBA / длительная программа', 'short' => 'Короткая программа', 'corporate' => 'Корпоративная программа'];
 
-    public const BLOCKS = ['contacts' => 'Контакты и чаты', 'schedule' => 'Расписание', 'join' => 'Подключиться к занятию', 'homework' => 'Домашние задания', 'recordings' => 'Записи занятий', 'materials' => 'Материалы для обучения', 'faq' => 'Вопросы об обучении', 'info' => 'Информационный блок', 'video' => 'Видео о школе', 'photos' => 'Фотографии с выпускного', 'introductions' => 'Практика «Знакомство»', 'alias' => 'Общий блок из другого ЛК'];
+    public const BLOCKS = ['preparation' => 'Как подготовиться к обучению', 'contacts' => 'Контакты и чаты', 'schedule' => 'Расписание', 'join' => 'Подключиться к занятию', 'homework' => 'Домашние задания', 'recordings' => 'Записи занятий', 'materials' => 'Материалы для обучения', 'faq' => 'Вопросы об обучении', 'info' => 'Информационный блок', 'video' => 'Видео о школе', 'photos' => 'Фотографии с выпускного', 'introductions' => 'Практика «Знакомство»', 'alias' => 'Общий блок из другого ЛК'];
 
     public static function defaults(string $template = 'mba'): array
     {
@@ -72,6 +73,9 @@ class CoursePage
     {
         foreach ($blocks as $i => &$block) {
             $block['data']['block_id'] ??= 'legacy-'.$i;
+            if (($block['type'] ?? '') === 'faq' && preg_match('/^(?:как\s+)?подготов(?:иться|ка)\s+к\s+обучению[?!.]?$/iu', trim($block['data']['title'] ?? ''))) {
+                $block['type'] = 'preparation';
+            }
             if (($block['type'] ?? '') === 'info' && $block['data']['block_id'] === 'kd26-info') {
                 $block['type'] = 'photos';
             }
@@ -98,19 +102,43 @@ class CoursePage
     {
         return array_map(function (array $block) use ($group): array {
             if (($block['type'] ?? '') !== 'alias') {
+                $block['editor_block_id'] = $block['data']['block_id'];
+
                 return $block;
             }
             $source = StudyGroup::find($block['data']['source_group'] ?? null);
             $original = $source && $source->id !== $group->id ? collect(self::forGroup($source))->first(fn ($b) => ($b['data']['block_id'] ?? '') === ($block['data']['source_block'] ?? '') && $b['type'] !== 'alias' && ($b['data']['visible'] ?? true)) : null;
             if (! $original) {
-                return ['type' => 'info', 'data' => ['title' => $block['data']['title'] ?? 'Общий блок', 'visible' => $block['data']['visible'] ?? true, 'text' => 'Содержимое временно недоступно. Администратор проверит подключение блока.']];
+                return ['editor_block_id' => $block['data']['block_id'], 'type' => 'info', 'data' => ['title' => $block['data']['title'] ?? 'Общий блок', 'visible' => $block['data']['visible'] ?? true, 'text' => 'Содержимое временно недоступно. Администратор проверит подключение блока.']];
             }
             $original['data']['title'] = $block['data']['title'] ?? $original['data']['title'];
             $original['data']['visible'] = $block['data']['visible'] ?? true;
             $original['source_group_model'] = $source;
+            $original['editor_block_id'] = $block['data']['block_id'];
 
             return $original;
         }, self::forGroup($group));
+    }
+
+    public static function visibleBlocks(StudyGroup $group): array
+    {
+        $preparationEnds = $group->starts_at?->copy()->addMonthNoOverflow()->toDateString();
+
+        return collect(self::display($group))->filter(fn (array $block): bool => isset(self::BLOCKS[$block['type'] ?? ''])
+            && ($block['data']['visible'] ?? true)
+            && ($block['type'] !== 'preparation' || ! $preparationEnds || now('Asia/Yekaterinburg')->toDateString() < $preparationEnds))
+            ->sortBy(fn (array $block): int => $block['type'] === 'preparation' ? 0 : 1)->values()->all();
+    }
+
+    public static function previewBlock(StudyGroup $group, array $block): string
+    {
+        abort_unless(auth()->user()?->can('update', $group), 403);
+        self::validateAliases([$block], $group, auth()->user());
+        $draft = clone $group;
+        $draft->page_blocks = [$block];
+        $resolved = self::display($draft)[0];
+
+        return view('student.block-preview', ['block' => $resolved, 'group' => $resolved['source_group_model'] ?? $draft])->render();
     }
 
     public static function validateAliases(array $blocks, ?StudyGroup $target, ?User $user): void
@@ -234,7 +262,7 @@ class CoursePage
     {
         $blocks = [];
         foreach (self::BLOCKS as $type => $label) {
-            $fields = [Hidden::make('block_id')->default(fn (): string => (string) Str::uuid()), TextInput::make('title')->label('Заголовок блока')->required()->maxLength(180), Toggle::make('visible')->label('Показывать блок')->default(true), Text::make(function (Get $get, $record): HtmlString {
+            $fields = [Hidden::make('block_id')->default(fn (): string => (string) Str::uuid())->extraAttributes(fn (?string $state): array => ['data-course-block' => $state ?? '']), TextInput::make('title')->label('Заголовок блока')->required()->maxLength(180), Toggle::make('visible')->label('Показывать блок')->default(true), Text::make(function (Get $get, $record): HtmlString {
                 if (! $record instanceof StudyGroup) {
                     return new HtmlString('');
                 }
@@ -293,7 +321,7 @@ class CoursePage
 
                     return implode(' ', [$date ?: 'Без срока', $status, $title]);
                 })->collapsed()],
-                'faq' => [Repeater::make('questions')->label('Вопросы и ответы')->schema([
+                'faq', 'preparation' => [Repeater::make('questions')->label('Вопросы и ответы')->schema([
                     TextInput::make('question')->label('Вопрос')->required()->maxLength(500), Textarea::make('answer')->label('Ответ')->required()->maxLength(5000), self::url('url', 'Ссылка в ответе'), TextInput::make('button')->label('Текст ссылки')->maxLength(100),
                 ])->defaultItems(0)->addActionLabel('Добавить вопрос')->collapsible()],
                 'recordings' => [Repeater::make('videos')->label('Записи')->schema([
@@ -309,6 +337,16 @@ class CoursePage
             $blocks[] = Block::make($type)->label($label)->schema($fields);
         }
 
-        return Builder::make('page_blocks')->label('Блоки страницы')->blocks($blocks)->addActionLabel('Добавить блок')->reorderableWithButtons()->collapsible()->blockNumbers(false)->columnSpanFull();
+        return Builder::make('page_blocks')->label('Блоки страницы')->blocks($blocks)->addActionLabel('Добавить блок')->reorderableWithButtons()->collapsible()->blockNumbers(false)->columnSpanFull()->extraItemActions([
+            Action::make('previewBlock')->label('Предпросмотр')->icon('heroicon-o-eye')->modalHeading('Предпросмотр блока')->modalWidth('7xl')->modalSubmitAction(false)->modalCancelActionLabel('Продолжить редактирование')
+                ->visible(fn ($record): bool => $record instanceof StudyGroup && auth()->user()?->can('update', $record))
+                ->modalContent(function (array $arguments, Builder $component, StudyGroup $record): HtmlString {
+                    $item = $component->getState()[$arguments['item']];
+                    $item['data'] = $component->getRawItemState($arguments['item']);
+                    $html = self::previewBlock($record, $item);
+
+                    return new HtmlString('<iframe title="Предпросмотр несохранённого блока" sandbox="allow-popups allow-popups-to-escape-sandbox" style="width:100%;height:65vh;border:1px solid #d9e1e5;border-radius:8px" srcdoc="'.e($html).'"></iframe>');
+                }),
+        ]);
     }
 }

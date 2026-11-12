@@ -154,7 +154,14 @@ class StudyGroupResource extends Resource
                 SelectFilter::make('program_id')->label('Программа')->relationship('program', 'tag')->searchable()->preload(),
                 Filter::make('mine')->label('Только мои группы')->query(fn (Builder $query): Builder => $query->where('administrator_id', auth()->id())),
             ])->deferFilters(false)->recordActions([
-                ViewAction::make()->modal()->label('Карточка')->iconButton()->modalWidth('3xl')->stickyModalHeader()->stickyModalFooter(),
+                ViewAction::make()->modal()->label('Карточка')->iconButton()->modalWidth('3xl')->stickyModalHeader()->stickyModalFooter()
+                    ->extraModalFooterActions(fn (StudyGroup $record): array => [
+                        Action::make('openPortal')->label('Открыть ЛК')->icon('heroicon-o-arrow-top-right-on-square')->color('gray')
+                            ->url(route('student.group', $record))->openUrlInNewTab(),
+                        Action::make('editPortal')->label('Редактировать ЛК')->icon('heroicon-o-pencil-square')
+                            ->visible(auth()->user()->can('update', $record))
+                            ->url(static::getUrl('page', ['record' => $record])),
+                    ]),
                 Action::make('student')->label('ЛК')->button()->color('gray')->url(fn (StudyGroup $record): string => route('student.group', $record))->openUrlInNewTab(),
                 Action::make('page')->label('Редактор')->button()->visible(fn (StudyGroup $record): bool => auth()->user()->can('update', $record))->url(fn (StudyGroup $record): string => static::getUrl('page', ['record' => $record])),
                 EditAction::make()->modal()->label('Настройки группы')->icon('heroicon-o-cog-6-tooth')->iconButton()->modalWidth('3xl')->stickyModalHeader()->stickyModalFooter()->unsavedChangesAlert()

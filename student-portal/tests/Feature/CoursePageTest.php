@@ -5,13 +5,16 @@ namespace Tests\Feature;
 use App\Filament\Resources\Programs\Pages\EditProgram;
 use App\Filament\Resources\StudyGroups\Pages\CreateStudyGroup;
 use App\Filament\Resources\StudyGroups\Pages\EditGroupPage;
+use App\Filament\Resources\StudyGroups\StudyGroupResource;
 use App\Models\Enrollment;
 use App\Models\Program;
 use App\Models\StudyGroup;
 use App\Models\User;
 use App\Support\CoursePage;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Livewire\Livewire;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class CoursePageTest extends TestCase
@@ -226,5 +229,87 @@ class CoursePageTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'senior']));
         Livewire::test(EditProgram::class, ['record' => $program->id])->call('save')->assertHasNoFormErrors();
         $this->assertSame('published', $program->fresh()->page_blocks[0]['data']['videos'][0]['status']);
+    }
+
+    public function test_calendar_archive_keeps_current_month_until_ekb_month_boundary(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-30 18:59:00', 'UTC'));
+        $group = StudyGroup::factory()->create();
+        $data = ['collapse_past' => true, 'source_url' => 'https://example.com/private-sheet', 'lessons' => array_map(fn ($date) => ['date' => $date, 'title' => $date, 'time' => '10:00–11:00'], ['2026-09-01', '2026-10-01', '2026-11-01', '2026-12-01'])];
+        $render = fn () => view('student.page-block', ['type' => 'schedule', 'data' => $data, 'group' => $group])->render();
+        $html = $render();
+        $this->assertSame(1, substr_count($html, 'Прошедшие занятия'));
+        $end = strpos($html, '</details>');
+        $this->assertLessThan($end, strpos($html, '01.10.2026'));
+        $this->assertGreaterThan($end, strpos($html, '01.11.2026'));
+        $this->assertStringNotContainsString('private-sheet', $html);
+        $this->travelTo(Carbon::parse('2026-11-30 19:00:00', 'UTC'));
+        $html = $render();
+        $this->assertLessThan(strpos($html, '</details>'), strpos($html, '01.11.2026'));
+    }
+
+    public function test_preparation_moves_first_and_disappears_after_one_calendar_month_without_deleting(): void
+    {
+        $group = StudyGroup::factory()->create(['starts_at' => '2026-01-31', 'page_blocks' => [
+            ['type' => 'info', 'data' => ['title' => 'Другое', 'block_id' => 'other']],
+            ['type' => 'faq', 'data' => ['title' => 'Как подготовиться к обучению', 'block_id' => 'prepare', 'questions' => [['question' => 'Чат', 'answer' => 'Присоединитесь']]]],
+        ]]);
+        $this->travelTo(Carbon::parse('2026-02-27 23:59', 'Asia/Yekaterinburg'));
+        $this->assertSame('preparation', CoursePage::visibleBlocks($group)[0]['type']);
+        $this->travelTo(Carbon::parse('2026-02-28 00:00', 'Asia/Yekaterinburg'));
+        $this->assertCount(1, CoursePage::visibleBlocks($group));
+        $this->assertCount(2, CoursePage::forEditor(CoursePage::forGroup($group->fresh())));
+    }
+
+    public function test_recordings_open_latest_four_preserve_other_links_and_remove_repeated_dates(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-12 12:00', 'Asia/Yekaterinburg'));
+        $group = StudyGroup::factory()->create();
+        $videos = array_map(fn ($n) => ['date' => '2026-11-0'.$n, 'title' => 'Занятие '.$n.' 0'.$n.'.11.2026', 'text' => 'Описание 0'.$n.'.11.2026', 'module' => 'Записи занятий', 'url' => 'https://example.com/video-'.$n], range(1, 6));
+        $html = view('student.page-block', ['type' => 'recordings', 'data' => ['videos' => $videos], 'group' => $group])->render();
+        $this->assertSame(4, substr_count(explode('<details', $html)[0], 'class="recording-row'));
+        $this->assertSame(1, substr_count($html, 'Предыдущие записи'));
+        $this->assertStringNotContainsString('<h3>Записи занятий</h3>', $html);
+        foreach (range(1, 6) as $n) {
+            $this->assertSame(1, substr_count($html, '0'.$n.'.11.2026'));
+            $this->assertStringContainsString('https://example.com/video-'.$n, $html);
+        }
+        $this->assertLessThan(strpos($html, 'Занятие 5'), strpos($html, 'Занятие 6'));
+    }
+
+    public function test_public_header_shows_start_only_and_completion_does_not_hide_future_lessons(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-12 12:00', 'Asia/Yekaterinburg'));
+        $group = StudyGroup::factory()->create(['starts_at' => '2026-04-03', 'graduates_at' => '2026-11-08', 'page_blocks' => []]);
+        $this->actingAs($group->administrator)->get(route('student.group', $group))->assertOk()->assertSee('Начало обучения')->assertSee('03.04.2026')->assertDontSee('08.11.2026')->assertSee('Обучение завершено');
+        $group->update(['page_blocks' => [['type' => 'schedule', 'data' => ['title' => 'Расписание', 'lessons' => [['date' => '2026-11-13', 'title' => 'Дополнительная встреча']]]]]]);
+        $this->get(route('student.group', $group))->assertOk()->assertSee('Дополнительная встреча')->assertDontSee('Обучение завершено');
+    }
+
+    public function test_unsaved_block_preview_uses_draft_escapes_content_and_never_persists(): void
+    {
+        $group = StudyGroup::factory()->create(['page_blocks' => [['type' => 'info', 'data' => ['title' => 'Сохранённый', 'text' => 'База', 'block_id' => 'own']]]]);
+        $this->actingAs($group->administrator);
+        $original = $group->page_blocks;
+        $draft = ['type' => 'info', 'data' => ['title' => 'Черновик', 'text' => '<script>опасно</script>', 'url' => 'javascript:alert(1)', 'block_id' => 'own']];
+        $html = CoursePage::previewBlock($group, $draft);
+        $this->assertStringContainsString('Черновик', $html);
+        $this->assertStringContainsString('&lt;script&gt;', $html);
+        $this->assertStringNotContainsString('javascript:', $html);
+        $this->assertSame($original, $group->fresh()->page_blocks);
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        $this->expectException(HttpException::class);
+        CoursePage::previewBlock($group, $draft);
+    }
+
+    public function test_pencil_targets_alias_in_current_group_and_is_hidden_from_students(): void
+    {
+        $source = StudyGroup::factory()->create(['page_blocks' => [['type' => 'info', 'data' => ['title' => 'Источник', 'text' => 'Общий текст', 'block_id' => 'source']]]]);
+        $group = StudyGroup::factory()->create(['page_blocks' => [['type' => 'alias', 'data' => ['title' => 'Общий блок', 'source_group' => $source->id, 'source_block' => 'source', 'block_id' => 'alias-here']]]]);
+        $this->actingAs($group->administrator)->get(route('student.group', $group))->assertOk()->assertSee('block=alias-here')->assertSee('id="course-block-alias-here"', false);
+        $this->get(StudyGroupResource::getUrl('page', ['record' => $group, 'block' => 'alias-here']))
+            ->assertOk()->assertSee('data-course-block="alias-here"', false);
+        $enrollment = Enrollment::factory()->create(['study_group_id' => $group->id]);
+        $this->actingAs($enrollment->user)->get(route('student.group', $group))->assertOk()->assertDontSee('block-edit-link');
     }
 }

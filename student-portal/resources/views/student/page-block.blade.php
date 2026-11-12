@@ -38,18 +38,25 @@
 @elseif($type === 'schedule')
 @php
     $months = collect($data['lessons'] ?? [])->filter(fn ($l) => !empty($l['date']))->sortBy(fn ($l) => $l['date'].' '.($l['time'] ?? ''))->groupBy(fn ($l) => substr($l['date'], 0, 7));
-    $today = now('Asia/Yekaterinburg')->toDateString();
+    $currentMonth = now('Asia/Yekaterinburg')->format('Y-m');
+    [$pastMonths, $currentMonths] = $months->partition(fn ($lessons, $month) => ($data['collapse_past'] ?? false) && $month < $currentMonth);
 @endphp
-@forelse($months as $month => $lessons)
+@foreach([$pastMonths, $currentMonths] as $monthSet)
+@if($monthSet->isNotEmpty())
 @php
-    $past = ($data['collapse_past'] ?? false) && $lessons->every(fn ($l) => $l['date'] < $today);
+    $past = $loop->first;
 @endphp
-@if($past)<details class="past-schedule"><summary>Прошедшие занятия — {{ \Carbon\Carbon::parse($month.'-01')->locale('ru')->translatedFormat('F Y') }}</summary>@endif
+@if($past)<details class="past-schedule"><summary>Прошедшие занятия</summary>@endif
+@foreach($monthSet as $month => $lessons)
 <div class="month-card"><div class="month-label">{{ \Carbon\Carbon::parse($month.'-01')->locale('ru')->translatedFormat('F Y') }}</div><div class="schedule-scroll"><table class="compact-schedule"><colgroup><col class="col-date"><col class="col-time"><col class="col-lesson"><col class="col-teacher"></colgroup><thead><tr><th>Дата</th><th>Время ЕКБ{{ ($data['show_moscow'] ?? false) ? ' / МСК' : '' }}</th><th>Занятие</th><th>Преподаватель</th></tr></thead><tbody>
 @foreach($lessons as $lesson)<tr><td><strong>{{ \Carbon\Carbon::parse($lesson['date'])->format('d.m.Y') }}</strong> <small>{{ mb_convert_case(\Carbon\Carbon::parse($lesson['date'])->locale('ru')->isoFormat('dd'), MB_CASE_TITLE, 'UTF-8') }}</small></td><td class="lesson-time">{{ $lesson['time'] ?? '' }}<span class="lesson-timezone"> ЕКБ</span>@if($data['show_moscow'] ?? false)<small>{{ \App\Support\CoursePage::moscow($lesson['time'] ?? '') }} МСК</small>@endif</td><td><strong>{{ $lesson['title'] ?? '' }}</strong><div class="lesson-context">@if(!empty($lesson['module']))<span class="lesson-module">{{ $lesson['module'] }}</span>@endif<span class="lesson-format-desktop">{{ $lesson['format'] ?? $group->format }}</span></div>@if($url = $safe($lesson['url'] ?? null))<a class="text-link" href="{{ $url }}" target="_blank" rel="noopener noreferrer">Подключиться ↗</a>@endif</td><td><span class="lesson-teacher-name">{{ $lesson['teacher'] ?? '' }}</span><span class="lesson-format-mobile">{{ $lesson['format'] ?? $group->format }}</span></td></tr>@endforeach
-</tbody></table></div></div>@if($past)</details>@endif
-@empty<div class="empty">Расписание ещё не опубликовано.</div>@endforelse
-@if($url = $safe($data['source_url'] ?? null))<a class="btn outline" href="{{ $url }}" target="_blank" rel="noopener noreferrer">Открыть исходное расписание ↗</a>@endif
+</tbody></table></div></div>
+@endforeach
+@if($past)</details>@endif
+@endif
+@endforeach
+@if($months->isEmpty())<div class="empty">Расписание ещё не опубликовано.</div>@endif
+
 @elseif($type === 'homework')
 @php
     $homeworkTasks = collect($data['tasks'] ?? []);
@@ -68,27 +75,56 @@
 @endforeach
 <p class="form-note">Статус общий для группы и не обозначает личное выполнение задания.</p>
 @else<div class="empty">Задания появятся здесь после публикации.</div>@endif
+@elseif($type === 'preparation')
+<ol class="preparation-steps">@foreach($data['questions'] ?? [] as $question)
+@php
+    $questionUrl = $safe($question['url'] ?? null);
+    $button = ($question['button'] ?? '') ?: 'Подробнее';
+    if (!$questionUrl) {
+        $targetType = preg_match('/расписани/iu', $question['question'] ?? '') ? 'schedule' : (preg_match('/чат|администратор/iu', $question['question'] ?? '') ? 'contacts' : null);
+        $targetBlock = $targetType ? collect(\App\Support\CoursePage::visibleBlocks($group))->firstWhere('type', $targetType) : null;
+        if ($targetBlock) {
+            $questionUrl = route('student.group', $group).'#course-block-'.rawurlencode($targetBlock['editor_block_id']);
+            $button = $targetType === 'schedule' ? 'Посмотреть расписание' : 'Контакты и чат';
+        }
+    }
+@endphp
+<li class="preparation-step"><span class="preparation-number" aria-hidden="true">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><div><h3>{{ $question['question'] ?? '' }}</h3><p class="block-text">{{ $question['answer'] ?? '' }}</p>@if($questionUrl)<a class="text-link" href="{{ $questionUrl }}" @if($safe($question['url'] ?? null))target="_blank" rel="noopener noreferrer"@endif>{{ $button }} ↗</a>@endif</div></li>
+@endforeach</ol>
 @elseif($type === 'faq')
 @forelse($data['questions'] ?? [] as $question)<details class="course-faq"><summary>{{ $question['question'] ?? '' }}</summary><div class="faq-answer"><p class="block-text">{{ $question['answer'] ?? '' }}</p>@if($url = $safe($question['url'] ?? null))<a class="text-link" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ ($question['button'] ?? '') ?: 'Подробнее' }} ↗</a>@endif</div></details>@empty<div class="empty">Ответы на вопросы скоро появятся.</div>@endforelse
 @elseif($type === 'recordings')
-@forelse(collect($data['videos'] ?? [])->groupBy(fn ($v) => ($v['module'] ?? '') ?: 'Записи занятий') as $module => $videos)
-<div class="recording-module"><h3>{{ $module }}</h3><div class="recording-grid">@foreach($videos as $video)
+@php
+    $videos = collect($data['videos'] ?? [])->sortByDesc(fn ($video) => $video['date'] ?? '')->values();
+    [$upcomingVideos, $pastVideos] = $videos->partition(fn ($video) => !empty($video['date']) && $video['date'] > now('Asia/Yekaterinburg')->toDateString());
+    $videoSets = [['items'=>$pastVideos->take(4), 'label'=>null], ['items'=>$pastVideos->skip(4), 'label'=>'Предыдущие записи'], ['items'=>$upcomingVideos->sortBy('date'), 'label'=>'Ожидаемые записи']];
+@endphp
+@foreach($videoSets as $set)
+@continue($set['items']->isEmpty())
+@if($set['label'])<details class="recording-archive"><summary>{{ $set['label'] }} <span class="archive-count">{{ $set['items']->count() }}</span></summary>@endif
+<div class="recording-list">@foreach($set['items'] as $video)
 @php
     $videoUrl = $safe($video['url'] ?? null);
     $ready = (($video['status'] ?? '') ?: ($videoUrl ? 'published' : 'pending')) === 'published' && $videoUrl;
     $videoDate = !empty($video['date']) ? \Carbon\Carbon::parse($video['date'])->format('d.m.Y') : '';
     $videoTitle = trim($video['title'] ?? '');
     $videoText = trim($video['text'] ?? '');
-    if ($videoDate && str_ends_with($videoTitle, $videoDate)) {
-        $videoTitle = preg_replace('/[\s,–—-]+$/u', '', substr($videoTitle, 0, -strlen($videoDate)));
-    }
-    $videoTitle = preg_replace('/^(\d+)\s+занятие$/iu', 'Занятие $1', $videoTitle) ?: 'Запись занятия';
     if ($videoDate && rtrim($videoText, '.') === 'Запись занятия от '.$videoDate) {
         $videoText = '';
     }
+    if ($videoDate) {
+        $dateSuffix = '/[\s,–—-]*(?:от\s+)?'.preg_quote($videoDate, '/').'\.?$/u';
+        $videoTitle = trim(preg_replace($dateSuffix, '', $videoTitle));
+        $videoText = trim(preg_replace($dateSuffix, '', $videoText));
+    }
+    $videoTitle = preg_replace('/^(\d+)\s+занятие$/iu', 'Занятие $1', $videoTitle) ?: 'Запись занятия';
 @endphp
-<article class="card recording-card {{ $ready ? '' : 'is-pending' }}"><div class="recording-meta"><span class="content-status {{ $ready ? 'is-published' : 'is-upcoming' }}">{{ $ready ? 'Запись опубликована' : 'Видео ещё не опубликовано' }}</span>@if(!empty($video['date']))<time datetime="{{ $video['date'] }}">{{ $videoDate }}</time>@endif</div><h3>{{ $videoTitle }}</h3>@if($videoText)<p class="block-text">{{ $videoText }}</p>@endif @if($ready)<a class="btn outline" href="{{ $videoUrl }}" target="_blank" rel="noopener noreferrer">Смотреть запись ↗</a>@else<p class="muted">Ссылка появится после публикации видео.</p>@endif</article>
-@endforeach</div></div>@empty<div class="empty">Записи появятся здесь после занятий.</div>@endforelse
+<article class="recording-row {{ $ready ? '' : 'is-pending' }}"><div class="recording-meta"><span class="content-status {{ $ready ? 'is-published' : 'is-upcoming' }}">{{ $ready ? 'Запись опубликована' : 'Видео ещё не опубликовано' }}</span>@if(!empty($video['date']))<time datetime="{{ $video['date'] }}">{{ $videoDate }}</time>@endif</div><div class="recording-copy">@if(!empty($video['module']) && !in_array(mb_strtolower(trim($video['module'])), ['записи занятий', mb_strtolower(trim($data['title'] ?? ''))], true))<p class="recording-module-name">{{ $video['module'] }}</p>@endif<h3>{{ $videoTitle }}</h3>@if($videoText)<p class="block-text">{{ $videoText }}</p>@endif </div>@if($ready)<a class="recording-action" href="{{ $videoUrl }}" target="_blank" rel="noopener noreferrer">Смотреть запись ↗</a>@else<p class="muted">Ссылка появится после публикации видео.</p>@endif</article>
+
+@endforeach</div>
+@if($set['label'])</details>@endif
+@endforeach
+@if($videos->isEmpty())<div class="empty">Записи появятся здесь после занятий.</div>@endif
 @elseif($type === 'materials')
 @php
     $resources = array_merge(!empty($data['url']) ? [['title' => 'Папка вашей группы', 'url' => $data['url']]] : [], $data['resources'] ?? []);
@@ -98,7 +134,13 @@
 @endphp
 @if(!empty($data['text']))<p class="block-text">{{ $data['text'] }}</p>@endif
 <div class="resource-grid">@foreach($resources as $resource)
-@php($showResourceTitle = !empty($resource['title']) && !(count($resources) === 1 && in_array($resource['title'], ['Материалы группы', 'Папка вашей группы', $data['title'] ?? ''], true)))
+@php
+    $resource['title'] = trim($resource['title'] ?? '');
+    if (!$resource['title'] || in_array($resource['title'], ['Материалы группы', 'Учебные материалы', 'Папка вашей группы', $data['title'] ?? ''], true) || preg_match('/^(?:(?:перейти\s+в|открыть)\s+)?(?:google|гугл)[\s-]*папк[ауи]$/iu', $resource['title'])) {
+        $resource['title'] = 'Папка с материалами';
+    }
+    $showResourceTitle = true;
+@endphp
 <article class="resource-folder"><svg class="resource-folder-art" viewBox="0 0 92 72" fill="none" aria-hidden="true"><path d="M4 24V6h31l9 8h39v10" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 24h84l-8 42H12L4 24Z" fill="#fff" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M23 39h22M23 47h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div class="resource-folder-copy">@if($showResourceTitle)<h3>{{ $resource['title'] }}</h3>@endif @if(!empty($resource['text']))<p class="block-text">{{ $resource['text'] }}</p>@endif @if($url = $safe($resource['url'] ?? null))<a class="resource-action" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ ($resource['button'] ?? '') ?: 'Открыть папку' }}<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>@else<p class="muted">Ссылка скоро появится.</p>@endif</div></article>
 @endforeach</div>
 @foreach(($isAlias ?? false) ? [] : ($group->materials ?? []) as $index => $material)<a class="material" href="{{ route('student.material',[$group,$index]) }}"><span class="file-icon">TXT</span><div class="details"><h3>{{ $material['title'] }}</h3><small>Демонстрационный материал — {{ $group->code }}</small></div><span class="arrow">↓</span></a>@endforeach

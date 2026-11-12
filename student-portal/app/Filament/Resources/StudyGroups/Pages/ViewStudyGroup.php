@@ -14,6 +14,7 @@ class ViewStudyGroup extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('student')->label('Открыть ЛК')->url(fn (): string => route('student.group', $this->getRecord()))->openUrlInNewTab(),
             EditAction::make()->label('Настройки группы'), Action::make('page')->label('Редактировать страницу ЛК')->visible(fn (): bool => auth()->user()->can('update', $this->getRecord()))->url(fn (): string => StudyGroupResource::getUrl('page', ['record' => $this->getRecord()])),
         ];
     }

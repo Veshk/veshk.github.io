@@ -1,7 +1,27 @@
 'use strict';
 window.CourseNavigation = (() => {
   const mounts = new WeakMap();
+  const titleObservers = new WeakMap();
+  function fitTitle() {
+    const title=document.querySelector('.hero-layout h1');
+    if(!title)return;
+    titleObservers.get(title)?.disconnect();
+    const resize=()=>{
+      title.style.fontSize='';
+      const base=parseFloat(getComputedStyle(title).fontSize),minimum=matchMedia('(max-width:600px)').matches?24:28;
+      let size=base;
+      const lines=()=>title.getBoundingClientRect().height/parseFloat(getComputedStyle(title).lineHeight);
+      const long=lines()>2.1;
+      while(lines()>2.1&&size>minimum){size-=1;title.style.fontSize=size+'px';}
+      title.closest('.course-hero')?.classList.toggle('has-long-title',long);
+    };
+    let width=0;
+    const observer=new ResizeObserver(entries=>{const next=entries[0].contentRect.width;if(Math.abs(next-width)>.5){width=next;resize();}});
+    observer.observe(title.parentElement);titleObservers.set(title,observer);
+    resize();document.fonts?.ready.then(resize);
+  }
   function mount() {
+    fitTitle();
     const nav = document.querySelector('.course-nav');
     const desktop = nav?.querySelector('.course-nav-inner');
     if (!desktop) return;

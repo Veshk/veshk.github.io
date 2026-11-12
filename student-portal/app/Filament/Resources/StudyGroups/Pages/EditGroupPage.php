@@ -9,9 +9,13 @@ use App\Support\GroupHero;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Schema;
+use Livewire\Attributes\Url;
 
 class EditGroupPage extends EditRecord
 {
+    #[Url]
+    public ?string $block = null;
+
     public static bool $formActionsAreSticky = true;
 
     protected ?bool $hasUnsavedDataChangesAlert = true;
@@ -22,7 +26,7 @@ class EditGroupPage extends EditRecord
 
     public function form(Schema $schema): Schema
     {
-        return $schema->components([...GroupHero::fields(), CoursePage::builder()->helperText('После сохранения откройте предпросмотр страницы группы.')]);
+        return $schema->components([...GroupHero::fields(), CoursePage::builder()->helperText('У каждого блока есть предпросмотр без сохранения. После сохранения можно вернуться к странице слушателя.')]);
     }
 
     protected function mutateFormDataBeforeFill(array $data): array
@@ -41,6 +45,6 @@ class EditGroupPage extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [Action::make('schedule')->label('Обновить расписание из таблицы')->url(fn (): string => ImportSchedule::getUrl(['group' => $this->getRecord()->id]))->openUrlInNewTab(), Action::make('preview')->label('Посмотреть страницу')->url(fn (): string => route('student.group', $this->getRecord()))->openUrlInNewTab(), Action::make('settings')->label('Настройки группы')->url(fn (): string => StudyGroupResource::getUrl('edit', ['record' => $this->getRecord()]))];
+        return [Action::make('returnToPage')->label('Вернуться к просмотру')->color('gray')->url(fn (): string => route('student.group', $this->getRecord()).($this->block ? '#course-block-'.rawurlencode($this->block) : '')), Action::make('schedule')->label('Обновить расписание из таблицы')->url(fn (): string => ImportSchedule::getUrl(['group' => $this->getRecord()->id]))->openUrlInNewTab(), Action::make('preview')->label('Посмотреть страницу')->url(fn (): string => route('student.group', $this->getRecord()))->openUrlInNewTab(), Action::make('settings')->label('Настройки группы')->url(fn (): string => StudyGroupResource::getUrl('edit', ['record' => $this->getRecord()]))];
     }
 }
