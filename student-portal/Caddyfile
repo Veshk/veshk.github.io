@@ -1,4 +1,9 @@
-{$PORTAL_DOMAIN} {
+{$PORTAL_DOMAIN} {$PORTAL_ALIASES} {
+    @previousDomain {
+        not host {$PORTAL_DOMAIN}
+    }
+    redir @previousDomain https://{$PORTAL_DOMAIN}{uri} 308
+
     root * /var/www/html/public
     encode zstd gzip
     header X-Content-Type-Options nosniff

@@ -58,6 +58,7 @@ services:
       target: web
     environment:
       PORTAL_DOMAIN: ${PORTAL_DOMAIN:?Set PORTAL_DOMAIN}
+      PORTAL_ALIASES: ${PORTAL_ALIASES:-}
     ports: ["80:80", "443:443", "443:443/udp"]
     volumes:
       - public_uploads:/var/www/html/storage/app/public:ro
