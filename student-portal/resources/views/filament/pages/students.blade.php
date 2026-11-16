@@ -2,8 +2,11 @@
 @if($group)
 <x-filament::button tag="a" :href="\App\Filament\Resources\StudyGroups\StudyGroupResource::getUrl()" color="gray">← К группам</x-filament::button>
 <x-filament::section :heading="'Участники группы «'.$group->title.'»'">
-<p>{{ $group->code }} Всего участников: <strong>{{ $participantCount }}</strong></p>
-<p class="portal-intro">Зачисленные слушатели, включая тех, чей доступ завершён. Заявки на проверке сюда не входят.</p>
+<p>{{ $group->code }} Зачислено: <strong>{{ $participantCount }}</strong> Ожидают одобрения: <strong>{{ $pendingCount }}</strong></p>
+<p class="portal-intro">В списке зачисленные слушатели и ожидающие одобрения. Заявка сама по себе не открывает доступ к обучению.</p>
+@if($pendingCount)
+<x-filament::button tag="a" :href="$groupApplicationsUrl" color="warning">Рассмотреть заявки ({{ $pendingCount }})</x-filament::button>
+@endif
 </x-filament::section>
 @endif
 <p class="portal-intro">Открытия и обновления страниц ЛК время Екатеринбурга (UTC+5).</p>
@@ -13,6 +16,14 @@
 <div class="portal-student-history" x-data x-init="$nextTick(() => $dispatch('open-modal', {id: 'student-history'}))">
 <h2 class="portal-profile-heading">{{ $person->name }}</h2>
 <p>{{ $person->email }}</p>
+@if($person->pendingApplications->isNotEmpty())
+<h3>Ожидающие заявки</h3>
+@foreach($person->pendingApplications as $application)
+<p>{{ $application->group?->title ?? 'Группа не выбрана' }} {{ $application->group?->code }}<br>
+<x-filament::badge color="warning">Ожидает одобрения</x-filament::badge>
+<a class="portal-link" href="{{ $this->applicationListUrl($person, $application->study_group_id) }}">Перейти к заявке →</a></p>
+@endforeach
+@endif
 <h3>Программы обучения</h3>
 @forelse($person->enrollments as $enrollment)
 <p><a class="portal-link" href="{{ \App\Filament\Resources\StudyGroups\StudyGroupResource::getUrl('view', ['record' => $enrollment->group]) }}">{{ $enrollment->group->title }} {{ $enrollment->group->code }}</a> — {{ $enrollment->group->availableTo($person) ? 'Доступ открыт' : 'Доступ завершён' }}</p>

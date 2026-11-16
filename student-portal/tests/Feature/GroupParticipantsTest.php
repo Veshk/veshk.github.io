@@ -17,7 +17,7 @@ class GroupParticipantsTest extends TestCase
 {
     use LazilyRefreshDatabase;
 
-    public function test_group_count_and_link_list_only_enrolled_students_including_expired_access(): void
+    public function test_group_count_separates_enrollments_and_directory_includes_pending_students(): void
     {
         $group = StudyGroup::factory()->create(['graduates_at' => now()->subYear(), 'access_days' => 0]);
         $empty = StudyGroup::factory()->create();
@@ -34,10 +34,11 @@ class GroupParticipantsTest extends TestCase
             ->assertTableColumnStateSet('enrollments_count', 0, $empty);
         $column = $table->instance()->getTable()->getColumn('enrollments_count')->record($group);
         $this->assertSame(Students::getUrl(['group' => $group->id]), $column->getUrl());
-        Livewire::test(ViewStudyGroup::class, ['record' => $group->id])->assertSee('1 · Открыть список →');
+        Livewire::test(ViewStudyGroup::class, ['record' => $group->id])->assertSee('1 Открыть список →')->assertSee('Ожидают одобрения');
         Livewire::withQueryParams(['group' => $group->id])->test(Students::class)
             ->assertSee($group->title)->assertSee($group->code)
-            ->assertCountTableRecords(1)->assertCanSeeTableRecords([$member])->assertCanNotSeeTableRecords([$pending, $group->administrator])
+            ->assertCountTableRecords(2)->assertCanSeeTableRecords([$member, $pending])->assertCanNotSeeTableRecords([$group->administrator])
+            ->assertTableColumnStateSet('access', 'Ожидает одобрения', $pending)
             ->assertTableColumnStateSet('access', 'Завершён', $member);
         Livewire::withQueryParams(['group' => $empty->id])->test(Students::class)->assertCountTableRecords(0)->assertSee('Участники не найдены');
     }
