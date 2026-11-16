@@ -14,6 +14,7 @@ use Filament\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Livewire\Attributes\Url;
 
@@ -48,6 +49,9 @@ class CourseAccesses extends Page implements HasTable
             TextColumn::make('status')->label('Доступ')->state(fn (SelfStudyEnrollment $record): string => $record->statusLabel())->badge(),
             TextColumn::make('expires_at')->label('Доступ до')->dateTime('d.m.Y H:i', timezone: 'Asia/Yekaterinburg')->sortable(),
             TextColumn::make('progress')->label('Прогресс')->state(fn (SelfStudyEnrollment $record): string => $record->progress().'%'),
+            TextColumn::make('feedback_rating')->label('Оценка курса')->formatStateUsing(fn (int $state): string => $state.' из 5')->placeholder('Нет ответа')->sortable(),
+        ])->filters([
+            TernaryFilter::make('feedback_submitted_at')->label('Анкета обратной связи')->nullable()->trueLabel('Ответ получен')->falseLabel('Нет ответа'),
         ])->headerActions([
             Action::make('grant')->label('Открыть бесплатный курс')->schema([
                 Select::make('course_id')->label('Бесплатный курс')->options(fn (): array => SelfStudyCourse::visibleTo(auth()->user())->where('kind', 'free')->pluck('title', 'id')->all())->default($course?->kind === 'free' ? $course->id : null)->searchable()->required(),
@@ -56,6 +60,7 @@ class CourseAccesses extends Page implements HasTable
                 app(SelfStudyAccess::class)->grantFree(SelfStudyCourse::findOrFail($data['course_id']), User::findOrFail($data['user_id']), auth()->user());
             }),
         ])->recordActions([
+            Action::make('feedback')->label('Ответ АОС')->visible(fn (SelfStudyEnrollment $record): bool => $record->feedback_submitted_at !== null)->modalHeading('Анкета обратной связи')->modalContent(fn (SelfStudyEnrollment $record) => view('filament.components.course-feedback-response', ['enrollment' => $record]))->modalSubmitAction(false)->modalCancelActionLabel('Закрыть'),
             Action::make('extend')->label('Продлить')->schema([
                 DatePicker::make('until')->label('Новая дата окончания')->required(),
                 Textarea::make('reason')->label('Причина')->required()->maxLength(1000),

@@ -15,17 +15,48 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SelfStudyController extends Controller
 {
-    public function show(Request $request, SelfStudyCourse $course, ?SelfStudyLesson $lesson = null): View
+    public function show(Request $request, SelfStudyCourse $course, ?SelfStudyLesson $lesson = null, bool $feedbackMode = false): View
     {
         $enrollment = $this->access($request, $course);
         $course->load(['lessons' => fn ($query) => $query->when($enrollment !== null, fn ($query) => $query->where('is_published', true))]);
         if ($lesson) {
             abort_unless($lesson->self_study_course_id === $course->id && ($enrollment === null || $lesson->is_published), 404);
-        } else {
+        } elseif (! $feedbackMode) {
             $lesson = $course->lessons->first(fn (SelfStudyLesson $item): bool => ! in_array($item->id, $enrollment?->completed_lessons ?? [])) ?? $course->lessons->first();
         }
 
-        return view('student.self-study', compact('course', 'lesson', 'enrollment'));
+        return view('student.self-study', compact('course', 'lesson', 'enrollment', 'feedbackMode'));
+    }
+
+    public function feedback(Request $request, SelfStudyCourse $course): View
+    {
+        return $this->show($request, $course, feedbackMode: true);
+    }
+
+    public function saveFeedback(Request $request, SelfStudyCourse $course): RedirectResponse
+    {
+        $enrollment = $this->access($request, $course, true);
+        $data = $request->validate([
+            'rating' => ['required', 'integer', 'between:1,5'],
+            'liked' => ['nullable', 'string', 'max:5000'],
+            'improvements' => ['nullable', 'string', 'max:5000'],
+        ], [
+            'rating.required' => 'Выберите оценку курса от 1 до 5.',
+            'rating.integer' => 'Выберите целую оценку от 1 до 5.',
+            'rating.between' => 'Оценка курса должна быть от 1 до 5.',
+        ]);
+        DB::transaction(function () use ($enrollment, $data): void {
+            $enrollment = SelfStudyEnrollment::whereKey($enrollment->id)->lockForUpdate()->firstOrFail();
+            abort_unless($enrollment->available(), 403);
+            $enrollment->update([
+                'feedback_rating' => $data['rating'],
+                'feedback_liked' => $data['liked'] ?? null,
+                'feedback_improvements' => $data['improvements'] ?? null,
+                'feedback_submitted_at' => now(),
+            ]);
+        });
+
+        return redirect()->route('student.course.feedback', $course)->with('notice', 'Спасибо за обратную связь! Ваш ответ сохранён.');
     }
 
     public function progress(Request $request, SelfStudyCourse $course, SelfStudyLesson $lesson): RedirectResponse|JsonResponse

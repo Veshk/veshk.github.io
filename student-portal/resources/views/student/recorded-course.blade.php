@@ -1,7 +1,7 @@
 @php
     $lessons = $course->lessons;
     $completed = $enrollment?->completed_lessons ?? [];
-    $lessonIndex = $lesson ? $lessons->search(fn ($item) => $item->id === $lesson->id) : 0;
+    $lessonIndex = $lesson ? $lessons->search(fn ($item) => $item->id === $lesson?->id) : 0;
     $moduleTitle = fn ($item) => $item->module_title ?: preg_replace('/ — часть \d+$/u', '', $item->title);
     $modules = $lessons->chunkWhile(fn ($item, $key, $chunk) => $moduleTitle($item) === $moduleTitle($chunk->last()));
     $minutes = $lessons->sum('duration_minutes');
@@ -25,22 +25,26 @@
         @else<p>Смотрите уроки и возвращайтесь к материалам</p>@endif
     </div><div class="rc-access"><span class="rc-access-label">{{ $enrollment ? 'Доступ открыт' : 'Доступ к курсу' }}</span><strong>{{ $enrollment ? 'До '.$enrollment->expires_at->timezone('Asia/Yekaterinburg')->format('d.m.Y') : $course->access_days.' дней после оплаты' }}</strong><span>У каждого курса свой срок</span></div></div>
     @include('partials.errors')
-    @if($lesson)<nav class="rc-nav" aria-label="Разделы курса"><a href="#rc-learning">Обучение</a><a href="#rc-materials">Материалы урока</a><a href="#rc-notes">Мои заметки</a><a href="#rc-help">Помощь</a></nav>@endif
+    @if($lesson || $feedbackMode)<nav class="rc-nav" aria-label="Разделы курса"><a href="#rc-learning">Обучение</a>@if(! $feedbackMode)<a href="#rc-materials">Материалы урока</a>@endif<a href="#rc-help">Помощь</a></nav>@endif
     @if($course->description)<details class="rc-panel" style="margin-bottom:24px"><summary>О курсе</summary><p class="rc-description">{{ $course->description }}</p></details>@endif
-    @if($lesson)
+    @if($lesson || $feedbackMode)
     <div class="rc-layout" id="rc-learning">
         <aside class="rc-sidebar"><details class="rc-program" open><summary>Программа курса <span>{{ $lessons->count() }} уроков ⌄</span></summary><nav class="rc-program-body" aria-label="Уроки курса">
             @foreach($modules as $module)
-                <details class="rc-module" {{ $module->contains('id', $lesson->id) ? 'open' : '' }}>
+                <details class="rc-module" {{ $module->contains('id', $lesson?->id) ? 'open' : '' }}>
                     <summary><span class="rc-module-number">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><span>{{ $moduleTitle($module->first()) }}<small data-module-progress>{{ $module->whereIn('id', $completed)->count() }} из {{ $module->count() }} пройдено</small></span><span class="rc-chevron" aria-hidden="true">⌄</span></summary>
                     <ol>@foreach($module as $item)
                         @php($number = $lessons->search(fn ($entry) => $entry->id === $item->id) + 1)
-                        <li><a href="{{ route('student.lesson', [$course, $item]) }}#rc-learning" @if($item->id === $lesson->id)aria-current="page"@endif><span class="rc-lesson-number" data-lesson-check="{{ $item->id }}" data-completed="{{ in_array($item->id, $completed) ? 'true' : 'false' }}" data-number="{{ str_pad($number, 2, '0', STR_PAD_LEFT) }}">{{ in_array($item->id, $completed) ? '✓' : str_pad($number, 2, '0', STR_PAD_LEFT) }}</span><span>{{ $item->title }}<small>{{ $item->duration_minutes }} мин</small></span>@if($item->id === $lesson->id)<span class="rc-current">Вы здесь</span>@endif</a></li>
+                        <li><a href="{{ route('student.lesson', [$course, $item]) }}#rc-learning" @if($item->id === $lesson?->id)aria-current="page"@endif><span class="rc-lesson-number" data-lesson-check="{{ $item->id }}" data-completed="{{ in_array($item->id, $completed) ? 'true' : 'false' }}" data-number="{{ str_pad($number, 2, '0', STR_PAD_LEFT) }}">{{ in_array($item->id, $completed) ? '✓' : str_pad($number, 2, '0', STR_PAD_LEFT) }}</span><span>{{ $item->title }}<small>{{ $item->duration_minutes }} мин</small></span>@if($item->id === $lesson?->id)<span class="rc-current">Вы здесь</span>@endif</a></li>
                     @endforeach</ol>
                 </details>
             @endforeach
+            <a class="aos-menu aos-menu-module" href="{{ route('student.course.feedback', $course) }}#rc-learning" @if($feedbackMode)aria-current="page"@endif><span class="rc-module-number">{{ str_pad($modules->count() + 1, 2, '0', STR_PAD_LEFT) }}</span><span>Анкета обратной связи<small>{{ $enrollment?->feedback_submitted_at ? 'Ответ отправлен' : 'Оцените курс' }}</small></span><span aria-hidden="true">{{ $enrollment?->feedback_submitted_at ? '✓' : '→' }}</span></a>
         </nav></details></aside>
         <div class="rc-workspace">
+            @if($feedbackMode)
+                @include('student.course-feedback')
+            @else
             <section class="rc-panel rc-lesson"><div class="rc-lesson-meta"><span class="eyebrow">Урок {{ $lessonIndex + 1 }} из {{ $lessons->count() }}</span><span>{{ $lesson->duration_minutes }} мин</span></div><h2>{{ $lesson->title }}</h2>
                 @if(! $lesson->is_published)<p class="rc-notice">Черновик урока — пока не виден слушателям</p>@endif
                 @if($lesson->embedUrl())
@@ -57,7 +61,7 @@
                 @else<p class="muted rc-completion" data-playback-hint>Предпросмотр не меняет прогресс слушателей</p>@endif
                 <div class="rc-lesson-navigation">
                     @if($lessonIndex > 0)<a class="rc-previous" href="{{ route('student.lesson', [$course, $lessons[$lessonIndex - 1]]) }}#rc-learning">← Предыдущий урок</a>@else<span></span>@endif
-                    @if($lessonIndex < $lessons->count() - 1)<a class="btn" href="{{ route('student.lesson', [$course, $lessons[$lessonIndex + 1]]) }}#rc-learning">Следующий урок →</a>@else<a class="btn" href="{{ $returnUrl }}">{{ $enrollment ? 'К моему обучению' : 'К управлению курсами' }} →</a>@endif
+                    @if($lessonIndex < $lessons->count() - 1)<a class="btn" href="{{ route('student.lesson', [$course, $lessons[$lessonIndex + 1]]) }}#rc-learning">Следующий урок →</a>@else<a class="btn" href="{{ route('student.course.feedback', $course) }}#rc-learning">Перейти к анкете →</a>@endif
                 </div>
             </section>
             <section class="rc-panel" id="rc-materials"><p class="eyebrow">К этому уроку</p><h2>Материалы</h2>
@@ -65,10 +69,7 @@
                     <a class="rc-resource" href="{{ route('student.lesson.material', [$course, $lesson, $index]) }}"><span>{{ $material['title'] ?? 'Материал' }}</span><span aria-hidden="true">↓</span></a>
                 @empty<div class="rc-empty"><span aria-hidden="true">↓</span><div><strong>Дополнительных файлов пока нет</strong><p>Если к уроку появятся материалы, они будут доступны в этом разделе</p></div></div>@endforelse
             </section>
-            <section class="rc-panel" id="rc-notes"><p class="eyebrow">Сохраните главное</p><h2>Мои заметки</h2><p class="muted rc-intro">Личные заметки сохраняются отдельно для каждого урока</p>
-                @if($enrollment)<form method="post" action="{{ route('student.lesson.note', [$course, $lesson]) }}">@csrf<label class="rc-field" for="lesson-note">Что хочу применить в работе<textarea id="lesson-note" name="note" rows="5" maxlength="5000" placeholder="Главная мысль, полезный пример или следующий шаг">{{ old('note', $enrollment->notes[$lesson->id] ?? '') }}</textarea></label><div class="rc-note-actions"><button class="btn secondary">Сохранить заметку</button><span class="muted">Видно только вам</span></div></form>
-                @else<label class="rc-field">Что хочу применить в работе<textarea rows="5" disabled placeholder="Главная мысль, полезный пример или следующий шаг"></textarea></label><div class="rc-note-actions"><button class="btn secondary" disabled>Сохранить заметку</button><span class="muted">Доступно в режиме слушателя</span></div>@endif
-            </section>
+            @endif
             <section class="rc-panel rc-help" id="rc-help"><div><p class="eyebrow">Мы рядом</p><h2>Нужна помощь?</h2><p>С вопросами по доступу, видео и продлению поможет команда ВЭШ</p></div><a class="btn secondary" href="mailto:info@veshk.ru">Написать в школу ↗</a></section>
         </div>
     </div>

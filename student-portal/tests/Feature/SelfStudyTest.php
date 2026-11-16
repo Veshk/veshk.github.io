@@ -180,7 +180,7 @@ class SelfStudyTest extends TestCase
         $this->assertFalse($course->fresh()->is_published);
     }
 
-    public function test_recorded_page_navigates_only_published_lessons_and_keeps_notes_on_the_selected_lesson(): void
+    public function test_recorded_page_navigates_only_published_lessons_and_hides_old_notes(): void
     {
         $course = SelfStudyCourse::factory()->create(['kind' => 'recorded']);
         $access = SelfStudyEnrollment::factory()->create(['self_study_course_id' => $course->id]);
@@ -197,7 +197,7 @@ class SelfStudyTest extends TestCase
             ->assertSee('Предыдущий урок')->assertDontSee('Следующий урок');
         $this->post(route('student.lesson.note', [$course, $last]), ['note' => 'Применить в отчёте'])
             ->assertRedirect(route('student.lesson', [$course, $last]));
-        $this->get(route('student.lesson', [$course, $last]))->assertOk()->assertSee('Применить в отчёте');
+        $this->get(route('student.lesson', [$course, $last]))->assertOk()->assertDontSee('Применить в отчёте')->assertSee('Перейти к анкете');
         $this->get(route('student.lesson', [$course, $first]))->assertOk()->assertDontSee('Применить в отчёте');
         $this->get(route('student.lesson', [$course, $hidden]))->assertNotFound();
     }

@@ -1,6 +1,7 @@
 @extends('layouts.portal')
 @section('title', $course->title)
 @section('content')
+<link rel="stylesheet" href="{{ asset('self-study/feedback.css') }}?v=20261116-aos-1">
 @if($course->kind === 'recorded')
 @include('student.recorded-course')
 @else
@@ -10,14 +11,18 @@
 <section class="course-hero has-group-cover self-study-hero"><img class="group-hero-background" src="{{ $course->coverUrl() }}" alt=""><div class="eyebrow">{{ $course->kindLabel() }}</div><h1>{{ $course->title }}</h1><p>{{ $course->expert }}</p></section>
 @include('partials.errors')
 @if(! $enrollment)<p class="self-study-notice">Предпросмотр администратора. Прогресс слушателей не меняется.</p>@else<p>Доступ до {{ $enrollment->expires_at->timezone('Asia/Yekaterinburg')->format('d.m.Y') }} <span class="self-study-progress">Пройдено <strong data-progress>{{ $enrollment->progress() }}%</strong></span></p>@endif
-@if($lesson)
+@if($lesson || $feedbackMode)
 <div class="self-study-grid">
 <aside class="card self-study-menu"><h2>Уроки курса</h2><nav aria-label="Уроки курса">
 @foreach($course->lessons as $item)
-<a href="{{ route('student.lesson', [$course, $item]) }}" @if($item->id === $lesson->id)aria-current="page"@endif><span class="muted">{{ $loop->iteration }}</span><span>{{ $item->title }}@if($item->module_title)<small>{{ $item->module_title }}</small>@endif</span><span data-lesson-check="{{ $item->id }}">{{ in_array($item->id, $enrollment?->completed_lessons ?? []) ? '✓' : '' }}</span></a>
+<a href="{{ route('student.lesson', [$course, $item]) }}" @if($item->id === $lesson?->id)aria-current="page"@endif><span class="muted">{{ $loop->iteration }}</span><span>{{ $item->title }}@if($item->module_title)<small>{{ $item->module_title }}</small>@endif</span><span data-lesson-check="{{ $item->id }}">{{ in_array($item->id, $enrollment?->completed_lessons ?? []) ? '✓' : '' }}</span></a>
 @endforeach
+<a class="aos-menu" href="{{ route('student.course.feedback', $course) }}" @if($feedbackMode)aria-current="page"@endif><span class="muted">{{ $course->lessons->count() + 1 }}</span><span>Анкета обратной связи<small>{{ $enrollment?->feedback_submitted_at ? 'Ответ отправлен' : 'Оцените курс' }}</small></span><span aria-hidden="true">{{ $enrollment?->feedback_submitted_at ? '✓' : '→' }}</span></a>
 </nav></aside>
-<section class="card self-study-lesson"><div class="eyebrow muted">{{ $lesson->module_title ?: 'Урок '.$course->lessons->search(fn ($item) => $item->id === $lesson->id) + 1 }}</div><h2>{{ $lesson->title }}</h2>
+@if($feedbackMode)
+@include('student.course-feedback')
+@else
+<section class="card self-study-lesson"><div class="eyebrow muted">{{ $lesson->module_title ?: 'Урок '.$course->lessons->search(fn ($item) => $item->id === $lesson?->id) + 1 }}</div><h2>{{ $lesson->title }}</h2>
 @if($lesson->duration_minutes)<p class="muted">{{ $lesson->duration_minutes }} мин</p>@endif
 @if($lesson->embedUrl())
 <div class="self-study-video"><iframe title="{{ $lesson->title }}" data-kinescope-url="{{ $lesson->videoUrl() }}" data-embed-src="{{ $lesson->embedUrl() }}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe><span data-player-status>Загружаем плеер</span></div>
@@ -35,9 +40,11 @@
 @endif
 @if($enrollment)
 <form method="post" action="{{ route('student.lesson.progress', [$course, $lesson]) }}" data-progress-form data-lesson-id="{{ $lesson->id }}">@csrf<input type="hidden" name="completed" value="{{ in_array($lesson->id, $enrollment->completed_lessons ?? []) ? 0 : 1 }}"><button class="btn outline" data-complete-button>{{ in_array($lesson->id, $enrollment->completed_lessons ?? []) ? 'Снять отметку о прохождении' : 'Отметить пройденным' }}</button><p class="muted" role="status" data-progress-status></p></form>
-<form class="self-study-note" method="post" action="{{ route('student.lesson.note', [$course, $lesson]) }}">@csrf<label for="lesson-note">Моя заметка к уроку</label><textarea id="lesson-note" name="note" rows="5" maxlength="5000">{{ old('note', $enrollment->notes[$lesson->id] ?? '') }}</textarea><button class="btn outline">Сохранить заметку</button></form>
 @endif
-</section></div>
+@if($lesson->id === $course->lessons->last()?->id)<div class="aos-navigation"><a class="btn" href="{{ route('student.course.feedback', $course) }}">Перейти к анкете →</a></div>@endif
+</section>
+@endif
+</div>
 @else<section class="card"><h2>Курс готовится</h2><p>Опубликованных уроков пока нет</p></section>@endif
 </main><script type="module" src="{{ asset('self-study/course.mjs') }}?v=20261112-1"></script>
 @endif

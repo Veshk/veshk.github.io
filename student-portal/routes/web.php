@@ -21,6 +21,8 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/learning', [StudentController::class, 'home'])->middleware(RecordPortalVisit::class)->name('student.home');
     Route::get('/courses/{course}', [SelfStudyController::class, 'show'])->middleware(RecordPortalVisit::class)->name('student.course');
+    Route::get('/courses/{course}/feedback', [SelfStudyController::class, 'feedback'])->middleware(RecordPortalVisit::class)->name('student.course.feedback');
+    Route::post('/courses/{course}/feedback', [SelfStudyController::class, 'saveFeedback'])->middleware('throttle:30,1')->name('student.course.feedback.store');
     Route::get('/courses/{course}/lessons/{lesson}', [SelfStudyController::class, 'show'])->middleware(RecordPortalVisit::class)->name('student.lesson');
     Route::post('/courses/{course}/lessons/{lesson}/progress', [SelfStudyController::class, 'progress'])->middleware('throttle:120,1')->name('student.lesson.progress');
     Route::post('/courses/{course}/lessons/{lesson}/note', [SelfStudyController::class, 'note'])->middleware('throttle:60,1')->name('student.lesson.note');

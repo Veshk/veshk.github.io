@@ -16,7 +16,7 @@ class SelfStudyEnrollment extends Model
 
     protected function casts(): array
     {
-        return ['starts_at' => 'datetime', 'expires_at' => 'datetime', 'revoked_at' => 'datetime', 'completed_lessons' => 'array', 'notes' => 'array', 'history' => 'array'];
+        return ['starts_at' => 'datetime', 'expires_at' => 'datetime', 'revoked_at' => 'datetime', 'completed_lessons' => 'array', 'notes' => 'array', 'history' => 'array', 'feedback_rating' => 'integer', 'feedback_submitted_at' => 'datetime'];
     }
 
     public function course(): BelongsTo
