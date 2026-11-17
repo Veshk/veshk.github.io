@@ -66,3 +66,4 @@
 #action-dialog.course-dialog .dialog-actions{position:sticky;bottom:-32px;background:#fff;border-top:1px solid var(--line);padding:16px 0;flex-wrap:wrap;z-index:2}
 
 .student-pending-group{display:grid;gap:6px;margin-top:10px}.student-pending-group .group-status{justify-self:start}.student-pending-group .group-name{white-space:normal}
+#student-dialog > h3{font-weight:700;color:var(--navy)}

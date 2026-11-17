@@ -115,6 +115,21 @@ test('recordings show the date once and preserve meaningful custom copy',()=>{
   for(const value of ['Занятие 1','<h3>Разбор кейса</h3>','Разбор решений команды','Без даты','Полезное описание','https://example.com/one','https://example.com/two'])assert.ok(html.includes(value),value);
 });
 
+test('recordings follow chronology with archive first, latest four open and planned last',()=>{
+  const videos=Array.from({length:6},(_,i)=>({date:`2026-01-0${i+1}`,title:`Topic ${i+1}`,url:`https://example.com/video-${i+1}`})).reverse();
+  videos.unshift({date:'2099-01-02',title:'Future 2',status:'pending'},{date:'2099-01-01',title:'Future 1',status:'pending'});
+  const html=render([{type:'recordings',data:{videos}}]);
+  const archive=html.split('</details>')[0],current=html.split('</details>')[1].split('<details')[0];
+  assert.equal((archive.match(/class="recording-row/g)||[]).length,2);
+  assert.equal((current.match(/class="recording-row/g)||[]).length,4);
+  const labels=['Topic 1','Topic 2','Topic 3','Topic 4','Topic 5','Topic 6','Future 1','Future 2'];
+  const positions=labels.map(label=>html.indexOf(label));
+  assert.ok(positions.every(p=>p>=0));
+  assert.deepEqual(positions,[...positions].sort((a,b)=>a-b));
+  assert.ok(!archive.includes(' open'));
+  for(let i=1;i<=6;i++)assert.ok(html.includes(`https://example.com/video-${i}`));
+});
+
 test('materials cleanup is targeted and one-time, keeping custom descriptions and multiple resources',()=>{
   for(const description of ['Дополнительные материалы группы ОНЛ_СПО-8.','Сначала изучите инструкцию']){
     const block={type:'materials',data:{block_id:'pilot-spo-materials',title:'Материалы для обучения',text:description,resources:[{title:'Материалы группы',url:'https://example.com/folder'}]}};
