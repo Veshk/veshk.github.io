@@ -95,9 +95,9 @@
 @forelse($data['questions'] ?? [] as $question)<details class="course-faq"><summary>{{ $question['question'] ?? '' }}</summary><div class="faq-answer"><p class="block-text">{{ $question['answer'] ?? '' }}</p>@if($url = $safe($question['url'] ?? null))<a class="text-link" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ ($question['button'] ?? '') ?: 'Подробнее' }} ↗</a>@endif</div></details>@empty<div class="empty">Ответы на вопросы скоро появятся.</div>@endforelse
 @elseif($type === 'recordings')
 @php
-    $videos = collect($data['videos'] ?? [])->sortByDesc(fn ($video) => $video['date'] ?? '')->values();
+    $videos = collect($data['videos'] ?? [])->sortBy(fn ($video) => $video['date'] ?? '')->values();
     [$upcomingVideos, $pastVideos] = $videos->partition(fn ($video) => !empty($video['date']) && $video['date'] > now('Asia/Yekaterinburg')->toDateString());
-    $videoSets = [['items'=>$pastVideos->take(4), 'label'=>null], ['items'=>$pastVideos->skip(4), 'label'=>'Предыдущие записи'], ['items'=>$upcomingVideos->sortBy('date'), 'label'=>'Ожидаемые записи']];
+    $videoSets = [['items'=>$pastVideos->take(max(0, $pastVideos->count() - 4)), 'label'=>'Предыдущие записи'], ['items'=>$pastVideos->take(-4), 'label'=>null], ['items'=>$upcomingVideos, 'label'=>'Ожидаемые записи']];
 @endphp
 @foreach($videoSets as $set)
 @continue($set['items']->isEmpty())

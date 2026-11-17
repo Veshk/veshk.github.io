@@ -172,6 +172,7 @@
 .portal-table th { padding: 10px 12px; }
 .portal-admin-form, .portal-admin-form fieldset { gap: 16px; }
 .portal-student-history { display: grid; gap: 14px; font-size: 13px; }
+.portal-student-history > h3 { font-weight: 700; color: var(--portal-navy); }
 .portal-history-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .portal-discard-dialog { margin: auto; width: min(440px, calc(100% - 32px)); padding: 24px; border: 1px solid var(--portal-line); border-radius: 8px; color: var(--portal-ink); background: white; box-shadow: 0 12px 48px #18252a33; }
 .portal-discard-dialog::backdrop { background: #18252a66; }

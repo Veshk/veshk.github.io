@@ -298,14 +298,41 @@ class CoursePageTest extends TestCase
         $group = StudyGroup::factory()->create();
         $videos = array_map(fn ($n) => ['date' => '2026-11-0'.$n, 'title' => 'Занятие '.$n.' 0'.$n.'.11.2026', 'text' => 'Описание 0'.$n.'.11.2026', 'module' => 'Записи занятий', 'url' => 'https://example.com/video-'.$n], range(1, 6));
         $html = view('student.page-block', ['type' => 'recordings', 'data' => ['videos' => $videos], 'group' => $group])->render();
-        $this->assertSame(4, substr_count(explode('<details', $html)[0], 'class="recording-row'));
+        $this->assertSame(2, substr_count(explode('</details>', $html)[0], 'class="recording-row'));
+        $this->assertSame(4, substr_count(explode('</details>', $html)[1], 'class="recording-row'));
         $this->assertSame(1, substr_count($html, 'Предыдущие записи'));
         $this->assertStringNotContainsString('<h3>Записи занятий</h3>', $html);
         foreach (range(1, 6) as $n) {
             $this->assertSame(1, substr_count($html, '0'.$n.'.11.2026'));
             $this->assertStringContainsString('https://example.com/video-'.$n, $html);
         }
-        $this->assertLessThan(strpos($html, 'Занятие 5'), strpos($html, 'Занятие 6'));
+        $positions = array_map(fn ($n) => strpos($html, 'Занятие '.$n), range(1, 6));
+        $sorted = $positions;
+        sort($sorted);
+        $this->assertSame($sorted, $positions);
+    }
+
+    public function test_recording_copy_is_inserted_after_source_and_edits_are_independent(): void
+    {
+        $video = ['title' => 'Первая запись', 'date' => '2026-11-01', 'status' => 'published', 'url' => 'https://example.com/one', 'module' => 'Модуль', 'text' => 'Описание'];
+        $next = array_replace($video, ['title' => 'Следующая запись', 'date' => '2026-11-08']);
+        $blocks = [['type' => 'recordings', 'data' => ['block_id' => 'videos', 'title' => 'Записи', 'visible' => true, 'videos' => [$video, $next]]]];
+        $group = StudyGroup::factory()->create(['page_blocks' => $blocks]);
+        $this->actingAs($group->administrator);
+        $editor = Livewire::test(EditGroupPage::class, ['record' => $group->id]);
+        $blockKey = array_key_first($editor->get('data.page_blocks'));
+        $path = 'page_blocks.'.$blockKey.'.data.videos';
+        $itemKey = array_key_first($editor->get('data.'.$path));
+        $editor->callAction(TestAction::make('clone')->schemaComponent($path)->arguments(['item' => $itemKey]));
+        $items = $editor->get('data.'.$path);
+        $this->assertCount(3, $items);
+        $this->assertSame([$video, $video, $next], array_values($items));
+        $copyKey = array_keys($items)[1];
+        $editor->set('data.'.$path.'.'.$copyKey.'.title', 'Новая тема')->call('save')->assertHasNoFormErrors();
+        $saved = $group->fresh()->page_blocks[0]['data']['videos'];
+        $this->assertSame($video, $saved[0]);
+        $this->assertSame(array_replace($video, ['title' => 'Новая тема']), $saved[1]);
+        $this->assertSame($next, $saved[2]);
     }
 
     public function test_public_header_shows_start_only_and_completion_does_not_hide_future_lessons(): void

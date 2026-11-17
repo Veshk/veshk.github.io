@@ -333,16 +333,36 @@ class CoursePage
                         TextInput::make('module')->label('Модуль')->maxLength(300),
                         Textarea::make('text')->label('Описание')->maxLength(5000)->rows(3),
                     ])->columnSpanFull()->compact()->collapsed(),
-                ])->columns(2)->defaultItems(0)->addActionLabel('Добавить запись')->itemLabel(function (array $state): string {
-                    $date = $state['date'] ?? '';
-                    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-                        $date = implode('.', array_reverse(explode('-', $date)));
-                    }
+                ])->columns(2)->defaultItems(0)->addActionLabel('Добавить запись')->cloneable()->cloneAction(fn (Action $action): Action => $action
+                    ->label('Копировать запись')
+                    ->tooltip('Копировать запись')
+                    ->after(function (array $arguments, Repeater $component): void {
+                        $items = $component->getRawState();
+                        if (! array_key_exists($arguments['item'], $items)) {
+                            return;
+                        }
+                        $copyKey = array_key_last($items);
+                        $ordered = [];
+                        foreach ($items as $key => $item) {
+                            if ($key === $copyKey) {
+                                continue;
+                            }
+                            $ordered[$key] = $item;
+                            if ($key === $arguments['item']) {
+                                $ordered[$copyKey] = $items[$copyKey];
+                            }
+                        }
+                        $component->rawState($ordered);
+                    }))->itemLabel(function (array $state): string {
+                        $date = $state['date'] ?? '';
+                        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                            $date = implode('.', array_reverse(explode('-', $date)));
+                        }
 
-                    $status = ($state['status'] ?? 'pending') === 'published' ? 'Опубликована' : 'Ожидает видео';
+                        $status = ($state['status'] ?? 'pending') === 'published' ? 'Опубликована' : 'Ожидает видео';
 
-                    return implode(' ', [$date ?: 'Без даты', $status, Str::limit($state['title'] ?? 'Новая запись', 120)]);
-                })->collapsed()],
+                        return implode(' ', [$date ?: 'Без даты', $status, Str::limit($state['title'] ?? 'Новая запись', 120)]);
+                    })->collapsed()],
                 'materials' => [Textarea::make('text')->label('Описание')->maxLength(5000), self::url('url', 'Ссылка на папку группы (необязательно)'), Repeater::make('resources')->label('Материалы')->schema([
                     TextInput::make('title')->label('Название материала')->required()->maxLength(300), Textarea::make('text')->label('Описание')->maxLength(5000), self::url('url', 'Ссылка на материал')->required(), TextInput::make('button')->label('Текст кнопки')->maxLength(100),
                 ])->defaultItems(0)->addActionLabel('Добавить материал')->collapsible()],
