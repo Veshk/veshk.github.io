@@ -102,7 +102,7 @@ window.CoursePages = (() => {
     GroupHero.render(document.querySelector('.course-hero'),{...g,program_cover_url:SchoolPrograms.coverFor(ctx.programs[g.program_id]),program_type:ctx.programs[g.program_id]?.program_type});
     const preparationEnds=(()=>{if(!g.starts_at)return '';const [y,m,d]=g.starts_at.split('-').map(Number),end=new Date(Date.UTC(y,m+1,0)).getUTCDate();return new Date(Date.UTC(y,m,Math.min(d,end))).toISOString().slice(0,10);})();
     const blocks=getBlocks(g).filter(b=>labels[b.type]&&b.data.visible!==false&&(b.type!=='preparation'||!preparationEnds||today()<preparationEnds)).sort((a,b)=>(a.type==='preparation'?0:1)-(b.type==='preparation'?0:1));
-    const canEdit=ctx.canEditGroup?.(ctx.groupId)&&new URLSearchParams(location.search).has('preview');
+    const canEdit=!ctx.studentView&&ctx.canEditGroup?.(ctx.groupId)&&new URLSearchParams(location.search).has('preview');
     const nav=document.querySelector('.course-nav-inner');
     nav.innerHTML=blocks.map((b,i)=>{
       const type=b.type==='alias'?resolveAlias(b,ctx.groups)?.block.type:b.type;
@@ -125,7 +125,7 @@ window.CoursePages = (() => {
     main.querySelectorAll?.('.preparation-top').forEach(item=>item.remove());
     blocks.forEach((b,i)=>{if(b.type==='preparation'){const section=document.getElementById('block-'+i),wrapper=document.createElement('div');wrapper.className='shell preparation-top';document.querySelector('#learning-overview').before(wrapper);wrapper.append(section);}});
     window.CourseNavigation?.mount();
-    if(new URLSearchParams(location.search).has('preview')){
+    if(!ctx.studentView&&new URLSearchParams(location.search).has('preview')){
       const bar=document.createElement('div');bar.className='page-edit-banner';bar.innerHTML=`<span>Предпросмотр страницы группы</span><a class="text-link" href="editor.html?group=${encodeURIComponent(ctx.groupId)}&role=${ctx.role}">Редактировать страницу ЛК →</a>`;document.querySelector('.course-hero').before(bar);
     }
   };

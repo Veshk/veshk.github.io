@@ -77,15 +77,37 @@
   const canReview = row => row.group ? senior || groups[row.group]?.id===role : state.reviewers.includes(role);
   const labels={pending:'На проверке',approved:'Доступ открыт',rejected:'Отклонена'};
   const badges={pending:'wait',approved:'',rejected:'rejected'};
+  const viewQuery=new URLSearchParams(location.search);
+  const studentView=viewQuery.get('student_view')==='1'||viewQuery.has('as_student');
+  const viewRole=senior?'senior':role;
+  const studentAccounts=window.StudentDirectory?.create({groups,sampleGroups:directory.groups,requests:state.requests,closes});
+  const viewedStudent=viewQuery.has('as_student')?studentAccounts?.rows().find(person=>person.id===viewQuery.get('as_student')):null;
+  const previewQuery=studentView?'&'+(viewedStudent?'as_student='+encodeURIComponent(viewedStudent.id):'student_view=1')+'&role='+encodeURIComponent(viewRole):'';
+  const previewHome='courses.html?list=1'+previewQuery;
+  const mountStudentView=()=>{
+    if(!studentView)return;
+    document.querySelectorAll('a[href="courses.html"],.breadcrumb a').forEach(a=>{a.href=previewHome;});
+    document.querySelectorAll('.logout,a[href="apply.html"],.admin-entry').forEach(el=>el.remove());
+    document.querySelectorAll('.person .name').forEach(el=>el.textContent=viewedStudent?.name||'Вид слушателя');
+    document.querySelectorAll('.person .avatar').forEach(el=>el.textContent=(viewedStudent?.name||'Слушатель').slice(0,1));
+    const banner=document.createElement('div');banner.className='student-preview-banner';banner.setAttribute('role','region');banner.setAttribute('aria-label','Просмотр как студент');
+    banner.innerHTML=`<div><strong>Вы смотрите как студент</strong><span>${escape(viewedStudent?.name||'Общий вид обучения')}</span><small>Режим просмотра — прогресс, ответы и история слушателя не меняются</small></div><a class="btn outline" href="admin.html?role=${encodeURIComponent(viewRole)}&panel=${viewedStudent?'students':'groups'}">Вернуться в управление</a>`;
+    document.body.prepend(banner);new ResizeObserver(()=>document.documentElement.style.setProperty('--student-preview-height',banner.offsetHeight+'px')).observe(banner);
+  };
+  if(studentView&&viewQuery.has('as_student')&&!viewedStudent){document.querySelector('main').innerHTML='<div class="page-heading"><h1>Слушатель не найден</h1></div>';mountStudentView();return;}
+
   if(location.pathname.endsWith('courses.html')){
-    const student=StudentDirectory.create({groups,sampleGroups:directory.groups,requests:state.requests,closes}).rows().find(person=>person.id==='student-0');
+    const student=viewedStudent||studentAccounts.rows().find(person=>person.id==='student-0');
+    if(studentView&&!viewedStudent){document.querySelector('h1').textContent='Все учебные группы';document.querySelector('.page-heading p').textContent='Выберите группу, чтобы увидеть её страницу со стороны слушателя';}
     const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Yekaterinburg'}).format(new Date());
     const cards=document.querySelector('.cards');
-    cards.innerHTML=(student?.groups||[]).map(id=>{
-      const g=groups[id],available=closes(g)>=today,finished=g.graduates_at<today;
+    cards.innerHTML=(studentView&&!viewedStudent?Object.keys(groups):student?.groups||[]).map(id=>{
+      const g=groups[id],available=studentView&&!viewedStudent||closes(g)>=today,finished=g.graduates_at<today;
       const status=!available?'Доступ завершён':finished?'Обучение завершено':g.starts_at>today?'Доступ открыт':'Идёт обучение';
-      return `<article class="card course-tile" data-learning-group="${escape(id)}"><div class="tile-cover course-hero"><div class="eyebrow">${escape(g.code)} — ${escape(g.format)}</div><h2>${escape(g.name)}</h2></div><div class="tile-bottom"><div><span class="badge ${!available||finished?'closed':''}">${status}</span><p class="learning-dates">Начало обучения ${dateLabel(g.starts_at)}</p>${available?`<p class="learning-access">Материалы доступны до ${dateLabel(closes(g))}</p>`:''}</div>${available?`<a class="btn" href="${groupLink(id)}">Перейти ↗</a>`:''}</div></article>`;
+      return `<article class="card course-tile" data-learning-group="${escape(id)}"><div class="tile-cover course-hero"><div class="eyebrow">${escape(g.code)} — ${escape(g.format)}</div><h2>${escape(g.name)}</h2></div><div class="tile-bottom"><div><span class="badge ${!available||finished?'closed':''}">${status}</span><p class="learning-dates">Начало обучения ${dateLabel(g.starts_at)}</p>${available?`<p class="learning-access">Материалы доступны до ${dateLabel(closes(g))}</p>`:''}</div>${available?`<a class="btn" href="${groupLink(id)+previewQuery}">Перейти ↗</a>`:''}</div></article>`;
     }).join('');
+    if(!cards.children.length)cards.innerHTML='<div class="card full"><h2>Обучение пока не открыто</h2><p>Здесь появятся программы после одобрения заявки</p></div>';
+    if(studentView&&viewedStudent?.pendingApplications.length){const section=document.createElement('section');section.className='section';section.innerHTML='<h2>Мои заявки</h2>'+viewedStudent.pendingApplications.map(r=>`<div class="request-row"><div class="details"><h3>${escape(groups[r.group]?.name||'Помощь с выбором группы')}</h3><small>${escape(groups[r.group]?.code||'')}</small></div><span class="badge wait">На проверке</span></div>`).join('');cards.after(section);}
     cards.querySelectorAll('[data-learning-group]').forEach(card=>{
       const g=groups[card.dataset.learningGroup],program=programs[g.program_id];
       GroupHero.render(card.querySelector('.tile-cover'),{...g,program_cover_url:SchoolPrograms.coverFor(program),program_type:program?.program_type});
@@ -135,15 +157,18 @@
     }
   }
     if(!groups.mba.page_blocks && !groups.mba.schedule)groups.mba.schedule=[{date:'2026-11-06',time:'10:00–18:00',title:'Бизнес и организация как система',teacher:'Алексей Миронов',module:'Модуль 1 — Стратегия и управление'},{date:'2026-11-07',time:'10:00–18:00',title:'Модель устойчивой организации',teacher:'Алексей Миронов',module:'Модуль 1 — Стратегия и управление'},{date:'2026-12-04',time:'17:00–21:00',title:'Команда и управленческое взаимодействие',teacher:'Ирина Лебедева',module:'Модуль 2 — Управление людьми'}];
-  const pageContext={state,programs,groups,names,staff:directory.staff,senior,role,canEditGroup,save,groupLink,closes,groupId:customId||(location.pathname.endsWith('excel.html')?'excel':'mba')};
+  const pageContext={studentView,state,programs,groups,names,staff:directory.staff,senior,role,canEditGroup,save,groupLink,closes,groupId:customId||(location.pathname.endsWith('excel.html')?'excel':'mba')};
   const advisorDirectory=window.AcademicAdvisors?.init(pageContext);
   const staffDirectory=AdminTools.init(pageContext);
   if(location.pathname.endsWith('editor.html')){CoursePages.initEditor(pageContext);return;}
   if(pageGroup&&(location.pathname.endsWith('course.html')||location.pathname.endsWith('excel.html'))){
 
-    CoursePages.render(pageContext,pageGroup);
+    if(viewedStudent&&(!viewedStudent.groups.includes(pageContext.groupId)||closes(pageGroup)<new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Yekaterinburg'}).format(new Date()))){document.querySelector('.course-hero')?.remove();document.querySelector('.course-nav')?.remove();document.querySelector('main.shell').innerHTML='<div class="page-heading"><h1>Доступ к группе не открыт</h1></div><p>У этого слушателя нет действующего доступа к материалам группы</p>';}
+    else CoursePages.render(pageContext,pageGroup);
   }
+  mountStudentView();
   if(!document.getElementById('requests-body')) return;
+  document.querySelector('[data-student-preview]')?.setAttribute('href','courses.html?student_view=1&role='+encodeURIComponent(viewRole));
   if(senior){ document.getElementById('create-course').hidden=false;document.getElementById('create-course-help').hidden=true;document.getElementById('create-program').hidden=false; }
   const dialog=document.getElementById('action-dialog');let action=null;let active=null;let selectedId=null;
   const close=()=>dialog.close();
