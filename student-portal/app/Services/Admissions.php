@@ -19,7 +19,7 @@ class Admissions
             User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
             if ($groupId) {
                 $group = StudyGroup::query()->lockForUpdate()->findOrFail($groupId);
-                if (! $group->registration_open) {
+                if (! $group->isRegistrationOpen()) {
                     throw ValidationException::withMessages(['study_group_id' => 'Приём заявок в эту группу закрыт.']);
                 }
                 if (Enrollment::where('user_id', $user->id)->where('study_group_id', $groupId)->exists()) {

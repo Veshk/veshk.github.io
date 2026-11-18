@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\StudyGroup;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -22,7 +23,7 @@ class RegistrationRequest extends FormRequest
     {
         return ['last_name' => ['required', 'string', 'max:80'], 'first_name' => ['required', 'string', 'max:80'], 'patronymic' => ['nullable', 'string', 'max:80'],
             'email' => ['required', 'email', 'max:190', 'unique:users,email'], 'password' => ['required', 'confirmed', Password::min(8)],
-            'study_group_id' => ['nullable', 'integer', Rule::exists('study_groups', 'id')->where('registration_open', true)],
+            'study_group_id' => ['nullable', 'integer', Rule::exists('study_groups', 'id')->where('status', StudyGroup::REGISTRATION_STATUS)],
             'message' => ['nullable', 'string', 'max:1500']];
     }
 

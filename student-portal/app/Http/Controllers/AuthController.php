@@ -17,7 +17,7 @@ class AuthController extends Controller
 {
     public function registration(): View
     {
-        return view('auth.register', ['groups' => StudyGroup::where('registration_open', true)->orderBy('starts_at')->get()]);
+        return view('auth.register', ['groups' => StudyGroup::openForRegistration()->orderBy('starts_at')->get()]);
     }
 
     public function register(RegistrationRequest $request, Admissions $admissions): RedirectResponse

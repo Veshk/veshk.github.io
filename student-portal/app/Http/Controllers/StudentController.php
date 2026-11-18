@@ -35,7 +35,7 @@ class StudentController extends Controller
     {
         abort_unless($request->user()->role === 'student', 403);
 
-        return view('student.apply', ['groups' => StudyGroup::where('registration_open', true)->orderBy('starts_at')->get()]);
+        return view('student.apply', ['groups' => StudyGroup::openForRegistration()->orderBy('starts_at')->get()]);
     }
 
     public function apply(ApplicationRequest $request, Admissions $admissions): RedirectResponse

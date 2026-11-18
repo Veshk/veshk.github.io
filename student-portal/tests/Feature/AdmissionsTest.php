@@ -16,6 +16,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\TestWith;
 use Tests\TestCase;
@@ -47,11 +48,65 @@ class AdmissionsTest extends TestCase
 
     public function test_closed_registration_is_hidden_and_cannot_be_submitted(): void
     {
-        $group = StudyGroup::factory()->create(['title' => 'Скрытая группа', 'registration_open' => false]);
+        $group = StudyGroup::factory()->create(['title' => 'Скрытая группа', 'status' => 'Идет обучение', 'registration_open' => true]);
         $this->get('/register')->assertOk()->assertDontSee('Скрытая группа');
         $this->post('/register', $this->registration(['study_group_id' => $group->id]))->assertSessionHasErrors(['study_group_id' => 'Приём заявок в эту группу закрыт.']);
         $this->assertDatabaseMissing('users', ['email' => 'new@vesh.test']);
         $this->assertDatabaseCount('enrollment_applications', 0);
+    }
+
+    public function test_only_launching_groups_appear_regardless_of_legacy_registration_flag(): void
+    {
+        $groups = collect(StudyGroup::STATUSES)->mapWithKeys(fn (string $status) => [$status => StudyGroup::factory()->create([
+            'title' => 'Группа '.$status,
+            'status' => $status,
+            'registration_open' => $status !== 'Запускается',
+        ])]);
+        $response = $this->get('/register')->assertOk();
+        foreach ($groups as $status => $group) {
+            if ($status === 'Запускается') {
+                $response->assertSee($group->title);
+            } else {
+                $response->assertDontSee($group->title);
+            }
+        }
+        $this->post('/register', $this->registration(['study_group_id' => $groups['Запускается']->id]))->assertRedirect('/learning');
+        $this->assertDatabaseHas('enrollment_applications', ['study_group_id' => $groups['Запускается']->id, 'status' => 'pending']);
+    }
+
+    public function test_status_change_blocks_stale_application_and_reopening_restores_registration(): void
+    {
+        $group = StudyGroup::factory()->create(['title' => 'Группа для смены статуса', 'registration_open' => false]);
+        $user = User::factory()->create();
+        $this->actingAs($user)->get('/applications/new')->assertOk()->assertSee($group->title);
+        $group->update(['status' => 'Идет обучение']);
+        $this->get('/applications/new')->assertOk()->assertDontSee($group->title);
+        $this->post('/applications', ['study_group_id' => $group->id])->assertSessionHasErrors('study_group_id');
+        $this->assertDatabaseCount('enrollment_applications', 0);
+        try {
+            app(Admissions::class)->submit($user, $group->id);
+            $this->fail('A closed group accepted a new application.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('study_group_id', $exception->errors());
+        }
+        $group->update(['status' => 'Запускается']);
+        $this->get('/applications/new')->assertOk()->assertSee($group->title);
+        $this->post('/applications', ['study_group_id' => $group->id])->assertRedirect();
+        $this->assertDatabaseCount('enrollment_applications', 1);
+    }
+
+    public function test_starting_training_preserves_pending_applications_and_enrolled_access(): void
+    {
+        $group = StudyGroup::factory()->create();
+        $enrollment = Enrollment::factory()->create(['study_group_id' => $group->id]);
+        $application = EnrollmentApplication::factory()->create(['study_group_id' => $group->id]);
+        $group->update(['status' => 'Идет обучение']);
+        $this->assertDatabaseHas('enrollment_applications', ['id' => $application->id, 'status' => 'pending']);
+        $this->assertDatabaseHas('enrollments', ['id' => $enrollment->id]);
+        $this->actingAs($enrollment->user)->get('/learning/'.$group->id)->assertOk();
+        app(Admissions::class)->approve($group->administrator, $application, false);
+        $this->assertDatabaseHas('enrollment_applications', ['id' => $application->id, 'status' => 'approved']);
+        $this->assertDatabaseHas('enrollments', ['study_group_id' => $group->id, 'user_id' => $application->user_id]);
     }
 
     public function test_registration_without_group_creates_help_request(): void

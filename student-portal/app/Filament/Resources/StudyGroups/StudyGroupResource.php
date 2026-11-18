@@ -75,7 +75,7 @@ class StudyGroupResource extends Resource
                 TextInput::make('number')->trim()->label('№ группы')->required()->maxLength(60)->live(onBlur: true)->afterStateUpdated(fn (Get $get, Set $set, ?string $state) => $set('code', (Program::find($get('program_id'))?->tag ?? '').'-'.trim($state ?? ''))),
                 Select::make('group_type')->label('Тип группы')->options(array_combine(StudyGroup::TYPES, StudyGroup::TYPES)),
                 Select::make('status')->label('Статус группы')->options(array_combine(StudyGroup::STATUSES, StudyGroup::STATUSES))->default('Запускается')->required()
-                    ->helperText('Срок доступа определяется датами ниже. Статус используется для учёта.'),
+                    ->helperText('В форме регистрации видны только группы со статусом «Запускается». При переходе в «Идет обучение» приём заявок закрывается автоматически. Доступ зачисленных слушателей определяется датами ниже.'),
                 Select::make('administrator_id')->label('Администратор')->options(fn () => User::whereIn('role', ['admin', 'senior'])->pluck('name', 'id'))->required()
                     ->rules(['exists:users,id'])->disabled(fn (): bool => ! auth()->user()->isSenior())->dehydrated(fn (): bool => auth()->user()->isSenior()),
                 Select::make('format')->label('Формат обучения')->options(['Очно' => 'Очно', 'Онлайн' => 'Онлайн', 'Смешанный' => 'Смешанный'])->default('Очно')->required(),
@@ -87,7 +87,6 @@ class StudyGroupResource extends Resource
                 TextInput::make('access_days')->label('Доступ после выпуска, дней')->numeric()->integer()->minValue(0)->maxValue(3650)->default(30)->required(),
                 DatePicker::make('extended_until')->label('До какого числа продлён доступ')->afterOrEqual('graduates_at')
                     ->helperText('Для всей группы. Продление не сокращает основной срок.'),
-                Toggle::make('registration_open')->label('Приём заявок открыт')->helperText('Группа появится в форме регистрации. Материалы доступны после одобрения.'),
             ])->columns(2)->columnSpanFull(),
             Section::make('Дополнительно')->schema([
                 Textarea::make('description')->label('Приветствие для слушателей')->rows(3)->maxLength(3000)->columnSpanFull(),
@@ -115,7 +114,7 @@ class StudyGroupResource extends Resource
             TextEntry::make('archive_date')->label('Дата архивации по основному сроку')->state(fn (StudyGroup $record): string => $record->graduates_at->copy()->addDays($record->access_days)->format('d.m.Y')),
             TextEntry::make('extended_until')->label('До какого числа продлён доступ')->date('d.m.Y')->placeholder('Без продления'),
             TextEntry::make('closes')->label('Доступ до включительно')->state(fn (StudyGroup $record): string => $record->closesAt()->format('d.m.Y')),
-            TextEntry::make('registration_open')->label('Приём заявок')->formatStateUsing(fn ($state): string => $state ? 'Открыт' : 'Закрыт'),
+            TextEntry::make('registration_open')->label('Приём заявок')->state(fn (StudyGroup $record): string => $record->isRegistrationOpen() ? 'Открыт' : 'Закрыт'),
             TextEntry::make('students')->label('Участники')->state(fn (StudyGroup $record): int => $record->enrollments()->whereHas('user', fn (Builder $query): Builder => $query->where('role', 'student'))->count())->formatStateUsing(fn (int $state): string => $state.' Открыть список →')->url(fn (StudyGroup $record): string => Students::getUrl(['group' => $record->id])),
             TextEntry::make('pending_applications_count')->label('Ожидают одобрения')->color('warning')
                 ->formatStateUsing(fn (int $state): string => $state.' Посмотреть заявки →')
@@ -148,7 +147,7 @@ class StudyGroupResource extends Resource
             TextColumn::make('chat_url')->label('Чат')->formatStateUsing(fn (): string => 'Чат ↗')->placeholder('—')
                 ->url(fn (StudyGroup $record): ?string => $record->chat_url)->openUrlInNewTab(),
             TextColumn::make('program.tag')->label('Программа')->searchable()->placeholder('Не выбрана')->toggleable(isToggledHiddenByDefault: true),
-            IconColumn::make('registration_open')->label('Приём заявок')->boolean()->toggleable(isToggledHiddenByDefault: true),
+            IconColumn::make('registration_open')->label('Приём заявок')->state(fn (StudyGroup $record): bool => $record->isRegistrationOpen())->boolean()->toggleable(isToggledHiddenByDefault: true),
             TextColumn::make('starts_at')->label('Запуск')->date('d.m.Y')->sortable()->toggleable(isToggledHiddenByDefault: true),
             TextColumn::make('graduates_at')->label('Выпуск')->date('d.m.Y')->sortable()->toggleable(isToggledHiddenByDefault: true),
             TextColumn::make('closes')->label('Доступ до')->state(fn (StudyGroup $record): string => $record->closesAt()->format('d.m.Y'))->toggleable(isToggledHiddenByDefault: true),

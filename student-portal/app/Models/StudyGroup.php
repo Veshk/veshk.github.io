@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Support\CoursePage;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -43,6 +44,18 @@ class StudyGroup extends Model
                 $group->page_blocks = $program->page_blocks ?? CoursePage::defaults($group->page_template);
             }
         });
+    }
+
+    public const REGISTRATION_STATUS = 'Запускается';
+
+    public function scopeOpenForRegistration(Builder $query): Builder
+    {
+        return $query->where('status', self::REGISTRATION_STATUS);
+    }
+
+    public function isRegistrationOpen(): bool
+    {
+        return $this->status === self::REGISTRATION_STATUS;
     }
 
     public const STATUSES = ['Тех. группа', 'Запускается', 'Идет обучение', 'На закрытии', 'Архив', 'обучение отложено', 'Экскурсия', 'Продление доступа'];
