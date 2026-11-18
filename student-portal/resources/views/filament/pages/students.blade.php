@@ -16,6 +16,7 @@
 <div class="portal-student-history" x-data x-init="$nextTick(() => $dispatch('open-modal', {id: 'student-history'}))">
 <h2 class="portal-profile-heading">{{ $person->name }}</h2>
 <p>{{ $person->email }}</p>
+<x-filament::button tag="a" :href="route('student.home', ['as_student' => $person->id])" target="_blank" color="gray" icon="heroicon-o-eye">Открыть ЛК слушателя</x-filament::button>
 @if($person->pendingApplications->isNotEmpty())
 <h3>Ожидающие заявки</h3>
 @foreach($person->pendingApplications as $application)

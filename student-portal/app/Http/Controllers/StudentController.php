@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\StudentPreview;
 use App\Http\Requests\ApplicationRequest;
 use App\Models\MailPreview;
+use App\Models\SelfStudyCourse;
 use App\Models\StudyGroup;
 use App\Services\Admissions;
 use Illuminate\Http\RedirectResponse;
@@ -16,15 +18,23 @@ class StudentController extends Controller
 {
     public function home(Request $request): View|RedirectResponse
     {
-        if ($request->user()->isStaff()) {
+        if ($request->user()->isStaff() && ! StudentPreview::active()) {
             return redirect('/admin');
         }
-        $enrollments = $request->user()->enrollments()->with(['group.administrator', 'group.program'])->get();
-        $applications = $request->user()->applications()->with('group')->latest()->get();
-        $courses = $request->user()->selfStudyEnrollments()->with('course.lessons')->get();
-        $orders = $request->user()->courseOrders()->where('status', 'pending')->with('course')->latest()->get();
-        $available = $enrollments->filter(fn ($enrollment) => $enrollment->group->availableTo($request->user()));
-        if ($available->count() === 1 && $courses->isEmpty() && $orders->isEmpty() && ! $request->boolean('list') && ! $applications->contains('status', 'pending')) {
+        if (StudentPreview::active() && ! StudentPreview::student()) {
+            return view('student.preview-catalog', [
+                'groups' => StudyGroup::with('program')->orderBy('title')->get(),
+                'courses' => SelfStudyCourse::visibleTo($request->user())->where('is_published', true)->orderBy('title')->get(),
+            ]);
+        }
+        $viewer = StudentPreview::student() ?? $request->user();
+        $enrollments = $viewer->enrollments()->with(['group.administrator', 'group.program'])->get();
+        $applications = $viewer->applications()->with('group')->latest()->get()
+            ->filter(fn ($application) => ! StudentPreview::active() || Gate::allows('view', $application));
+        $courses = $viewer->selfStudyEnrollments()->with('course.lessons')->get();
+        $orders = $viewer->courseOrders()->where('status', 'pending')->with('course')->latest()->get();
+        $available = $enrollments->filter(fn ($enrollment) => $enrollment->group->availableTo($viewer));
+        if (! StudentPreview::active() && $available->count() === 1 && $courses->isEmpty() && $orders->isEmpty() && ! $request->boolean('list') && ! $applications->contains('status', 'pending')) {
             return redirect()->route('student.group', $available->first()->group);
         }
 
@@ -47,7 +57,7 @@ class StudentController extends Controller
 
     public function group(Request $request, StudyGroup $group): View
     {
-        abort_unless($request->user()->isStaff() || $group->availableTo($request->user()), 403, 'Доступ к этой группе пока не открыт или уже завершён.');
+        abort_unless(StudentPreview::student() ? $group->availableTo(StudentPreview::student()) : ($request->user()->isStaff() || $group->availableTo($request->user())), 403, 'Доступ к этой группе пока не открыт или уже завершён.');
         $group->load('administrator');
 
         return view('student.group', compact('group'));

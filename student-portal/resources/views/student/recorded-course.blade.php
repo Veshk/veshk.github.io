@@ -5,12 +5,12 @@
     $moduleTitle = fn ($item) => $item->module_title ?: preg_replace('/ — часть \d+$/u', '', $item->title);
     $modules = $lessons->chunkWhile(fn ($item, $key, $chunk) => $moduleTitle($item) === $moduleTitle($chunk->last()));
     $minutes = $lessons->sum('duration_minutes');
-    $returnUrl = auth()->user()->isStaff() ? \App\Filament\Pages\CourseCatalog::getUrl(['kind' => $course->kind]) : route('student.home', ['list' => 1]);
+    $returnUrl = auth()->user()->isStaff() && ! ($studentPreview ?? false) ? \App\Filament\Pages\CourseCatalog::getUrl(['kind' => $course->kind]) : \App\Http\Middleware\StudentPreview::url('student.home', ['list' => 1]);
 @endphp
 <link rel="stylesheet" href="{{ asset('self-study/course.css') }}?v=20261112-1">
 <link rel="stylesheet" href="{{ asset('self-study/recorded-course.css') }}?v=20261112-2">
 <main class="shell rc-course">
-    <div class="rc-breadcrumb"><a href="{{ $returnUrl }}">← {{ auth()->user()->isStaff() ? 'К управлению курсами' : 'Моё обучение' }}</a><span>{{ $course->title }}</span></div>
+    <div class="rc-breadcrumb"><a href="{{ $returnUrl }}">← {{ auth()->user()->isStaff() && ! ($studentPreview ?? false) ? 'К управлению курсами' : 'Моё обучение' }}</a><span>{{ $course->title }}</span></div>
     @if(! $enrollment)<div class="rc-preview">Предпросмотр администратора — прогресс слушателей не меняется</div>@endif
     <section class="rc-hero">
         <img src="{{ $course->coverUrl() }}" alt="">
@@ -35,11 +35,11 @@
                     <summary><span class="rc-module-number">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><span>{{ $moduleTitle($module->first()) }}<small data-module-progress>{{ $module->whereIn('id', $completed)->count() }} из {{ $module->count() }} пройдено</small></span><span class="rc-chevron" aria-hidden="true">⌄</span></summary>
                     <ol>@foreach($module as $item)
                         @php($number = $lessons->search(fn ($entry) => $entry->id === $item->id) + 1)
-                        <li><a href="{{ route('student.lesson', [$course, $item]) }}#rc-learning" @if($item->id === $lesson?->id)aria-current="page"@endif><span class="rc-lesson-number" data-lesson-check="{{ $item->id }}" data-completed="{{ in_array($item->id, $completed) ? 'true' : 'false' }}" data-number="{{ str_pad($number, 2, '0', STR_PAD_LEFT) }}">{{ in_array($item->id, $completed) ? '✓' : str_pad($number, 2, '0', STR_PAD_LEFT) }}</span><span>{{ $item->title }}<small>{{ $item->duration_minutes }} мин</small></span>@if($item->id === $lesson?->id)<span class="rc-current">Вы здесь</span>@endif</a></li>
+                        <li><a href="{{ \App\Http\Middleware\StudentPreview::url('student.lesson', [$course, $item]) }}#rc-learning" @if($item->id === $lesson?->id)aria-current="page"@endif><span class="rc-lesson-number" data-lesson-check="{{ $item->id }}" data-completed="{{ in_array($item->id, $completed) ? 'true' : 'false' }}" data-number="{{ str_pad($number, 2, '0', STR_PAD_LEFT) }}">{{ in_array($item->id, $completed) ? '✓' : str_pad($number, 2, '0', STR_PAD_LEFT) }}</span><span>{{ $item->title }}<small>{{ $item->duration_minutes }} мин</small></span>@if($item->id === $lesson?->id)<span class="rc-current">Вы здесь</span>@endif</a></li>
                     @endforeach</ol>
                 </details>
             @endforeach
-            <a class="aos-menu aos-menu-module" href="{{ route('student.course.feedback', $course) }}#rc-learning" @if($feedbackMode)aria-current="page"@endif><span class="rc-module-number">{{ str_pad($modules->count() + 1, 2, '0', STR_PAD_LEFT) }}</span><span>Анкета обратной связи<small>{{ $enrollment?->feedback_submitted_at ? 'Ответ отправлен' : 'Оцените курс' }}</small></span><span aria-hidden="true">{{ $enrollment?->feedback_submitted_at ? '✓' : '→' }}</span></a>
+            <a class="aos-menu aos-menu-module" href="{{ \App\Http\Middleware\StudentPreview::url('student.course.feedback', $course) }}#rc-learning" @if($feedbackMode)aria-current="page"@endif><span class="rc-module-number">{{ str_pad($modules->count() + 1, 2, '0', STR_PAD_LEFT) }}</span><span>Анкета обратной связи<small>{{ $enrollment?->feedback_submitted_at ? 'Ответ отправлен' : 'Оцените курс' }}</small></span><span aria-hidden="true">{{ $enrollment?->feedback_submitted_at ? '✓' : '→' }}</span></a>
         </nav></details></aside>
         <div class="rc-workspace">
             @if($feedbackMode)
@@ -56,17 +56,17 @@
                     <div class="rc-video-empty"><span class="rc-video-symbol" aria-hidden="true">▷</span><strong>Запись готовится</strong><p>Видео появится здесь после публикации</p></div>
                 @endif
                 @if($lesson->description)<p class="rc-description">{{ $lesson->description }}</p>@endif
-                @if($enrollment)
-                    <form method="post" action="{{ route('student.lesson.progress', [$course, $lesson]) }}" data-progress-form data-lesson-id="{{ $lesson->id }}">@csrf<input type="hidden" name="completed" value="{{ in_array($lesson->id, $completed) ? 0 : 1 }}"><div class="rc-completion"><button class="btn secondary" data-complete-button>{{ in_array($lesson->id, $completed) ? 'Снять отметку о прохождении' : 'Отметить пройденным' }}</button><p class="muted" data-playback-hint>{{ $lesson->embedUrl() ? 'Урок отметится автоматически, когда начнётся видео. Отметку можно изменить вручную.' : 'После изучения отметьте урок как пройденный' }}</p></div><p class="muted" role="status" data-progress-status></p></form>
+                @if($enrollment && ! ($studentPreview ?? false))
+                    <form method="post" action="{{ \App\Http\Middleware\StudentPreview::url('student.lesson.progress', [$course, $lesson]) }}" data-progress-form data-lesson-id="{{ $lesson->id }}">@csrf<input type="hidden" name="completed" value="{{ in_array($lesson->id, $completed) ? 0 : 1 }}"><div class="rc-completion"><button class="btn secondary" data-complete-button>{{ in_array($lesson->id, $completed) ? 'Снять отметку о прохождении' : 'Отметить пройденным' }}</button><p class="muted" data-playback-hint>{{ $lesson->embedUrl() ? 'Урок отметится автоматически, когда начнётся видео. Отметку можно изменить вручную.' : 'После изучения отметьте урок как пройденный' }}</p></div><p class="muted" role="status" data-progress-status></p></form>
                 @else<p class="muted rc-completion" data-playback-hint>Предпросмотр не меняет прогресс слушателей</p>@endif
                 <div class="rc-lesson-navigation">
-                    @if($lessonIndex > 0)<a class="rc-previous" href="{{ route('student.lesson', [$course, $lessons[$lessonIndex - 1]]) }}#rc-learning">← Предыдущий урок</a>@else<span></span>@endif
-                    @if($lessonIndex < $lessons->count() - 1)<a class="btn" href="{{ route('student.lesson', [$course, $lessons[$lessonIndex + 1]]) }}#rc-learning">Следующий урок →</a>@else<a class="btn" href="{{ route('student.course.feedback', $course) }}#rc-learning">Перейти к анкете →</a>@endif
+                    @if($lessonIndex > 0)<a class="rc-previous" href="{{ \App\Http\Middleware\StudentPreview::url('student.lesson', [$course, $lessons[$lessonIndex - 1]]) }}#rc-learning">← Предыдущий урок</a>@else<span></span>@endif
+                    @if($lessonIndex < $lessons->count() - 1)<a class="btn" href="{{ \App\Http\Middleware\StudentPreview::url('student.lesson', [$course, $lessons[$lessonIndex + 1]]) }}#rc-learning">Следующий урок →</a>@else<a class="btn" href="{{ \App\Http\Middleware\StudentPreview::url('student.course.feedback', $course) }}#rc-learning">Перейти к анкете →</a>@endif
                 </div>
             </section>
             <section class="rc-panel" id="rc-materials"><p class="eyebrow">К этому уроку</p><h2>Материалы</h2>
                 @forelse($lesson->materials ?? [] as $index => $material)
-                    <a class="rc-resource" href="{{ route('student.lesson.material', [$course, $lesson, $index]) }}"><span>{{ $material['title'] ?? 'Материал' }}</span><span aria-hidden="true">↓</span></a>
+                    <a class="rc-resource" href="{{ \App\Http\Middleware\StudentPreview::url('student.lesson.material', [$course, $lesson, $index]) }}"><span>{{ $material['title'] ?? 'Материал' }}</span><span aria-hidden="true">↓</span></a>
                 @empty<div class="rc-empty"><span aria-hidden="true">↓</span><div><strong>Дополнительных файлов пока нет</strong><p>Если к уроку появятся материалы, они будут доступны в этом разделе</p></div></div>@endforelse
             </section>
             @endif

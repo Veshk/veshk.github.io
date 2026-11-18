@@ -84,7 +84,7 @@
         $targetType = preg_match('/расписани/iu', $question['question'] ?? '') ? 'schedule' : (preg_match('/чат|администратор/iu', $question['question'] ?? '') ? 'contacts' : null);
         $targetBlock = $targetType ? collect(\App\Support\CoursePage::visibleBlocks($group))->firstWhere('type', $targetType) : null;
         if ($targetBlock) {
-            $questionUrl = route('student.group', $group).'#course-block-'.rawurlencode($targetBlock['editor_block_id']);
+            $questionUrl = \App\Http\Middleware\StudentPreview::url('student.group', $group).'#course-block-'.rawurlencode($targetBlock['editor_block_id']);
             $button = $targetType === 'schedule' ? 'Посмотреть расписание' : 'Контакты и чат';
         }
     }
@@ -143,7 +143,7 @@
 @endphp
 <article class="resource-folder"><svg class="resource-folder-art" viewBox="0 0 92 72" fill="none" aria-hidden="true"><path d="M4 24V6h31l9 8h39v10" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 24h84l-8 42H12L4 24Z" fill="#fff" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M23 39h22M23 47h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div class="resource-folder-copy">@if($showResourceTitle)<h3>{{ $resource['title'] }}</h3>@endif @if(!empty($resource['text']))<p class="block-text">{{ $resource['text'] }}</p>@endif @if($url = $safe($resource['url'] ?? null))<a class="resource-action" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ ($resource['button'] ?? '') ?: 'Открыть папку' }}<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>@else<p class="muted">Ссылка скоро появится.</p>@endif</div></article>
 @endforeach</div>
-@foreach(($isAlias ?? false) ? [] : ($group->materials ?? []) as $index => $material)<a class="material" href="{{ route('student.material',[$group,$index]) }}"><span class="file-icon">TXT</span><div class="details"><h3>{{ $material['title'] }}</h3><small>Демонстрационный материал — {{ $group->code }}</small></div><span class="arrow">↓</span></a>@endforeach
+@foreach(($isAlias ?? false) ? [] : ($group->materials ?? []) as $index => $material)<a class="material" href="{{ \App\Http\Middleware\StudentPreview::url('student.material',[$group,$index]) }}"><span class="file-icon">TXT</span><div class="details"><h3>{{ $material['title'] }}</h3><small>Демонстрационный материал — {{ $group->code }}</small></div><span class="arrow">↓</span></a>@endforeach
 @else
 <div class="card information-block">@if($imageUrl = $safe($data['image_url'] ?? null))<img class="block-image" src="{{ $imageUrl }}" alt="{{ $data['image_alt'] ?? '' }}" loading="lazy" referrerpolicy="no-referrer">@endif<p class="block-text">{{ ($data['text'] ?? '') ?: ($type === 'join' ? 'Информация о подключении появится перед занятием.' : 'Администратор добавит информацию.') }}</p>@if($type === 'join' && !empty($data['platform']))<p class="muted">Платформа: {{ $data['platform'] }}</p>@endif @if($url = $safe($data['url'] ?? null))<a class="btn outline" href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ ($data['button'] ?? '') ?: match($type) { 'join' => 'Подключиться', 'video' => 'Смотреть видео', 'introductions' => 'Перейти в Holst', default => 'Подробнее' } }} ↗</a>@endif</div>
 @endif

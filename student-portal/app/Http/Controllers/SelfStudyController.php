@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\StudentPreview;
 use App\Models\SelfStudyCourse;
 use App\Models\SelfStudyEnrollment;
 use App\Models\SelfStudyLesson;
@@ -18,9 +19,9 @@ class SelfStudyController extends Controller
     public function show(Request $request, SelfStudyCourse $course, ?SelfStudyLesson $lesson = null, bool $feedbackMode = false): View
     {
         $enrollment = $this->access($request, $course);
-        $course->load(['lessons' => fn ($query) => $query->when($enrollment !== null, fn ($query) => $query->where('is_published', true))]);
+        $course->load(['lessons' => fn ($query) => $query->when($enrollment !== null || StudentPreview::active(), fn ($query) => $query->where('is_published', true))]);
         if ($lesson) {
-            abort_unless($lesson->self_study_course_id === $course->id && ($enrollment === null || $lesson->is_published), 404);
+            abort_unless($lesson->self_study_course_id === $course->id && (($enrollment === null && ! StudentPreview::active()) || $lesson->is_published), 404);
         } elseif (! $feedbackMode) {
             $lesson = $course->lessons->first(fn (SelfStudyLesson $item): bool => ! in_array($item->id, $enrollment?->completed_lessons ?? [])) ?? $course->lessons->first();
         }
@@ -96,7 +97,7 @@ class SelfStudyController extends Controller
     public function material(Request $request, SelfStudyCourse $course, SelfStudyLesson $lesson, int $index): StreamedResponse
     {
         $enrollment = $this->access($request, $course);
-        abort_unless($lesson->self_study_course_id === $course->id && ($enrollment === null || $lesson->is_published), 404);
+        abort_unless($lesson->self_study_course_id === $course->id && (($enrollment === null && ! StudentPreview::active()) || $lesson->is_published), 404);
         $material = $lesson->materials[$index] ?? [];
         $path = $material['path'] ?? '';
         abort_unless(str_starts_with($path, 'course-materials/') && ! str_contains($path, '..') && Storage::disk('local')->exists($path), 404);
@@ -108,10 +109,15 @@ class SelfStudyController extends Controller
 
     private function access(Request $request, SelfStudyCourse $course, bool $studentOnly = false): ?SelfStudyEnrollment
     {
-        if (! $studentOnly && $course->canManage($request->user())) {
+        abort_if($studentOnly && ($request->user()->isStaff() || StudentPreview::active()), 403);
+        if (StudentPreview::active()) {
+            abort_unless($course->canManage($request->user()), 403);
+            abort_unless($course->is_published, 404);
+        }
+        if (! $studentOnly && ! StudentPreview::student() && $course->canManage($request->user())) {
             return null;
         }
-        $enrollment = $request->user()->selfStudyEnrollments()->where('self_study_course_id', $course->id)->with('course')->first();
+        $enrollment = (StudentPreview::student() ?? $request->user())->selfStudyEnrollments()->where('self_study_course_id', $course->id)->with('course')->first();
         abort_unless($enrollment && $enrollment->available(), 403, 'Доступ к курсу пока не открыт или уже завершён.');
 
         return $enrollment;

@@ -1,6 +1,6 @@
 @extends('layouts.portal')
 @section('title',$group->title)
-@section('content')@if(auth()->user()->isStaff())<div class="admin-notice">Предпросмотр страницы слушателя — @can('update', $group)<a class="text-link" href="{{ \App\Filament\Resources\StudyGroups\StudyGroupResource::getUrl('page', ['record' => $group]) }}">Редактировать страницу ЛК →</a>@else Чужая группа: только просмотр @endcan</div>@endif
+@section('content')@if(auth()->user()->isStaff() && ! ($studentPreview ?? false))<div class="admin-notice">Предпросмотр страницы слушателя — @can('update', $group)<a class="text-link" href="{{ \App\Filament\Resources\StudyGroups\StudyGroupResource::getUrl('page', ['record' => $group]) }}">Редактировать страницу ЛК →</a>@else Чужая группа: только просмотр @endcan</div>@endif
 @include('student.group-hero')
 @php($blocks = collect(\App\Support\CoursePage::visibleBlocks($group)))
 @foreach($blocks as $i => $block)

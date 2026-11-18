@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SelfStudyController;
 use App\Http\Controllers\StudentController;
 use App\Http\Middleware\RecordPortalVisit;
+use App\Http\Middleware\StudentPreview;
 use App\Models\StudyGroup;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1')->name('login.store');
 });
-Route::middleware('auth')->group(function (): void {
+Route::middleware(['auth', StudentPreview::class])->group(function (): void {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/learning', [StudentController::class, 'home'])->middleware(RecordPortalVisit::class)->name('student.home');
     Route::get('/courses/{course}', [SelfStudyController::class, 'show'])->middleware(RecordPortalVisit::class)->name('student.course');
@@ -31,7 +32,7 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/applications', [StudentController::class, 'apply'])->middleware('throttle:10,1')->name('student.apply.store');
     Route::get('/learning/{group}', [StudentController::class, 'group'])->middleware(RecordPortalVisit::class)->name('student.group');
     Route::get('/learning/{group}/materials/{index}', function (Request $request, StudyGroup $group, int $index) {
-        abort_unless($request->user()->isStaff() || $group->availableTo($request->user()), 403);
+        abort_unless(StudentPreview::student() ? $group->availableTo(StudentPreview::student()) : ($request->user()->isStaff() || $group->availableTo($request->user())), 403);
         $material = $group->materials[$index] ?? null;
         abort_if(! $material, 404);
         $contents = $material['title']."\n".$group->title.' — '.$group->code."\n\nДемонстрационный материал. Здесь будет учебный файл вашей группы.\n";
