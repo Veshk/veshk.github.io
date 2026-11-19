@@ -12,6 +12,6 @@ return [
     'landing_url' => env('COURSE_INTEGRATION_LANDING_URL', ''),
     'mail_enabled' => (bool) env('PORTAL_MAIL_ENABLED', false),
     'enkod_key' => env('ENKOD_API_KEY', ''),
-    'enkod_domain' => env('ENKOD_SENDING_DOMAIN', ''),
+    'enkod_message_id' => (int) env('ENKOD_MESSAGE_ID', 0),
     'from' => env('ENKOD_FROM', ''),
 ];

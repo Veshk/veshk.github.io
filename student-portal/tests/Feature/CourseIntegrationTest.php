@@ -22,7 +22,7 @@ class CourseIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['course_integration.enabled' => true, 'course_integration.sandbox' => true,
+        config(['course_integration.enabled' => true, 'course_integration.sandbox' => true, 'course_integration.enkod_message_id' => 42,
             'course_integration.allowed_email' => 'pilot@example.test', 'course_integration.webhook_key' => str_repeat('k', 40),
             'course_integration.form_ids' => ['form123'], 'course_integration.course_slug' => 'test-power-query',
             'course_integration.project_id' => 'test-project', 'course_integration.page_id' => 'test-page']);
@@ -168,12 +168,13 @@ class CourseIntegrationTest extends TestCase
         config(['course_integration.mail_enabled' => true, 'course_integration.enkod_key' => 'test-key', 'course_integration.enkod_domain' => 'example.test', 'course_integration.from' => 'portal@example.test']);
         $user = User::factory()->create(['email' => 'pilot@example.test']);
         $mail = PortalMail::create(['user_id' => $user->id, 'kind' => 'reset', 'deduplication_key' => 'test-mail', 'payload' => ['email' => $user->email, 'name' => $user->name, 'url' => 'https://example.test/password/set/token']]);
-        Http::fake(['*' => Http::response(['message' => 'Queued. Thank you.', 'id' => 'provider-001'], 200)]);
+        Http::fake(['*' => Http::response('Success', 200)]);
         app(PortalMailDelivery::class)->send($mail->id);
         app(PortalMailDelivery::class)->send($mail->id);
         Http::assertSentCount(1);
         $this->assertSame('accepted', $mail->fresh()->status);
-        $this->assertSame('provider-001', $mail->fresh()->provider_id);
+        $this->assertSame('message:42', $mail->fresh()->provider_id);
+        Http::assertSent(fn ($request): bool => $request->url() === 'https://api.enkod.ru/v1/mail/' && $request->hasHeader('apiKey', 'test-key') && $request['email'] === 'pilot@example.test' && $request['messageId'] === 42 && $request['snippets']['action_url'] === 'https://example.test/password/set/token');
     }
 
     public function test_uncertain_mail_is_not_automatically_retried(): void
@@ -185,6 +186,19 @@ class CourseIntegrationTest extends TestCase
         app(PortalMailDelivery::class)->send($mail->id);
         app(PortalMailDelivery::class)->send($mail->id);
         Http::assertSentCount(1);
+        $this->assertSame('unknown', $mail->fresh()->status);
+    }
+
+    public function test_unexpected_success_response_is_not_retried_and_snippets_escape_html(): void
+    {
+        config(['course_integration.mail_enabled' => true, 'course_integration.enkod_key' => 'test-key']);
+        $user = User::factory()->create(['email' => 'pilot@example.test']);
+        $mail = PortalMail::create(['user_id' => $user->id, 'kind' => 'setup', 'deduplication_key' => 'test-mail', 'payload' => ['email' => $user->email, 'name' => '<img src=x>', 'url' => 'https://example.test/password/set/token']]);
+        Http::fake(['*' => Http::response(['unexpected' => true], 200)]);
+        app(PortalMailDelivery::class)->send($mail->id);
+        app(PortalMailDelivery::class)->send($mail->id);
+        Http::assertSentCount(1);
+        Http::assertSent(fn ($request): bool => $request['snippets']['name'] === '&lt;img src=x&gt;');
         $this->assertSame('unknown', $mail->fresh()->status);
     }
 
