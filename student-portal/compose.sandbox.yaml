@@ -1,0 +1,61 @@
+name: vesh-portal-sandbox
+
+x-sandbox: &sandbox
+  image: vesh-portal-app:${PORTAL_RELEASE:?Set release}
+  user: "33:33"
+  env_file: ${SANDBOX_ENV_FILE:?Set private sandbox env path}
+  volumes:
+    - sandbox_storage:/var/www/html/storage
+  networks: [sandbox]
+  depends_on:
+    db:
+      condition: service_healthy
+  restart: unless-stopped
+  logging: &logging
+    driver: json-file
+    options: {max-size: 5m, max-file: "2"}
+
+services:
+  sandbox-app:
+    <<: *sandbox
+  worker:
+    <<: *sandbox
+    entrypoint: ["sh", "-c"]
+    command: ["while true; do php artisan portal:process-integrations; sleep 5; done"]
+  web:
+    image: vesh-portal-web:${PORTAL_RELEASE:?Set release}
+    entrypoint: ["caddy", "run", "--config", "/etc/caddy/Sandbox.Caddyfile"]
+    volumes:
+      - ./Sandbox.Caddyfile:/etc/caddy/Sandbox.Caddyfile:ro
+    networks:
+      sandbox: {}
+      gateway:
+        aliases: [vesh-sandbox-web]
+    depends_on: [sandbox-app]
+    restart: unless-stopped
+    logging: *logging
+  db:
+    image: postgres:17-alpine
+    env_file: ${SANDBOX_ENV_FILE:?Set private sandbox env path}
+    environment:
+      POSTGRES_DB: vesh_sandbox
+      POSTGRES_USER: vesh_sandbox
+    volumes:
+      - sandbox_database:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U vesh_sandbox -d vesh_sandbox"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [sandbox]
+    restart: unless-stopped
+    logging: *logging
+
+networks:
+  sandbox: {}
+  gateway:
+    external: true
+    name: vesh-portal_web
+volumes:
+  sandbox_storage:
+  sandbox_database:

@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CourseWebhookController;
+use App\Http\Controllers\IntegrationGuideController;
+use App\Http\Controllers\PortalPasswordController;
 use App\Http\Controllers\SelfStudyController;
 use App\Http\Controllers\StudentController;
 use App\Http\Middleware\RecordPortalVisit;
@@ -62,3 +65,10 @@ Route::post('/demo/{role}', function (Request $request, string $role) use ($role
 
     return redirect($request->user()->isStaff() ? '/admin/enrollment-applications' : route('student.home'));
 })->name('demo.login');
+
+Route::post('/integrations/tilda/free-course', CourseWebhookController::class)->middleware('throttle:60,1')->name('integrations.tilda');
+Route::get('/password/request', [PortalPasswordController::class, 'forgot'])->name('portal.password.request');
+Route::post('/password/request', [PortalPasswordController::class, 'requestLink'])->middleware('throttle:5,1')->name('portal.password.email');
+Route::get('/password/set/{token}', [PortalPasswordController::class, 'form'])->name('portal.password.form');
+Route::post('/password/set/{token}', [PortalPasswordController::class, 'save'])->middleware('throttle:10,1')->name('portal.password.save');
+Route::get('/technical/integrations', IntegrationGuideController::class)->middleware('auth')->name('integrations.guide');

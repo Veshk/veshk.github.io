@@ -1,0 +1,16 @@
+:80 {
+    root * /var/www/html/public
+    header X-Robots-Tag "noindex, nofollow"
+    header X-Content-Type-Options nosniff
+    @otherPhp {
+        path *.php *.php/*
+        not path /index.php /index.php/*
+    }
+    route {
+        respond @otherPhp 404
+        php_fastcgi sandbox-app:9000 {
+            env HTTPS on
+        }
+        file_server
+    }
+}
