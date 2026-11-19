@@ -61,6 +61,7 @@ services:
       PORTAL_ALIASES: ${PORTAL_ALIASES:-}
     ports: ["80:80", "443:443", "443:443/udp"]
     volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - public_uploads:/var/www/html/storage/app/public:ro
       - caddy_data:/data
       - caddy_config:/config
