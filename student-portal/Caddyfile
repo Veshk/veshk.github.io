@@ -23,3 +23,6 @@
         file_server
     }
 }
+
+# Optional extra virtual hosts live in the persistent Caddy config volume.
+import /config/portal-extra/*.caddy

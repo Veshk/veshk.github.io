@@ -36,10 +36,10 @@ services:
     logging: *logging
   db:
     image: postgres:17-alpine
-    env_file: ${SANDBOX_ENV_FILE:?Set private sandbox env path}
     environment:
       POSTGRES_DB: vesh_sandbox
       POSTGRES_USER: vesh_sandbox
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set sandbox DB password}
     volumes:
       - sandbox_database:/var/lib/postgresql/data
     healthcheck:
