@@ -58,7 +58,7 @@ class PortalPasswordController extends Controller
     public function save(Request $request, string $token): RedirectResponse
     {
         abort_unless(config('course_integration.enabled'), 404);
-        $data = $request->validate(['password' => ['required', 'confirmed', Password::min(10)->letters()->numbers()]]);
+        $data = $request->validate(['password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()]]);
         $user = DB::transaction(function () use ($token, $data): User {
             $row = DB::table('portal_password_tokens')->where('token_hash', hash('sha256', $token))->first();
             abort_unless($row, 422, 'Ссылка недействительна');

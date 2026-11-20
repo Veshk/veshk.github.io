@@ -57,7 +57,7 @@
                 @endif
                 @if($lesson->description)<p class="rc-description">{{ $lesson->description }}</p>@endif
                 @if($enrollment && ! ($studentPreview ?? false))
-                    <form method="post" action="{{ \App\Http\Middleware\StudentPreview::url('student.lesson.progress', [$course, $lesson]) }}" data-progress-form data-lesson-id="{{ $lesson->id }}">@csrf<input type="hidden" name="completed" value="{{ in_array($lesson->id, $completed) ? 0 : 1 }}"><div class="rc-completion"><button class="btn secondary" data-complete-button>{{ in_array($lesson->id, $completed) ? 'Снять отметку о прохождении' : 'Отметить пройденным' }}</button><p class="muted" data-playback-hint>{{ $lesson->embedUrl() ? 'Урок отметится автоматически, когда начнётся видео. Отметку можно изменить вручную.' : 'После изучения отметьте урок как пройденный' }}</p></div><p class="muted" role="status" data-progress-status></p></form>
+                    <form method="post" action="{{ \App\Http\Middleware\StudentPreview::url('student.lesson.progress', [$course, $lesson]) }}" data-progress-form data-lesson-id="{{ $lesson->id }}">@csrf<input type="hidden" name="completed" value="{{ in_array($lesson->id, $completed) ? 0 : 1 }}"><div class="rc-completion"><button class="btn secondary" data-complete-button>{{ in_array($lesson->id, $completed) ? 'Снять отметку о прохождении' : 'Отметить пройденным' }}</button><p class="muted" data-playback-hint @if($lesson->embedUrl())hidden@endif>{{ $lesson->embedUrl() ? '' : 'После изучения отметьте урок как пройденный' }}</p></div><p class="muted" role="status" data-progress-status></p></form>
                 @else<p class="muted rc-completion" data-playback-hint>Предпросмотр не меняет прогресс слушателей</p>@endif
                 <div class="rc-lesson-navigation">
                     @if($lessonIndex > 0)<a class="rc-previous" href="{{ \App\Http\Middleware\StudentPreview::url('student.lesson', [$course, $lessons[$lessonIndex - 1]]) }}#rc-learning">← Предыдущий урок</a>@else<span></span>@endif
@@ -75,4 +75,4 @@
     </div>
     @else<section class="rc-panel"><h2>Курс готовится</h2><p>Опубликованных уроков пока нет</p></section>@endif
 </main>
-<script type="module" src="{{ asset('self-study/course.mjs') }}?v=20261112-2"></script>
+<script type="module" src="{{ asset('self-study/course.mjs') }}?v=20261120-course-1"></script>

@@ -26,7 +26,7 @@
 @if($lesson->duration_minutes)<p class="muted">{{ $lesson->duration_minutes }} мин</p>@endif
 @if($lesson->embedUrl())
 <div class="self-study-video"><iframe title="{{ $lesson->title }}" data-kinescope-url="{{ $lesson->videoUrl() }}" data-embed-src="{{ $lesson->embedUrl() }}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe><span data-player-status>Загружаем плеер</span></div>
-<p class="muted" data-playback-hint>{{ $enrollment && ! ($studentPreview ?? false) ? 'Урок будет отмечен как пройденный, когда начнётся воспроизведение' : 'В предпросмотре можно проверить видео урока' }}</p>
+<p class="muted" data-playback-hint hidden></p>
 <noscript><p><a class="text-link" href="{{ $lesson->videoUrl() }}" target="_blank" rel="noopener">Открыть видео ↗</a></p></noscript>
 @elseif($lesson->videoUrl())
 <p><a class="btn" href="{{ $lesson->videoUrl() }}" target="_blank" rel="noopener">Смотреть видео ↗</a></p><p class="muted">После просмотра отметьте урок как пройденный</p>
@@ -46,6 +46,6 @@
 @endif
 </div>
 @else<section class="card"><h2>Курс готовится</h2><p>Опубликованных уроков пока нет</p></section>@endif
-</main><script type="module" src="{{ asset('self-study/course.mjs') }}?v=20261112-1"></script>
+</main><script type="module" src="{{ asset('self-study/course.mjs') }}?v=20261120-course-1"></script>
 @endif
 @endsection

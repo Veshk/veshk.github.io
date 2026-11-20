@@ -132,11 +132,15 @@ class CourseIntegrationTest extends TestCase
     {
         $user = User::factory()->create(['email' => 'pilot@example.test', 'password_setup_pending' => true]);
         $url = app(CourseRegistration::class)->passwordLink($user, 'setup');
-        $this->get($url)->assertOk()->assertSee('Установите пароль')->assertHeader('Referrer-Policy', 'no-referrer');
-        $this->post($url, ['password' => 'StrongTest123', 'password_confirmation' => 'StrongTest123'])->assertRedirect('/learning');
+        $this->get($url)->assertOk()->assertSee('Установите пароль')->assertSee('Не менее 8 символов')->assertSee('minlength="8"', false)->assertHeader('Referrer-Policy', 'no-referrer');
+        foreach (['Study12', '12345678', 'Studyabc'] as $invalidPassword) {
+            $this->postJson($url, ['password' => $invalidPassword, 'password_confirmation' => $invalidPassword])->assertUnprocessable()->assertJsonValidationErrors('password');
+        }
+        $this->postJson($url, ['password' => 'Study123', 'password_confirmation' => 'Other123'])->assertUnprocessable()->assertJsonValidationErrors('password');
+        $this->post($url, ['password' => 'Study123', 'password_confirmation' => 'Study123'])->assertRedirect('/learning');
         $this->assertAuthenticatedAs($user);
         $this->assertFalse($user->fresh()->password_setup_pending);
-        $this->assertTrue(Hash::check('StrongTest123', $user->fresh()->password));
+        $this->assertTrue(Hash::check('Study123', $user->fresh()->password));
         $this->post($url, ['password' => 'OtherTest123', 'password_confirmation' => 'OtherTest123'])->assertUnprocessable();
         $this->assertDatabaseCount('self_study_enrollments', 0);
     }
@@ -151,6 +155,15 @@ class CourseIntegrationTest extends TestCase
         $other = User::factory()->create();
         $otherUrl = app(CourseRegistration::class)->passwordLink($other, 'reset');
         $this->post($otherUrl, ['password' => 'StrongTest123', 'password_confirmation' => 'StrongTest123'])->assertForbidden();
+    }
+
+    public function test_recovery_accepts_an_eight_character_password(): void
+    {
+        $user = User::factory()->create(['email' => 'pilot@example.test']);
+        $url = app(CourseRegistration::class)->passwordLink($user, 'reset');
+        $this->get($url)->assertOk()->assertSee('Новый пароль')->assertSee('minlength="8"', false);
+        $this->post($url, ['password' => 'Study123', 'password_confirmation' => 'Study123'])->assertRedirect('/learning');
+        $this->assertTrue(Hash::check('Study123', $user->fresh()->password));
     }
 
     public function test_recovery_uses_neutral_response_and_does_not_send_to_unapproved_email(): void

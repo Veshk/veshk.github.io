@@ -32,5 +32,6 @@ async function saveProgress(completed) {
 form?.addEventListener('submit',event=>{event.preventDefault();saveProgress(form.elements.completed.value==='1');});
 const iframe=document.querySelector('[data-kinescope-url]');
 if(iframe)mountKinescope(iframe,()=>saveProgress(true),{onUnavailable:()=>{
-  document.querySelector('[data-playback-hint]').textContent='После просмотра отметьте урок как пройденный кнопкой ниже';
+  const hint=document.querySelector('[data-playback-hint]');
+  if(hint&&form){hint.hidden=false;hint.textContent='После просмотра отметьте урок как пройденный кнопкой ниже';}
 }});
