@@ -4,48 +4,27 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Концепция студии фирменных материалов Высшей экономической школы.">
-  <title>Студия ВЭШ — концепция</title>
+  <title>Библиотека бренда — Студия ВЭШ</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="studio.js" defer></script>
+  <script src="studio.js?v=20261126-2" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">Перейти к содержимому</a>
   <header class="topbar">
-    <a class="identity" href="#home"><img src="assets/logo-full.png" width="110" height="46" alt="Высшая экономическая школа"><span>Команда ВЭШ<small>Демонстрация дизайн-центра</small></span></a>
+    <a class="identity" href="#brand"><img src="assets/logo-full.png" width="110" height="46" alt="Высшая экономическая школа"><span>Команда ВЭШ<small>Демонстрация дизайн-центра</small></span></a>
     <span class="prototype-label">Концепция сервиса <span>26 ноября 2026</span></span>
   </header>
   <div class="layout">
     <aside class="sidebar">
       <div class="workspace-name">Студия ВЭШ<small>Фирменный стиль в работе</small></div>
       <nav aria-label="Разделы студии">
-        <a href="#home" data-page="home"><span aria-hidden="true">01</span> Обзор</a>
-        <a href="#brand" data-page="brand"><span aria-hidden="true">02</span> Библиотека бренда</a>
-        <a href="#pilot" data-page="pilot"><span aria-hidden="true">03</span> Пилот МК</a>
-        <a href="#templates" data-page="templates"><span aria-hidden="true">04</span> Шаблоны</a>
-        <a href="#drafts" data-page="drafts"><span aria-hidden="true">05</span> Мои черновики</a>
-        <a href="#concept" data-page="concept"><span aria-hidden="true">06</span> План сервиса</a>
+        <a href="#brand" data-page="brand"><span aria-hidden="true">01</span> Библиотека бренда</a>
+        <a href="#pilot" data-page="pilot"><span aria-hidden="true">02</span> Пилот МК</a>
+        <a href="#concept" data-page="concept"><span aria-hidden="true">03</span> План сервиса</a>
       </nav>
-      <div class="sidebar-foot"><span class="small-label">НАШИ ИНСТРУМЕНТЫ</span><p>Figma / PowerPoint<br>Wagtail / enKod</p><a href="about.html">О прототипе ↗</a><p class="small muted">Публичный прототип.<br>По итогам встречи<br>26 ноября 2026.</p></div>
     </aside>
     <main id="main" tabindex="-1">
-      <section id="page-home" class="page" aria-labelledby="home-title">
-        <div class="hero">
-          <div class="hero-copy"><p class="eyebrow">ЕДИНЫЙ СТИЛЬ. ОБЩАЯ БИБЛИОТЕКА.</p><h1 id="home-title">Материалы ВЭШ<br>в одном месте</h1><p>Находите исходники, выбирайте основу<br class="desktop-break"> и собирайте визуалы для своей задачи.</p><a class="button light" href="#brand">Открыть библиотеку <span aria-hidden="true">↗</span></a></div>
-          <div class="hero-art" aria-hidden="true"><div class="art-paper"><span>ВЫСШАЯ<br>ЭКОНОМИЧЕСКАЯ<br>ШКОЛА</span><strong>Знания,<br>которые<br>работают</strong><img src="assets/motif.svg" alt=""></div><div class="art-label">Одна команда.<br>Общий визуальный язык.</div></div>
-        </div>
-        <div class="intro-line"><p>Первый этап по встрече 26 ноября</p><span>Общая библиотека → Сверка палитры → Пилот МК</span></div>
-        <div class="section-heading"><div><p class="eyebrow">ОТ БИБЛИОТЕКИ К МАТЕРИАЛУ</p><h2>Одна задача — готовая основа</h2></div><a href="#templates">Все направления <span aria-hidden="true">→</span></a></div>
-        <div class="template-grid" id="home-templates"></div>
-        <div class="brand-band"><div><p class="eyebrow">ОПОРА ДЛЯ КАЖДОГО МАТЕРИАЛА</p><h2>Логотип, цвет, типографика</h2><p>Исходники и короткие правила всегда рядом.</p><a href="#brand">Открыть фирменный стиль →</a></div><div class="brand-preview" aria-hidden="true"><div class="type-sample">Аа<span>Qanelas / Lato</span></div><div class="palette-mini"><i style="background:#0e394b"></i><i style="background:#226d8d"></i><i style="background:#6ba6c0"></i><i style="background:#8d1638"></i><i style="background:#f2f7fb"></i></div></div></div>
-        <div class="home-note"><span class="step-number">↗</span><div><h3>Первый пилот — комплект визуалов мастер-класса</h3><p>Один набор данных для нескольких носителей, состояний и плашек. Основой станут новые карточки мастер-классов; сейчас можно проверить сам сценарий.</p></div><a href="#pilot">Попробовать →</a></div>
-      </section>
-      <section id="page-templates" class="page" hidden aria-labelledby="templates-title">
-        <div class="page-heading"><p class="eyebrow">ОТ ПОВСЕДНЕВНОЙ ЗАДАЧИ К МАКЕТУ</p><h1 id="templates-title">Шаблоны материалов</h1><p>Небольшой набор понятных основ для повторяющихся задач команды.</p></div>
-        <div class="notice">Первый пилот по встрече — комплект визуалов МК. Остальные направления — запросы команды; порядок их обновления ещё не определён. Все макеты здесь — эскизы.</div>
-        <div class="catalog-controls"><label class="search-field"><span class="sr-only">Поиск шаблона</span><input id="template-search" type="search" placeholder="Найти по задаче или инструменту"></label><div class="filters" role="group" aria-label="Тип материала"><button type="button" data-filter="all" aria-pressed="true">Все</button><button type="button" data-filter="slides" aria-pressed="false">Презентации</button><button type="button" data-filter="documents" aria-pressed="false">Документы</button><button type="button" data-filter="digital" aria-pressed="false">Анонсы и письма</button></div></div>
-        <p id="catalog-count" class="small muted" aria-live="polite"></p><div class="template-grid" id="catalog"></div><p id="catalog-empty" class="empty" hidden>По этому запросу ничего не найдено. Попробуйте другое название или тип материала.</p>
-      </section>
-      <section id="page-brand" class="page" hidden aria-labelledby="brand-title">
+      <section id="page-brand" class="page" aria-labelledby="brand-title">
         <div class="page-heading"><p class="eyebrow">ПЕРВЫЙ ЭТАП</p><h1 id="brand-title">Библиотека бренда</h1><p>Исходники и универсальные элементы, которые можно использовать в Figma, презентациях, письмах и документах.</p></div>
         <div class="notice">Палитра в процессе сверки. Команда собирает используемые цвета и источники для сверки и подтверждения. Ниже — цвета из прежних исходников, не окончательная палитра встречи.</div>
         <div class="library-scope"><h2>Что собираем в библиотеку</h2><p>Логотипы и палитра уже представлены в прототипе. Следом: SVG-иконки по темам, линии и рамки, оформление цитат, фото, блоки писем, исходники шаблонов и требования к размерам.</p><p>У каждого материала будут источник, версия и статус проверки. Ссылки на новые Figma-макеты добавим после получения; платные права редактирования не меняем.</p></div>
@@ -63,7 +42,6 @@
         <div class="kit-workspace"><form id="kit-form" class="kit-form"><h2>Данные мастер-класса</h2><label for="kit-title">Тема</label><input id="kit-title" maxlength="90" required placeholder="Название мастер-класса"><label for="kit-date">Дата и время</label><input id="kit-date" maxlength="80" placeholder="Укажите дату и время"><label for="kit-speaker">Спикер</label><input id="kit-speaker" maxlength="80" placeholder="Имя и фамилия"><label for="kit-badge">Плашка</label><input id="kit-badge" maxlength="30" placeholder="Например, новый мастер-класс"><fieldset><legend>Состояние карточки</legend><label class="radio"><input type="radio" name="kit-state" value="open" checked> Открыто</label><label class="radio"><input type="radio" name="kit-state" value="closed"> Закрыто</label></fieldset><button class="button" type="submit">Скачать задание на комплект ↓</button><p class="small muted">JSON с едиными данными. Форма не сохраняется при обновлении страницы. Генерация изображений и редактируемых исходников — следующий этап пилота.</p><p id="kit-feedback" role="status" class="small"></p></form><div class="kit-results"><div class="kit-preview-heading"><h2>Комплект</h2><span class="small muted">Схема / Inter</span></div><div id="kit-previews" class="kit-previews"></div><p class="small muted">Фото преподавателя обозначено областью в макете. Загрузка, кадрирование и выходные размеры будут настроены по новым карточкам.</p></div></div>
         <details><summary>Что должно пройти проверку в настоящем пилоте</summary><p>Одна замена темы, даты, спикера или фото обновляет весь комплект. Состояния «открыто» и «закрыто» и необходимые плашки берутся из утверждённого макета. Длинный текст, переносы и фото проверяются во всех носителях. Выходные изображения соответствуют согласованным размерам, а редактируемые исходники карточек сохраняются в Figma.</p></details>
       </section>
-      <section id="page-drafts" class="page" hidden aria-labelledby="drafts-title"><div class="page-heading"><p class="eyebrow">ВАШИ МАТЕРИАЛЫ</p><h1 id="drafts-title">Мои черновики</h1><p>В прототипе черновики хранятся только в этом браузере. Для переноса скачайте задание в JSON.</p></div><div id="draft-list"></div><div id="draft-empty" class="empty"><h2>Начните с первой задачи</h2><p>Выберите шаблон и добавьте содержание — черновик появится здесь после сохранения.</p><a class="button" href="#templates">Выбрать шаблон →</a></div></section>
       <section id="page-concept" class="page" hidden aria-labelledby="concept-title">
         <div class="page-heading"><p class="eyebrow">ПРОЕКТ ДЛЯ ОБСУЖДЕНИЯ</p><h1 id="concept-title">Какой сервис строим</h1><p>«Студия ВЭШ» — рабочее название. Единая точка входа в правила, исходники и подготовку фирменных материалов.</p></div>
         <div class="concept-lead"><h2>Сотрудник начинает с задачи.<br>Система помогает сохранить стиль.</h2><p>У каждого шаблона есть назначение, пример, редактируемый исходник, версия и понятные границы изменений. Сложные материалы передаются дизайнеру с готовым заданием.</p></div>
@@ -75,7 +53,6 @@
       <footer class="footer"><span>Высшая экономическая школа</span><span>Студия ВЭШ / Концепция</span></footer>
     </main>
   </div>
-  <dialog id="editor" aria-labelledby="editor-title"><div class="editor-top"><div><p class="eyebrow">ПРОБА СЦЕНАРИЯ</p><h2 id="editor-title">Создать материал</h2></div><button class="icon-button" id="close-editor" type="button" aria-label="Закрыть редактор">×</button></div><div class="editor-layout"><form id="editor-form"><input id="draft-id" type="hidden"><input id="draft-template" type="hidden"><label for="material-title">Название материала</label><input id="material-title" maxlength="90" required placeholder="Например, программа мастер-класса"><label for="material-subtitle">Краткое содержание</label><textarea id="material-subtitle" maxlength="240" rows="3" placeholder="Главная мысль или подзаголовок"></textarea><label for="material-detail">Дополнительная строка</label><input id="material-detail" maxlength="80" placeholder="Дата, имя спикера или название программы"><fieldset><legend>Вариант оформления</legend><label class="radio"><input type="radio" name="tone" value="dark" checked> Тёмный</label><label class="radio"><input type="radio" name="tone" value="light"> Светлый</label></fieldset><label for="material-notes">Задание дизайнеру</label><textarea id="material-notes" maxlength="1500" rows="3" placeholder="Что учесть при подготовке итогового файла"></textarea><button class="button" type="submit">Сохранить черновик</button><button id="download-brief" class="button secondary" type="button">Скачать задание JSON ↓</button><p id="editor-feedback" class="small" role="status"></p></form><div class="editor-preview"><span class="small-label">ЭСКИЗ КОМПОЗИЦИИ</span><div id="live-preview" class="live-preview dark"><div class="preview-logo"><img src="assets/logo-full.png" alt="ВЭШ" width="120" height="50"></div><span id="preview-format" class="eyebrow"></span><h3 id="preview-title"></h3><p id="preview-subtitle"></p><span id="preview-detail"></span><img class="preview-motif" src="assets/motif.svg" alt=""></div><p class="small muted">Эскиз показывает идею и содержание, а не итоговую вёрстку. Шрифт — Inter. Экспорт PowerPoint/PDF и проверка макета предусмотрены следующим этапом.</p></div></div></dialog>
   <div id="toast" class="toast" role="status" hidden></div>
 </body>
 </html>
