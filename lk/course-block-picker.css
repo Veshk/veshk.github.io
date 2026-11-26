@@ -1,0 +1,47 @@
+.course-block-picker{box-sizing:border-box;width:min(900px,calc(100vw - 32px));max-width:none;max-height:calc(100dvh - 48px);margin:auto;padding:0;border:1px solid #d6e0e5;border-radius:12px;background:#fff;color:#19282e;font:16px/1.45 Inter,Arial,sans-serif;box-shadow:0 18px 70px #10212b30;overflow:auto}
+.course-block-picker::backdrop{background:#10212b80}
+.course-block-picker *{box-sizing:border-box}
+.course-block-picker [hidden]{display:none!important}
+.course-block-picker button,.course-block-picker input{font:inherit;letter-spacing:normal;text-transform:none}
+.course-block-picker button{cursor:pointer}
+.cbp-header{display:flex;justify-content:space-between;gap:20px;padding:24px 28px 16px}
+.cbp-header h2{font-size:25px;line-height:1.25;font-weight:600;margin:0 0 6px}
+.cbp-header p{font-size:14px;color:#657780;margin:0}
+.cbp-close{flex:0 0 40px;align-self:flex-start;border:0;border-radius:6px;background:#f1f5f6;color:#46616e;height:40px;font-size:28px!important;line-height:1}
+.cbp-search{padding:0 28px 20px}
+.cbp-search label{display:block;font-size:13px;font-weight:600;margin-bottom:7px}
+.cbp-search input{width:100%;padding:11px 14px;border:1px solid #b9cdd7;border-radius:6px;background:white;color:#19282e}
+.cbp-layout{display:grid;grid-template-columns:245px minmax(0,1fr);border-top:1px solid #dde5e9;min-height:330px}
+.cbp-nav{padding:14px;background:#f6f8f9;border-right:1px solid #dde5e9;display:flex;flex-direction:column;gap:4px;align-items:stretch}
+.cbp-nav button{display:flex;justify-content:space-between;align-items:center;gap:10px;background:transparent;border:1px solid transparent;text-align:left;padding:12px 10px;border-radius:6px;color:#405b67;font-size:14px;line-height:1.4}
+.cbp-nav button span{font-size:12px;color:#697d86}
+.cbp-nav button[data-active=true]{background:#e5f0f5;border-color:#c1d9e5;color:#1c526d;font-weight:600}
+.course-block-picker[data-searching=true] .cbp-nav button{background:transparent;border-color:transparent;font-weight:400}
+.cbp-results{padding:18px 24px 24px;min-width:0}
+.cbp-group{display:none}
+.cbp-group[data-active=true]{display:block}
+.course-block-picker[data-searching=true] .cbp-group{display:none}
+.course-block-picker[data-searching=true] .cbp-group[data-matches=true]{display:block}
+.cbp-group h3{font-size:15px;font-weight:600;margin:0 0 12px}
+.cbp-group h3 button{pointer-events:none;background:none;border:0;padding:0;color:#405b67;font-weight:600;text-align:left;width:100%}
+.cbp-group h3 button span{display:none}
+.cbp-items{display:grid;gap:8px;margin-bottom:18px}
+.cbp-choice{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;padding:14px 16px;text-align:left;background:#fff;border:1px solid #d9e3e8;border-radius:7px;color:#19282e;min-width:0}
+.cbp-choice-copy{display:flex;flex-direction:column;gap:5px;min-width:0;overflow-wrap:anywhere}
+.cbp-choice strong{font-size:15px;font-weight:600;line-height:1.35}
+.cbp-choice-copy>span{font-size:13px;color:#657780;line-height:1.45}
+.cbp-plus{font-size:24px;color:#226d8d;flex:0 0 auto}
+.cbp-choice:hover{background:#f1f7fa;border-color:#7da8bc}
+.course-block-picker button:focus-visible,.course-block-picker input:focus-visible{outline:2px solid #226d8d;outline-offset:3px}
+.cbp-shared{padding:16px 28px;border-top:1px solid #dde5e9;background:#f6f8f9}
+.cbp-shared .cbp-choice{background:transparent}
+.cbp-empty{font-size:15px;color:#657780;padding:18px 0}
+@media(max-width:640px){
+.course-block-picker{width:calc(100vw - 20px);max-height:calc(100dvh - 24px);border-radius:10px}
+.cbp-header{padding:18px 16px 14px;gap:12px}.cbp-header h2{font-size:22px}.cbp-search{padding:0 16px 16px}
+.cbp-layout{display:block;min-height:0}.cbp-nav{display:none}.cbp-results{padding:0 16px}.cbp-group{display:block;border-bottom:1px solid #e2e9ed}
+.cbp-group h3{margin:0}.cbp-group h3 button{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 0;pointer-events:auto;font-size:15px;min-height:52px}
+.cbp-group h3 button span{display:block;font-size:18px}.cbp-group[data-active=true] h3 button span{transform:rotate(180deg)}
+.cbp-items{display:none}.cbp-group[data-active=true] .cbp-items,.course-block-picker[data-searching=true] .cbp-items{display:grid}
+.cbp-choice{padding:12px}.cbp-shared{padding:14px 16px}
+}

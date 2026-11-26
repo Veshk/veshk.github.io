@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#1c3948"><meta name="robots" content="noindex,nofollow">
+  <title>Личный кабинет глазами слушателя — ВЭШ</title>
+  <meta name="description" content="Интерактивная презентация нового личного кабинета ВЭШ для отдела продаж и администраторов: путь слушателя, обучение и будущая аналитика.">
+  <link rel="icon" href="assets/vesh-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css"><script type="module" src="app.mjs"></script>
+</head>
+<body>
+<a class="skip" href="#main">К содержанию</a>
+<header class="site-header">
+  <a class="brand" href="#intro" aria-label="ВЭШ — начало презентации"><img src="assets/vesh-logo.svg" alt="ВЭШ"><span>Пространство<br>вашего обучения</span></a>
+  <nav aria-label="Разделы презентации"><a href="#first">Слушателю</a><a href="#team">Команде</a><a href="#analytics">Аналитика</a></nav>
+  <button class="mode-button" id="present" aria-pressed="false">Режим показа <span aria-hidden="true">⤢</span></button>
+</header>
+<main id="main">
+<section class="scene hero" id="intro" data-title="Знакомство" aria-labelledby="intro-title">
+ <div class="hero-photo" aria-hidden="true"></div>
+ <div class="hero-content">
+  <p class="eyebrow light">Для отдела продаж и администраторов ВЭШ</p>
+  <h1 id="intro-title">Личный кабинет<br><em>глазами<br>слушателя</em></h1>
+  <p class="hero-lead">Один аккаунт. Всё своё обучение.<br>Понятный следующий шаг.</p>
+  <a class="button white" href="#first">Пройти путь слушателя <span>↘</span></a>
+  <div class="hero-caption"><span class="line"></span> Можно нажимать, выбирать и пробовать</div>
+ </div>
+ <div class="hero-card">
+  <div class="mini-top"><span class="eyebrow">Личный кабинет</span><span class="avatar">А</span></div>
+  <h2>Моё обучение</h2><p>Анна, всё ваше обучение — здесь</p>
+  <a href="#group" class="hero-course"><span class="course-icon">01</span><span><small>Программа обучения</small><strong>Управление командой</strong></span><span>↗</span></a>
+  <a href="#lesson" data-open-free class="hero-course"><span class="course-icon">02</span><span><small>Бесплатный курс</small><strong>Обратная связь</strong></span><span>↗</span></a>
+  <a href="#lesson" data-open-paid class="hero-course"><span class="course-icon">03</span><span><small>Курс в записи</small><strong>Дашборды в Excel</strong></span><span>↗</span></a>
+  <p class="demo-caption">Учебный пример интерфейса</p>
+ </div>
+ <div class="hero-bottom"><span>От первого входа до новых возможностей</span><span>Обзор на 26 ноября 2026</span></div>
+</section>
+
+<section class="scene" id="first" data-title="Первый экран" aria-labelledby="first-title">
+ <div class="section-heading"><p class="eyebrow">01 / Начало пути</p><h2 id="first-title">Сначала — <em>своё обучение</em></h2><p>После входа слушатель попадает на общую страницу. Даже если у него пока только один курс.</p></div>
+ <div class="split">
+  <div class="narrative">
+   <div class="choice-stack" id="home-choices" role="group" aria-label="Состояние кабинета">
+    <button data-home="active" aria-pressed="true"><span>01</span><strong>Доступ открыт<small>Программы и курсы рядом</small></strong><span>↗</span></button>
+    <button data-home="waiting" aria-pressed="false"><span>02</span><strong>Заявка на проверке<small>Понятно, чего ждать дальше</small></strong><span>↗</span></button>
+    <button data-home="returning" aria-pressed="false"><span>03</span><strong>Снова учится в ВЭШ<small>Прежний аккаунт, новое обучение</small></strong><span>↗</span></button>
+   </div>
+   <p class="explanation" id="home-note" aria-live="polite"></p>
+   <div class="side-note"><span>Что сказать слушателю</span><p>«Войдите в свой кабинет. На странице “Моё обучение” найдите нужную программу или курс».</p></div>
+  </div>
+  <div class="browser-frame">
+   <div class="browser-label"><span class="browser-dots" aria-hidden="true">● ● ●</span><span>Моё обучение</span><span>Демо</span></div>
+   <div class="mock-header"><img src="assets/vesh-logo.svg" alt="ВЭШ"><span>Моё обучение</span><span class="avatar">А</span></div>
+   <div class="home-screen" id="home-screen"></div>
+  </div>
+ </div>
+</section>
+
+<section class="scene pale" id="group" data-title="Страница группы" aria-labelledby="group-title">
+ <div class="section-heading"><p class="eyebrow">02 / Обучение в группе</p><h2 id="group-title">Всё, что нужно <em>к занятию</em></h2><p>Расписание, подключение, записи и контакты собраны на странице группы. Состав разделов зависит от программы.</p></div>
+ <div class="group-demo browser-frame">
+  <div class="browser-label"><span class="browser-dots" aria-hidden="true">● ● ●</span><span>Страница учебной группы</span><span>Демо</span></div>
+  <div class="group-cover"><div><p class="eyebrow light">Программа обучения / Учебная группа</p><h3>Управление командой</h3><p>Онлайн <span class="cover-divider"></span> Доступ открыт</p></div><div class="next-class"><small>Ближайшее занятие</small><strong>30 ноября, 18:00–21:00</strong><span>Мотивация и обратная связь</span><small>Время Екатеринбурга</small></div></div>
+  <div class="group-layout"><nav id="group-choices" aria-label="Раздел учебной группы"><button data-group="overview" aria-pressed="true">Контакты и чат</button><button data-group="schedule" aria-pressed="false">Расписание</button><button data-group="recordings" aria-pressed="false">Записи занятий</button><button data-group="materials" aria-pressed="false">Материалы</button><button data-group="defense" aria-pressed="false">Запись на защиту</button></nav><div id="group-screen" class="group-screen"></div><aside class="context-note"><p class="eyebrow">Зачем это слушателю</p><p id="group-note" aria-live="polite"></p><span class="tiny-rule"></span><small>Нажимайте на разделы слева. Наполнение и даты в примере вымышлены.</small></aside></div>
+ </div>
+ <p class="under-note">Администратор собирает страницу из блоков. Общий блок можно подключить к нескольким группам и обновлять в одном месте.</p>
+</section>
+
+<section class="scene" id="lesson" data-title="Курс в записи" aria-labelledby="lesson-title">
+ <div class="section-heading"><p class="eyebrow">03 / Самостоятельное обучение</p><h2 id="lesson-title">Урок за уроком. <em>В своём темпе.</em></h2><p>У бесплатного курса и курса в записи — уроки, материалы, личный срок доступа и собственный прогресс.</p></div>
+ <div class="segmented" id="lesson-kind-choices" role="group" aria-label="Пример самостоятельного курса"><button data-kind="free" aria-pressed="true">Бесплатный курс</button><button data-kind="paid" aria-pressed="false">Курс в записи</button></div>
+ <div class="lesson-demo browser-frame">
+  <div class="course-title"><div><p class="eyebrow" id="lesson-kind-label">Бесплатный курс / Учебный пример</p><h3 id="lesson-course-title">Обратная связь в команде</h3></div><div class="progress-label"><span id="progress-label">Пройдено 0%</span><div class="progress-track" role="progressbar" aria-label="Прогресс учебного примера" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="lesson-progress"></span></div></div></div>
+  <div class="lesson-layout"><nav id="lesson-choices" aria-label="Уроки курса"></nav><div id="lesson-screen" class="lesson-screen"></div></div>
+ </div>
+ <div class="two-notes"><p><strong>Попробуйте:</strong> откройте урок, отметьте его пройденным, переключитесь на следующий. Прогресс изменится.</p><p><strong>Что означает процент:</strong> долю отмеченных уроков. Он сам по себе не подтверждает просмотр всего видео или усвоение материала.</p></div>
+</section>
+
+<section class="scene dark" id="access" data-title="Как открывается доступ" aria-labelledby="access-title">
+ <div class="section-heading"><p class="eyebrow light">04 / За интерфейсом</p><h2 id="access-title">Один человек.<br><em>Разные основания доступа.</em></h2><p>Аккаунт объединяет обучение. Доступ, срок и прогресс относятся к конкретной программе или курсу.</p></div>
+ <div class="segmented inverse" id="access-choices" role="group" aria-label="Вид обучения"><button data-access="program" aria-pressed="true">Программа обучения</button><button data-access="free" aria-pressed="false">Бесплатный курс</button><button data-access="paid" aria-pressed="false">Курс в записи</button></div>
+ <div id="access-flow" class="access-flow" aria-live="polite"></div>
+ <div class="access-bottom"><div><p class="eyebrow light">Главное правило</p><h3>Регистрация ≠ доступ<br>ко всем материалам</h3></div><p id="access-note"></p></div>
+ <p class="dark-footnote">Здесь показана логика доступа. Подключение форм, оплат и писем проверяется отдельно для каждого запуска; схема не означает, что все интеграции уже включены.</p>
+</section>
+
+<section class="scene" id="team" data-title="Работа команды" aria-labelledby="team-title">
+ <div class="section-heading"><p class="eyebrow">05 / По другую сторону экрана</p><h2 id="team-title">Команда видит <em>контекст</em></h2><p>Какая группа у человека, открыт ли доступ, когда он закончится и что нужно сделать дальше.</p></div>
+ <div class="segmented" id="team-choices" role="group" aria-label="Роль сотрудника"><button data-team="sales" aria-pressed="true">Отдел продаж</button><button data-team="admin" aria-pressed="false">Административный отдел</button></div>
+ <div class="team-layout"><div id="team-copy" aria-live="polite"></div><div class="scenario-panel"><p class="eyebrow">Разберём обычную ситуацию</p><h3>«Я вошёл, но не вижу обучение»</h3><p>Выберите, что проверить.</p><div id="scenario-choices" class="scenario-choices"><button data-scenario="account">Тот ли аккаунт?</button><button data-scenario="access">Открыт ли доступ?</button><button data-scenario="date">Не закончился ли срок?</button></div><div class="scenario-result" id="scenario-result" role="status">Проверка начинается с аккаунта, конкретного курса и статуса доступа. Повторная регистрация не должна быть первым решением.</div></div></div>
+ <div class="permissions-note"><strong>Права сотрудников</strong><span>Администратор работает со своими группами, чужие доступны для просмотра. Старший администратор управляет всеми. Работа в отделе продаж сама по себе не назначает административную роль.</span></div>
+</section>
+
+<section class="scene pale" id="analytics" data-title="Будущая аналитика" aria-labelledby="analytics-title">
+ <div class="section-heading"><p class="eyebrow">06 / Следующий шаг</p><h2 id="analytics-title">От доступа — <em>к пониманию пути</em></h2><p>Единый кабинет создаёт основу для аналитики: кто начал обучение, кто продолжил и кто вернулся за следующим курсом.</p></div>
+ <div class="future-label"><span>Возможность развития</span><p>Ниже — интерактивный макет будущего отчёта. Все числа условные, это не показатели ВЭШ.</p></div>
+ <div class="analytics-card"><div class="analytics-toolbar"><div><h3>Путь по курсу</h3><p>Учебная когорта: доступ открыт 1–7 октября / первые 30 дней</p></div><div class="segmented" id="analytics-choices" role="group" aria-label="Тип курсов в учебном отчёте"><button data-cohort="free" aria-pressed="true">Бесплатные</button><button data-cohort="paid" aria-pressed="false">Платные</button><button data-cohort="all" aria-pressed="false">Все</button></div></div>
+  <p class="chart-hint">Выберите тип курса и нажмите на этап, чтобы увидеть пояснение.</p><div class="analytics-body"><div class="funnel" id="funnel"></div><aside class="analytics-insight" aria-live="polite"><p class="eyebrow">Как читать результат</p><div class="big-number" id="completion-rate"></div><p id="cohort-summary"></p><div id="stage-insight" class="stage-insight"></div></aside></div>
+  <p class="analytics-definition">Единица учёта — зачисление на курс. Один человек может иметь несколько зачислений. Все проценты рассчитаны от числа открытых доступов; «начали» здесь означает первую отметку урока.</p>
+ </div>
+ <div class="future-grid"><div><p class="eyebrow">Для продаж</p><h3>Что приводит к следующему обучению?</h3><p>Сопоставить бесплатный курс и последующую подтверждённую покупку. Считать людей по единому профилю и фиксированному периоду.</p><p class="inline-sample">Пример: 8 из 100 участников купили курс за 60 дней → 8%. Это связь событий, а не доказательство причины покупки.</p></div><div><p class="eyebrow">Для администраторов</p><h3>Где слушателю нужна помощь?</h3><p>Найти выданные, но не использованные доступы, группы с низкой активностью и повторяющиеся замечания в обратной связи.</p><p class="inline-sample">Для такого отчёта нужны согласованные события, даты, правила расчёта и права доступа.</p></div></div>
+ <details class="methodology"><summary>Что есть в ЛК и что нужно добавить для этих отчётов</summary><div class="method-grid"><div><h4>Основа уже есть</h4><p>Аккаунты и зачисления, сроки доступа, отметки уроков самостоятельных курсов, анкеты обратной связи. Сотрудники могут разбирать ответы и выгружать их в Excel.</p></div><div><h4>Следующий этап</h4><p>Единые отчёты по платным и бесплатным курсам, история нужных событий, сопоставление с проверенными оплатами и источниками заявок. UTM, выручка, конверсия и длительность просмотра не предполагаются автоматически готовыми.</p></div></div><p>Для честного сравнения нужны одинаковые окна наблюдения и понятные определения. Клик по ссылке на видео и отметка урока не равны полному просмотру. Прогресс самостоятельного курса нельзя автоматически переносить на посещаемость занятий в группе.</p></details>
+</section>
+
+<section class="scene closing" id="finish" data-title="Что запомнить" aria-labelledby="finish-title">
+ <div class="section-heading"><p class="eyebrow">07 / Берём в работу</p><h2 id="finish-title">Слушателю — ясность.<br><em>Команде — общая картина.</em></h2></div>
+ <div class="takeaways"><div><span>01</span><h3>Один аккаунт</h3><p>Новое обучение добавляется к прежнему профилю. Доступы и сроки остаются отдельными.</p></div><div><span>02</span><h3>Понятная точка входа</h3><p>«Моё обучение» ведёт к группе или курсу. Внутри — всё необходимое для следующего шага.</p></div><div><span>03</span><h3>Основа для аналитики</h3><p>Появляется возможность связать обучение и дальнейший путь клиента. Отчёты — отдельный этап развития.</p></div></div>
+ <div class="closing-actions"><a class="button" href="https://student.veshk.ru/login" target="_blank" rel="noopener">Открыть рабочий ЛК <span>↗</span></a><a class="text-link" href="#first">Повторить интерактивный рассказ ↑</a><button class="text-link" id="reset-demo">Сбросить учебные примеры</button></div>
+ <details class="about"><summary>О презентации и учебных примерах</summary><p>Подготовлена для отдела продаж и административного отдела ВЭШ. Описывает интерфейс и подтверждённое поведение по состоянию на 26.11.2026. Экраны упрощены для объяснения, названия, слушатели, сроки и цифры в примерах вымышлены.</p><p>Все действия выполняются только на этой странице: аккаунты и заявки не создаются, уведомления не отправляются, платежи не проводятся. При перезагрузке примеры сбрасываются. Раздел аналитики показывает возможное развитие, а не работающий отчёт.</p><p>Читайте как сайт или включите «Режим показа». Стрелки внизу переключают главы. В режиме показа также работают клавиши ← и →, Escape возвращает обычный вид.</p><p><a class="text-link" href="https://veshk.github.io/lk/" target="_blank" rel="noopener">Отдельная демонстрация интерфейса ЛК ↗</a> — её версия и наполнение могут отличаться от рабочего кабинета.</p><p>История: 26.11.2026 — первая версия интерактивного рассказа.</p></details>
+ <footer><span>Высшая экономическая школа</span><span>Внутреннее знакомство с продуктом / 2026</span></footer>
+</section>
+</main>
+<noscript><p class="no-script">Для интерактивных примеров включите JavaScript. Основной рассказ доступен выше.</p></noscript>
+<div class="deck-controls"><div class="deck-progress" aria-hidden="true"><span id="deck-progress"></span></div><span class="deck-label" id="deck-label">Знакомство</span><div><button id="prev-scene" aria-label="Предыдущая глава">←</button><span id="scene-count" aria-live="polite">01 / 08</span><button id="next-scene" aria-label="Следующая глава">→</button></div><span class="deck-hint">Листайте вниз или выбирайте главу</span></div>
+<div class="toast" id="toast" role="status" hidden></div>
+</body></html>

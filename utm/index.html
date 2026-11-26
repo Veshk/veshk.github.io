@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Генератор ссылок ВЭШ. Создавайте UTM-метки для материалов, рассылок и мероприятий за три простых шага.">
+  <meta name="theme-color" content="#b2272a">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Генератор ссылок · ВЭШ</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script src="vendor/qrcode.js" defer></script>
+  <script src="vendor/qrcode-utf8.js" defer></script>
+  <script src="app.mjs" type="module"></script>
+</head>
+<body>
+<a class="skip" href="#main">К генератору</a>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="https://veshk.ru" target="_blank" rel="noopener" class="brand" aria-label="Высшая экономическая школа — открыть сайт"><img src="assets/vesh-logo.png" alt="ВЭШ" width="146" height="56"><span>Высшая экономическая школа<small>Образовательные решения для бизнеса</small></span></a>
+    <div class="header-actions"><span class="team-label">Инструменты команды</span><button class="help-button" id="help" type="button"><span class="help-symbol">?</span> Как это работает</button></div>
+  </div>
+</header>
+<main id="main" class="page">
+  <section class="intro">
+    <div><div class="eyebrow"><span></span> МАРКЕТИНГ ВЭШ</div><h1>Генератор ссылок</h1><p>Помогите аналитике понять, откуда пришли люди.<br>Ответьте на три вопроса — метки добавятся сами.</p></div>
+    <div class="intro-note"><span class="note-line"></span><span>Одна ссылка.<br>Больше ясности.</span><span class="note-arrow" aria-hidden="true">↗</span></div>
+  </section>
+  <nav class="tabs" aria-label="Разделы генератора"><button class="tab active" id="create-tab" aria-current="page" type="button"><span data-icon="link"></span> Создать ссылку</button><button class="tab" id="history-tab" type="button"><span data-icon="clock"></span> Мои ссылки <span class="count" id="history-count">0</span></button><span class="tab-note"><span class="status-dot"></span> По правилам ВЭШ</span></nav>
+  <section id="create-view" class="workspace">
+    <form id="generator" class="form-panel" novalidate>
+      <section class="form-section">
+        <div class="section-heading"><span class="step-number">01</span><div><h2>Куда ведёт ссылка?</h2><p>На страницу курса, вебинара или полезного материала.</p></div></div>
+        <label class="field-label" for="address">Адрес страницы <span class="required">*</span></label>
+        <div class="input-with-icon"><span data-icon="link"></span><input id="address" name="address" type="text" inputmode="url" autocomplete="url" placeholder="Вставьте ссылку, например https://veshk.ru/calendar" aria-describedby="address-hint address-error" required></div>
+        <p class="error" id="address-error" hidden></p><p class="field-hint" id="address-hint">Можно вставить ссылку с метками — мы заменим их на новые.</p>
+        <div class="quick-links"><span>Быстрый выбор:</span><button type="button" data-url="https://veshk.ru/">Сайт ВЭШ <span>↗</span></button><button type="button" data-url="https://veshk.ru/calendar">Календарь обучения <span>↗</span></button><button type="button" data-url="https://mk.veshk.ru/">Вебинары <span>↗</span></button></div>
+      </section>
+      <section class="form-section">
+        <div class="section-heading"><span class="step-number">02</span><div><h2>Где разместите ссылку?</h2><p>Выберите площадку. Мы подберём нужные метки.</p></div></div>
+        <fieldset class="channel-fieldset"><legend class="sr-only">Площадка размещения</legend><div class="channel-grid" id="channels"></div></fieldset>
+        <div class="field-row channel-options"><div id="source-wrap" hidden><label class="field-label" for="source-choice">Источник</label><select id="source-choice"></select></div><div><label class="field-label" for="placement">Как разместите?</label><select id="placement"></select></div></div>
+        <div id="custom-source-wrap" hidden><label class="field-label" for="custom-source">Название источника <span class="required">*</span></label><input id="custom-source" placeholder="Например, журнал Деловой квартал"><p class="field-hint">Переведём в латиницу автоматически.</p></div>
+        <p class="context-note" id="channel-note"><span data-icon="spark"></span><span>Обычный пост и реклама получат разные метки — их легко сравнить в отчёте.</span></p>
+      </section>
+      <section class="form-section">
+        <div class="section-heading"><span class="step-number">03</span><div><h2>Что продвигаете?</h2><p>Назовите материал так, чтобы потом узнать его в отчёте.</p></div></div>
+        <label class="field-label" for="campaign-type">Тип материала</label><select id="campaign-type"></select>
+        <label class="field-label spaced" for="theme">Название материала или кампании <span class="required">*</span></label><input id="theme" maxlength="120" placeholder="Например, управление командой" aria-describedby="campaign-hint" required>
+        <p class="field-hint" id="campaign-hint">Можно по-русски — название автоматически превратится в метку.</p>
+        <div class="field-row spaced"><div><label class="field-label" for="date">Дата размещения</label><input id="date" type="date" required><p class="field-hint">Поможет отличить публикации.</p></div><div><label class="field-label" for="variant">Вариант материала <span class="optional">необязательно</span></label><input id="variant" maxlength="60" placeholder="Например, кнопка или баннер"><p class="field-hint">Если в одном материале несколько ссылок.</p></div></div>
+        <details id="advanced" class="advanced"><summary><span data-icon="sliders"></span> Настроить метки вручную <span class="chevron">⌄</span></summary><div class="advanced-body"><p class="field-hint">Здесь можно изменить каждую метку. Изменённые вручную значения сохраняются, пока вы не вернёте автозаполнение.</p><div id="technical-fields"></div><button class="text-button" type="button" id="reset-overrides">Вернуть автозаполнение</button></div></details>
+      </section>
+      <div class="form-footer"><span><span class="required">*</span> Обязательные поля</span><button type="button" class="text-button muted" id="reset-form">Начать заново</button></div>
+    </form>
+    <aside class="result-column" aria-label="Готовая ссылка">
+      <section class="result-card"><div class="result-topline"><span class="eyebrow">ВАША ССЫЛКА</span><span id="ready-badge" class="ready-badge">Заполните 3 шага</span></div><h2 id="result-title">Всё готово к началу</h2><p id="result-description">Добавьте адрес и название материала. Ссылка появится здесь.</p><div id="link-preview" class="link-preview placeholder">https://veshk.ru/<span>?utm_source=…<br>&amp;utm_medium=…<br>&amp;utm_campaign=…</span></div><div id="warnings" class="warnings" role="status"></div><button type="button" id="copy-link" class="primary-button" disabled><span data-icon="copy"></span><span id="copy-label">Скопировать ссылку</span></button><p class="copy-hint">При копировании сохраним её в «Мои ссылки».</p><div class="result-actions"><button type="button" id="qr-button" disabled><span data-icon="qr"></span> QR-код</button><a id="test-link" target="_blank" rel="noopener noreferrer" aria-disabled="true"><span data-icon="external"></span> Открыть</a></div><div class="tag-breakdown" id="tag-breakdown"><div><span>Площадка</span><strong id="summary-channel">ВКонтакте</strong></div><div><span>Размещение</span><strong id="summary-placement">Пост в сообществе</strong></div><div><span>Кампания</span><strong id="summary-campaign">Пока не задана</strong></div></div></section>
+      <section class="tip-card"><span class="tip-icon" data-icon="bulb"></span><div><h3>Метка — это подпись к ссылке</h3><p>Для посетителя страница останется прежней. А вы увидите в аналитике, какая публикация привела людей.</p><button type="button" class="text-button" id="show-example">Показать на примере <span>→</span></button></div></section>
+      <p class="local-note"><span data-icon="shield"></span> История хранится только в этом браузере.</p>
+    </aside>
+  </section>
+  <section id="history-view" class="history-view" hidden><div class="history-heading"><div><h2>Мои ссылки</h2><p>Ссылки, которые вы скопировали в этом браузере. Последние 100 записей.</p></div><button type="button" id="export-history" class="secondary-button" disabled><span data-icon="download"></span> Скачать CSV</button></div><div class="history-toolbar"><label class="search-field"><span data-icon="search"></span><input id="history-search" placeholder="Найти по названию, площадке или ссылке" aria-label="Поиск по истории"></label><button class="text-button muted" id="clear-history" type="button" disabled>Очистить историю</button></div><div id="history-list"></div><p class="history-footnote">История не синхронизируется с Google-таблицей или другими устройствами. Чтобы передать ссылки коллегам, скачайте CSV.</p></section>
+  <footer class="page-footer"><span>ВЭШ · Образовательные решения для бизнеса</span><a href="https://veshk.ru" target="_blank" rel="noopener">Перейти на veshk.ru <span>↗</span></a></footer>
+</main>
+<dialog id="help-dialog" class="dialog help-dialog"><button class="dialog-close" type="button" data-close aria-label="Закрыть">×</button><div class="eyebrow">ВСЁ ПРОСТО</div><h2>Зачем нужны метки?</h2><p>Вы публикуете одну и ту же страницу в Telegram и ВКонтакте. Метки помогут аналитике различить эти переходы.</p><div class="example-path"><span>Пост в Telegram</span><span>→</span><span>Ссылка с меткой</span><span>→</span><span>Страница ВЭШ</span></div><ol class="help-steps"><li><strong>Вставьте адрес страницы</strong><span>Той, куда должен попасть человек.</span></li><li><strong>Выберите место размещения</strong><span>Например, Telegram → Пост в канале.</span></li><li><strong>Назовите материал</strong><span>Например, «Управление командой». Дату добавим отдельно.</span></li></ol><p class="help-note">Готовую ссылку скопируйте в пост, письмо или презентацию. Для печати скачайте QR-код. Статистику переходов смотрите в подключённой к сайту аналитике.</p><button type="button" class="primary-button" data-close>Понятно, создать ссылку</button></dialog>
+<dialog id="qr-dialog" class="dialog qr-dialog"><button class="dialog-close" type="button" data-close aria-label="Закрыть">×</button><div class="eyebrow">ДЛЯ ВАШИХ МАТЕРИАЛОВ</div><h2>QR-код готов</h2><p>Ведёт на вашу страницу и сохраняет все метки.</p><div id="qr-image" class="qr-image"></div><p class="field-hint">Перед печатью проверьте код камерой телефона.</p><div class="dialog-actions"><button type="button" id="download-png" class="primary-button"><span data-icon="download"></span> Скачать PNG</button><button type="button" id="download-svg" class="secondary-button">SVG для печати</button></div></dialog>
+<dialog id="clear-dialog" class="dialog"><button class="dialog-close" type="button" data-close aria-label="Закрыть">×</button><h2>Очистить историю?</h2><p>Сами ссылки продолжат работать. Список сохранённых ссылок в этом браузере будет удалён. При необходимости сначала скачайте CSV.</p><div class="dialog-actions"><button type="button" class="secondary-button" data-close>Отмена</button><button type="button" class="primary-button" id="confirm-clear">Очистить</button></div></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<noscript><div class="noscript">Для генератора нужно включить JavaScript в браузере.</div></noscript>
+</body>
+</html>

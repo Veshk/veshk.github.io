@@ -1,0 +1,88 @@
+'use strict';
+window.CourseNavigation = (() => {
+  const mounts = new WeakMap();
+  const titleObservers = new WeakMap();
+  function fitTitle() {
+    const title=document.querySelector('.hero-layout h1');
+    if(!title)return;
+    titleObservers.get(title)?.disconnect();
+    const resize=()=>{
+      title.style.fontSize='';
+      const base=parseFloat(getComputedStyle(title).fontSize),minimum=matchMedia('(max-width:600px)').matches?24:28;
+      let size=base;
+      const lines=()=>title.getBoundingClientRect().height/parseFloat(getComputedStyle(title).lineHeight);
+      const long=lines()>2.1;
+      while(lines()>2.1&&size>minimum){size-=1;title.style.fontSize=size+'px';}
+      title.closest('.course-hero')?.classList.toggle('has-long-title',long);
+    };
+    let width=0;
+    const observer=new ResizeObserver(entries=>{const next=entries[0].contentRect.width;if(Math.abs(next-width)>.5){width=next;resize();}});
+    observer.observe(title.parentElement);titleObservers.set(title,observer);
+    resize();document.fonts?.ready.then(resize);
+  }
+  function mount() {
+    fitTitle();
+    const nav = document.querySelector('.course-nav');
+    const desktop = nav?.querySelector('.course-nav-inner');
+    if (!desktop) return;
+    mounts.get(nav)?.abort();
+    const controller = new AbortController(), options = {signal:controller.signal};
+    mounts.set(nav,controller);
+    nav.querySelector('.course-mobile-nav')?.remove();
+    const menu = document.createElement('details');
+    menu.className = 'course-mobile-nav';
+    menu.innerHTML = '<summary><span class="course-menu-caption">Разделы курса</span><span class="course-menu-current"></span></summary><div class="course-mobile-links"></div>';
+    const list = menu.querySelector('.course-mobile-links');
+    desktop.querySelectorAll('a').forEach(link => {
+      if (link.textContent.trim() === 'О Высшей экономической школе') link.textContent = 'О ВЭШ';
+      list.append(link.cloneNode(true));
+    });
+    nav.append(menu);
+    nav.classList.add('has-mobile-menu');
+    const summary = menu.querySelector('summary'), current = menu.querySelector('.course-menu-current');
+    const links = [...nav.querySelectorAll('a[href^="#"]')];
+    const sections = [...desktop.querySelectorAll('a[href^="#"]')].map(link => document.getElementById(link.hash.slice(1))).filter(Boolean);
+    function select(hash) {
+      const active = links.find(link => link.hash === hash) || links[0];
+      if (!active) return;
+      current.textContent = active.textContent;
+      links.forEach(link => {
+        const selected = link.hash === active.hash;
+        link.classList.toggle('active',selected);
+        if (selected) link.setAttribute('aria-current','location'); else link.removeAttribute('aria-current');
+      });
+    }
+    nav.addEventListener('click',event => {
+      const link = event.target.closest('a[href^="#"]');
+      if (!link || !nav.contains(link)) return;
+      select(link.hash);
+      if (menu.contains(link)) {
+        menu.open = false;
+        const target = document.getElementById(link.hash.slice(1))?.querySelector('h2');
+        if (target) requestAnimationFrame(() => { target.tabIndex = -1; target.focus({preventScroll:true}); });
+      }
+    },options);
+    document.addEventListener('keydown',event => {
+      if (event.key === 'Escape' && menu.open) { menu.open = false; summary.focus(); }
+    },options);
+    document.addEventListener('click',event => { if (!nav.contains(event.target)) menu.open = false; },options);
+    window.addEventListener('hashchange',() => select(location.hash),options);
+    let ticking = false;
+    window.addEventListener('scroll',() => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const top = nav.getBoundingClientRect().height + 24;
+        const reached = sections.map(item => ({item,top:item.getBoundingClientRect().top})).filter(entry => entry.top <= top);
+        const rowTop = reached.at(-1)?.top;
+        const row = reached.filter(entry => Math.abs(entry.top-rowTop)<2).map(entry => entry.item);
+        const section = row.find(item => links.some(link => link.hash === '#'+item.id && link.getAttribute('aria-current') === 'location')) || row[0];
+        if (section) select('#'+section.id);
+      });
+    },{...options,passive:true});
+    select(location.hash);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',mount,{once:true}); else mount();
+  return {mount};
+})();

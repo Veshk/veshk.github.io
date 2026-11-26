@@ -1,0 +1,317 @@
+'use strict';
+window.CoursePages = (() => {
+  const materialIcons={folder:'Папка',book:'Книги',film:'Фильмы'};
+  const materialIcon=value=>['book','film'].includes(value)?value:'folder';
+  const materialArt=value=>{const icon=materialIcon(value);return `<svg class="resource-folder-art" viewBox="0 0 92 72" fill="none" aria-hidden="true" data-material-icon="${icon}">${{folder:`<path d="M4 24V6h31l9 8h39v10" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 24h84l-8 42H12L4 24Z" fill="#fff" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M23 39h22M23 47h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`,book:`<g stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M6 17c15-5 26-3 40 5 14-8 25-10 40-5v46c-15-5-26-3-40 3-14-6-25-8-40-3Z" fill="#fff"/>
+        <path d="M10 9c14-3 24 0 36 8 12-8 22-11 36-8v47c-14-3-24 0-36 8-12-8-22-11-36-8Z" fill="#fff"/>
+        <path d="M46 17v47M19 24c7-1 12 1 18 4M19 33c7-1 12 1 18 4M55 28c6-3 11-5 18-4M55 37c6-3 11-5 18-4" fill="none"/>
+      </g>`,film:`<g stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M6 10h80v52H6Z" fill="#fff"/>
+        <path d="M20 10v52M72 10v52M6 23h14M6 36h14M6 49h14M72 23h14M72 36h14M72 49h14" fill="none"/>
+        <path d="m39 24 18 12-18 12Z" fill="#fff"/>
+      </g>`}[icon]}</svg>`;};
+  const labels = {preparation:'Как подготовиться к обучению',contacts:'Контакты и чаты',schedule:'Расписание',coursework:'Подготовка к курсовой работе',consultations:'Расписание консультаций',defense:'Запись на защиту курсовой',join:'Подключиться к занятию',homework:'Домашние задания',recordings:'Записи занятий',materials:'Материалы для обучения',faq:'Вопросы об обучении',info:'Информационный блок',video:'Видео о школе',photos:'Фотографии с выпускного',introductions:'Практика «Знакомство»',alias:'Общий блок из другого ЛК'};
+  const templates = {mba:'MBA / длительная программа',short:'Короткая программа',corporate:'Корпоративная программа'};
+  const clone = value => JSON.parse(JSON.stringify(value));
+  const courseworkDefaults={"intro": "Для написания курсовой работы вам необходимо посетить 4 консультации.", "mode": "free", "attendance_text": "", "consultation_points": [{"icon": "calendar", "title": "Удобный день", "text": "Приходите в свою или параллельную группу — выбирайте день, который вам удобен."}, {"icon": "book", "title": "По нужной теме", "text": "У каждой консультации есть тема. Посмотрите расписание и посещайте нужные темы в разных группах."}, {"icon": "monitor", "title": "Можно в Zoom", "text": "Предупредите администратора до утра дня консультации, чтобы мы подготовили оборудование и прислали ссылку."}], "defense_steps": [{"title": "Тайминг", "text": "30 минут на каждого: 15 минут — выступление, 15 минут — вопросы комиссии и одногруппников.\nЗа 1,5 недели администратор составит порядок выступлений."}, {"title": "В день защиты", "text": "Возьмите два печатных экземпляра курсовой работы для комиссии.\nПришлите работу администратору на электронную почту."}]};
+  const consultationIcons={"users": "Люди", "calendar": "Календарь", "book": "Книга", "monitor": "Экран", "info": "Информация"};
+  const consultationArt=icon=>({"users": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M22 21v-2a4 4 0 0 0-3-3.87\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg>", "calendar": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M16 3v4M8 3v4M3 11h18M8 15h2M14 15h2M8 18h2\"/></svg>", "book": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v16M3 3c4-1 6 0 9 2 3-2 5-3 9-2v16c-4-1-6 0-9 2-3-2-5-3-9-2Z\"/></svg>", "monitor": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"2\" y=\"3\" width=\"20\" height=\"14\" rx=\"2\"/><path d=\"M8 21h8M12 17v4\"/></svg>", "info": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 11v6M12 7h.01\"/></svg>"})[icon]||"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v16M3 3c4-1 6 0 9 2 3-2 5-3 9-2v16c-4-1-6 0-9 2-3-2-5-3-9-2Z\"/></svg>";
+  const block = type => ({type,data:{title:labels[type],visible:true,block_id:crypto.randomUUID(),...(type==='coursework'?clone(courseworkDefaults):{}),...(type==='defense'?{days:[],open:true}:{}),...(type==='consultations'?{sessions:[],collapse_past:true}:{}),...(type==='contacts'?{chats:[]}:{}),...(type==='schedule'?{lessons:[],show_moscow:false,collapse_past:true}:{}),...(type==='recordings'?{videos:[]}:{}),...(type==='materials'?{text:'Все материалы вашей группы собраны в одной папке.'}:{})}});
+  const template = key => {
+    const list=['contacts','schedule','join','recordings','materials'].map(block);
+    if(key==='mba')list.push({type:'info',data:{title:'Подготовка к курсовой работе',text:'Информация о консультациях и материалы появятся здесь.',visible:true}});
+    return list;
+  };
+  const fallback = g => {
+    const list=template(g.page_template||'short');
+    list.find(b=>b.type==='schedule').data.lessons=clone(g.schedule||[]);
+    if(g.chat_url)list[0].data.chats=[{label:'Чат группы',url:g.chat_url}];
+    list.forEach((b,i)=>b.data.block_id='legacy-'+i);
+    return list;
+  };
+  const getBlocks = g => clone(g.page_blocks??fallback(g)).map((b,i)=>({...b,type:b.type==='info'&&b.data.block_id==='kd26-info'?'photos':b.type==='faq'&&/^(?:как\s+)?подготов(?:иться|ка)\s+к\s+обучению[?!.]?$/i.test((b.data.title||'').trim())?'preparation':b.type,data:{...b.data,block_id:b.data.block_id||'legacy-'+i}}));
+  const resolveAlias=(b,groups)=>{const source=groups[b.data.source_group];const original=source&&getBlocks(source).find(x=>x.data.block_id===b.data.source_block&&x.type!=='alias'&&x.data.visible!==false);return original?{block:original,group:source}:null;};
+  const usedBy=(gid,bid,groups)=>Object.entries(groups).filter(([,g])=>getBlocks(g).some(b=>b.type==='alias'&&b.data.source_group===gid&&b.data.source_block===bid));
+  const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const url=value=>{try{const u=new URL(value);return ['http:','https:'].includes(u.protocol)?u.href:'';}catch{return '';}};
+  const link=(value,label,cls='btn outline')=>url(value)?`<a class="${cls}" href="${esc(url(value))}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`:'';
+  const chatDescription='Присоединяйтесь к чатам, чтобы быть на связи с группой и получать объявления.';
+  const contactDetails=(text,name)=>{
+    const normalized=value=>String(value||'').trim().replace(/\s+/g,' ').toLocaleLowerCase('ru');
+    const token=/[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+|\+?\d[\d ()\u00a0.\-\u2010-\u2015]{7,}\d/gi;
+    return String(text||'').split(/\r?\n/).map(line=>line.trim()).filter(line=>line&&normalized(line)!==normalized(name)).map(line=>{
+      let linked=false;
+      let last=0,html='';const clean=line.replace(/^(?:e-?mail|почта|тел(?:ефон)?\.?)\s*:\s*/i,'');
+      for(const match of clean.matchAll(token)){
+        html+=esc(clean.slice(last,match.index));const value=match[0],digits=value.replace(/\D/g,'');let href='';
+        if(value.includes('@'))href='mailto:'+encodeURIComponent(value).replace(/%40/g,'@');
+        else if(digits.length>=10&&digits.length<=15)href='tel:'+(digits.length===11&&digits.startsWith('8')?'+7'+digits.slice(1):(value.startsWith('+')?'+':'')+digits);
+        html+=href?`<a href="${esc(href)}">${esc(value)}</a>`:esc(value);linked=linked||Boolean(href);last=match.index+value.length;
+      }
+      html+=esc(clean.slice(last));return `<p class="contact-line${linked?'':' contact-note'}">${html}</p>`;
+    }).join('');
+  };
+  const dateLabel=value=>value?value.split('-').reverse().join('.'):'';
+  const recordingCopy=v=>{
+    const date=dateLabel(v.date);let title=(v.title||'').trim(),text=(v.text||'').trim();
+    if(date&&text.replace(/\.$/,'')===`Запись занятия от ${date}`)text='';
+    if(date){const suffix=new RegExp('[\\s,–—-]*(?:от\\s+)?'+date.replace(/\./g,'\\.')+'\\.?$');title=title.replace(suffix,'').trim();text=text.replace(suffix,'').trim();}
+    title=title.replace(/^(\d+)\s+занятие$/i,'Занятие $1');
+    return {title:title||'Запись занятия',text};
+  };
+  const month=value=>{const d=new Date(value+'T12:00:00Z');return Number.isNaN(d.valueOf())?'Дата уточняется':new Intl.DateTimeFormat('ru',{month:'long',year:'numeric',timeZone:'UTC'}).format(d).replace(/\s*г\.$/,'');};
+  const weekday=value=>{const d=new Date(value+'T12:00:00Z');return Number.isNaN(d.valueOf())?'':['Вс','Пн','Вт','Ср','Чт','Пт','Сб'][d.getUTCDay()];};
+  const moscow=value=>String(value||'').replace(/(\d{1,2})[:.](\d{2})/g,(_,h,m)=>`${String((Number(h)+22)%24).padStart(2,'0')}:${m}`);
+  const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Yekaterinburg',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const recordingStatus=v=>v.status|| (url(v.url)?'published':'pending');
+  const image=d=>url(d.image_url)?`<img class="block-image" src="${esc(url(d.image_url))}" alt="${esc(d.image_alt||'')}" loading="lazy" referrerpolicy="no-referrer">`:'';
+  const lessonHighlights={day:'Другой день',time:'Другое время',format:'Другой формат',important:'Важно'};
+  const lessonHighlight=l=>l.highlight?(lessonHighlights[l.highlight_type]||lessonHighlights.important):'';
+  const lessonNotice=l=>`${lessonHighlight(l)?`<span class="lesson-highlight-label">${esc(lessonHighlight(l))}</span>`:''}`;
+  const lessonComment=l=>String(l.comment||'').trim()?`<p class="lesson-comment">${esc(l.comment)}</p>`:'';
+  const schedule = (d,g,consultations=false) => {
+    const validDate=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)&&!Number.isNaN(new Date(value+'T12:00:00Z').valueOf())&&new Date(value+'T12:00:00Z').toISOString().slice(0,10)===value;
+    const notices=(d.announcements||[]).filter(n=>validDate(n.start_date)&&validDate(n.end_date)&&n.end_date>=n.start_date&&String(n.text||'').trim()).map(n=>({...n,date:n.start_date,is_notice:true}));
+    const rows=[...(d.lessons||[]).map(l=>({...l,is_notice:false})),...notices].sort((a,b)=>(a.date||'').localeCompare(b.date||'')||Number(b.is_notice)-Number(a.is_notice)||(a.time||'').localeCompare(b.time||''));
+    const currentMonth=today().slice(0,7),months={},pastMonths={};
+    rows.forEach(row=>{const monthKey=(row.date||'').slice(0,7),endMonth=(row.end_date||row.date||'').slice(0,7),past=d.collapse_past&&monthKey&&endMonth<currentMonth;const key=!past&&row.is_notice&&d.collapse_past&&monthKey<currentMonth?currentMonth:monthKey;const target=past?pastMonths:months;(target[key]??=[]).push(row);});
+    const noticeRow=n=>`<tr class="schedule-announcement"><td colspan="4"><div class="schedule-announcement-content"><strong>${esc(n.text)}</strong><span class="schedule-announcement-dates">${n.start_date===n.end_date?esc(dateLabel(n.start_date)):`С ${esc(dateLabel(n.start_date))} по ${esc(dateLabel(n.end_date))}`}</span></div></td></tr>`;
+    const table=(key,lessons)=>`<div class="month-card"><div class="month-label">${esc(month(key+'-01'))}</div><div class="schedule-scroll"><table class="compact-schedule"><colgroup><col class="col-date"><col class="col-time"><col class="col-lesson"><col class="col-teacher"></colgroup><thead><tr><th>Дата</th><th>Время${d.show_moscow?' ЕКБ / МСК':' ЕКБ'}</th><th>${consultations?'Тема консультации':'Занятие'}</th><th>Преподаватель</th></tr></thead><tbody>${lessons.map(l=>l.is_notice?noticeRow(l):`<tr${lessonHighlight(l)?' class="lesson-highlighted"':''}><td><strong>${esc(dateLabel(l.date))}</strong> <small>${esc(weekday(l.date))}</small></td><td class="lesson-time">${esc(l.time)}<span class="lesson-timezone"> ЕКБ</span>${d.show_moscow?`<small>${esc(moscow(l.time))} МСК</small>`:''}</td><td>${lessonNotice(l)}<strong>${esc(l.title)}</strong>${lessonComment(l)}<div class="lesson-context">${l.module?`<span class="lesson-module">${esc(l.module)}</span>`:''}<span class="lesson-format-desktop">${esc(l.format||g.format)}</span></div>${link(l.url,consultations?(l.button||'Подключиться'):'Подключиться','text-link')}</td><td><span class="lesson-teacher-name">${esc(l.teacher)}</span><span class="lesson-format-mobile">${esc(l.format||g.format)}</span></td></tr>`).join('')}</tbody></table></div></div>`;
+    const renderMonths=set=>Object.entries(set).sort(([a],[b])=>a.localeCompare(b)).map(([key,lessons])=>table(key,lessons)).join('');
+    const current=renderMonths(months),past=renderMonths(pastMonths);
+    return `${past?`<details class="past-schedule"><summary>${consultations?'Прошедшие консультации':'Прошедшие занятия'}</summary>${past}</details>`:''}${current}${rows.length?'':'<div class="empty">Расписание ещё не опубликовано.</div>'}`;
+  };
+  const content=(b,g,title=b.data.title||labels[b.type])=>{
+    const d=b.data;
+    if(['introductions','video','photos'].includes(b.type)){
+      const video=b.type==='video',photos=b.type==='photos',action=url(d.url),picture=image(d),visual=photos?(picture||'<svg class="welcome-photo-icon" viewBox="0 0 120 96" fill="none" aria-hidden="true"><path d="M15 20V9h90v63H94" stroke="#b2272a" stroke-width="2.5" stroke-linejoin="round"/><rect x="7" y="24" width="88" height="63" rx="5" stroke="#226d8d" stroke-width="2.5"/><circle cx="70" cy="42" r="6" stroke="#b2272a" stroke-width="2.5"/><path d="m18 74 22-25 18 18 12-11 14 18" stroke="#226d8d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'):video?`${picture}<span class="welcome-play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 5.5 19 12 9 18.5Z"/></svg></span>`:(picture||'<svg class="welcome-dialogue" viewBox="0 0 120 96" fill="none" aria-hidden="true"><path d="M58 38h34a14 14 0 0 1 14 14v20a14 14 0 0 1-14 14h-3l-13 9v-9H63a14 14 0 0 1-14-14V51" stroke="#b2272a" stroke-width="2.5" stroke-linejoin="round"/><path d="M22 8h42a14 14 0 0 1 14 14v23a14 14 0 0 1-14 14H43L25 72V59h-3A14 14 0 0 1 8 45V22A14 14 0 0 1 22 8Z" fill="#fff" stroke="#226d8d" stroke-width="2.5" stroke-linejoin="round"/><path d="M25 29h35M25 40h24" stroke="#226d8d" stroke-width="2.5" stroke-linecap="round"/></svg>');
+      return `<div class="welcome-card ${video?'welcome-video':photos?'welcome-photos':'welcome-intro'}"><div class="welcome-copy"><h2 class="welcome-handwriting">${esc(photos?title:video?(['О Высшей экономической школе','Видео о школе'].includes(title)?'Это ВЭШ':title):title==='Практика «Знакомство»'?'Давайте знакомиться!':title)}</h2><p class="block-text">${esc(d.text||(photos?'Вспоминаем наш выпускной.':video?'Познакомьтесь со школой в коротком видео.':'Расскажите о себе и познакомьтесь с коллегами по обучению.'))}</p>${link(d.url,d.button||(photos?'Смотреть фотографии':video?'Смотреть видео':'Перейти в Holst'),'btn welcome-action')}</div>${video&&action?`<a class="welcome-art${picture?' has-image':''}" href="${esc(action)}" target="_blank" rel="noopener noreferrer" aria-label="${esc((d.button||'Смотреть видео')+': '+title)}">${visual}</a>`:`<div class="welcome-art${picture?' has-image':''}">${visual}</div>`}</div>`;
+    }
+    if(b.type==='info'&&/^\s*Поздравляем\s+с\s+окончанием\s+обучения(?:[!.\s]|$)/iu.test(d.text||''))return `<link rel="stylesheet" href="graduation.css?v=20261125-1"><div class="graduation-card"><div><h2>Поздравляем!</h2><p>${esc((d.text||'').replace(/^\s*Поздравляем\s+с\s+окончанием\s+обучения[!.\s]*/iu,'').trim()||'Вы завершили обучение. Пусть новые знания помогают уверенно двигаться вперёд')}</p>${link(d.url,d.button||'Сертификаты','btn')}</div><svg viewBox="0 0 270 240" aria-hidden="true" focusable="false">
+<g transform="rotate(7 135 120)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M48 25 Q132 21 223 27 L225 197 Q137 201 46 195 Z" fill="#fff" stroke="#b2272a" stroke-width="1.8"/>
+<path d="M59 37 L211 37 L212 185 L59 184 Z" stroke="#c8d9e2" stroke-width="1"/>
+<path d="M75 105 Q135 103 193 106 M87 118 L180 118 M76 144 Q128 141 188 144" stroke="#a3bcc9" stroke-width="1.8"/>
+<path d="M97 167 Q106 155 114 164 Q122 172 133 159" stroke="#226d8d" stroke-width="1.5"/>
+<path d="M178 171 l-6 38 13-8 8 11 3-41" fill="#f5e3e4" stroke="#b2272a" stroke-width="1.5"/>
+<path d="M170 156 l8-4 6-8 8 6 10 1 1 10 6 8-7 7-3 10-11-1-9 4-5-9-8-6 4-9Z" fill="#fff" stroke="#b2272a" stroke-width="1.8"/>
+<path d="m179 168 6 6 11-14" stroke="#b2272a" stroke-width="2"/>
+</g>
+<text x="137" y="86" text-anchor="middle" transform="rotate(7 135 120)" class="certificate-word">ВЭШ</text>
+<path d="M26 48 l-8-6 M31 33 l-2-11 M242 180 l9 6" fill="none" stroke="#b2272a" stroke-width="1.8" stroke-linecap="round"/>
+</svg></div>`;
+    if(b.type==='contacts')return `<div class="contact-panel"><div class="contact-person">${AdminTools.avatar(g.staffProfile||{name:g.owner})}<div class="contact-details"><div class="eyebrow muted">Администратор группы</div><h3>${esc(g.owner)}</h3><div class="contact-info">${contactDetails(d.text||g.staffProfile?.text||'Поможет с расписанием и организационными вопросами.',g.owner)}</div><button type="button" class="btn advisor-question-button" data-administrator-open>Написать администратору</button><p class="advisor-question-status" data-administrator-status role="status"></p></div></div><div class="contact-chats"><h3>Чаты группы</h3>${(d.chat_text??chatDescription)?`<p class="chat-description">${esc(d.chat_text??chatDescription)}</p>`:''}<div class="chat-links">${(d.chats?.length?d.chats:g.chat_url?[{label:'Чат группы',url:g.chat_url}]:[]).map(c=>link(c.url,c.label)).join('')||'<p class="muted">Ссылки на чаты скоро появятся.</p>'}</div></div></div>`;
+    if(b.type==='coursework'){
+      const individual=d.mode==='individual',attendance=d.attendance_text||(individual?'Консультации проходят индивидуально по предварительной записи. Условия записи указаны в расписании консультаций.':'Можете приходить или не приходить. Администратор не записывает вас на восстановление.');
+      return `<link rel="stylesheet" href="coursework.css?v=20261125-1"><div class="coursework-block">${d.intro?`<p class="coursework-intro block-text">${esc(d.intro)}</p>`:''}<details class="coursework-disclosure" open><summary>О консультациях</summary><div class="coursework-points"><article class="coursework-point">${consultationArt('users')}<div><h3>${individual?'Индивидуальные консультации по записи':'Свободное посещение'}</h3><p class="block-text">${esc(attendance)}</p></div></article>${(d.consultation_points||[]).map(p=>`<article class="coursework-point">${consultationArt(p.icon)}<div><h3>${esc(p.title)}</h3><p class="block-text">${esc(p.text)}</p></div></article>`).join('')}</div></details>${d.defense_steps?.length?`<details class="coursework-disclosure"><summary>Защита курсовой работы</summary><ol class="coursework-steps">${d.defense_steps.map((step,i)=>`<li><span aria-hidden="true">${i+1}</span><div><h3>${esc(step.title)}</h3><p class="block-text">${esc(step.text)}</p></div></li>`).join('')}</ol></details>`:''}</div>`;
+    }
+    if(b.type==='defense')return `<div class="defense-booking" data-defense-demo data-defense-source="${esc(Object.keys(window.__defenseGroups||{}).find(id=>window.__defenseGroups[id]===g)||'')}" data-defense-data="${esc(JSON.stringify(d))}">${window.DefenseDemo.preview(d)}</div>`;
+    if(b.type==='consultations')return `${d.text?`<p class="block-text">${esc(d.text)}</p>`:''}${schedule({...d,lessons:d.sessions||[],announcements:[]},g,true)}`;
+    if(b.type==='schedule')return schedule(d,g);
+    if(b.type==='homework'){
+      const tasks=d.tasks||[],past=tasks.filter(t=>t.status==='past'),current=tasks.filter(t=>t.status!=='past');
+      const table=items=>`<div class="homework-scroll"><table class="homework-table"><thead><tr><th>Статус</th><th>Срок</th><th>Модуль и задание</th><th>Материалы</th></tr></thead><tbody>${items.map(t=>`<tr><td><span class="content-status ${t.status==='past'?'is-past':'is-upcoming'}">${t.status==='past'?'Прошедшее':'Предстоит'}</span></td><td class="homework-deadline">${esc(dateLabel(t.deadline)||'Уточняется')}</td><td>${t.module?`<div class="homework-module">${esc(t.module)}</div>`:''}<p class="block-text">${esc(t.title)}</p></td><td>${url(t.url)?`<a class="homework-action" href="${esc(url(t.url))}" target="_blank" rel="noopener noreferrer">${esc(!t.button||t.button==='Открыть'?'Перейти к заданию':t.button)}<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`:''}</td></tr>`).join('')}</tbody></table></div>`;
+      return tasks.length?`${current.length?table(current):''}${past.length?`<details class="past-homework"><summary>Прошедшие задания <span class="past-homework-count">${past.length}</span></summary>${table(past)}</details>`:''}<p class="form-note">Статус общий для группы и не обозначает личное выполнение задания.</p>`:'<div class="empty">Задания появятся здесь после публикации.</div>';
+    }
+    if(b.type==='preparation')return `<ol class="preparation-steps">${(d.questions||[]).map((q,i)=>{
+      const targetType=/расписани/i.test(q.question)?'schedule':/чат|администратор/i.test(q.question)?'contacts':null,target=getBlocks(g).find(x=>x.type===targetType&&x.data.visible!==false);
+      const action=url(q.url)?link(q.url,q.button||'Подробнее','text-link'):target?`<a class="text-link" href="#course-block-${esc(target.data.block_id)}">${targetType==='schedule'?'Посмотреть расписание':'Контакты и чат'} ↓</a>`:'';
+      return `<li class="preparation-step"><span class="preparation-number" aria-hidden="true">${String(i+1).padStart(2,'0')}</span><div><h3>${esc(q.question)}</h3><p class="block-text">${esc(q.answer)}</p>${action}</div></li>`;
+    }).join('')}</ol>`;
+    if(b.type==='faq')return (d.questions||[]).map(q=>`<details class="course-faq"><summary>${esc(q.question)}</summary><div class="faq-answer"><p class="block-text">${esc(q.answer)}</p>${link(q.url,q.button||'Подробнее','text-link')}</div></details>`).join('')||'<div class="empty">Ответы на вопросы скоро появятся.</div>';
+    if(b.type==='recordings'){
+      const videos=[...(d.videos||[])].sort((a,b)=>(a.date||'').localeCompare(b.date||'')),past=videos.filter(v=>!v.date||v.date<=today()),future=videos.filter(v=>v.date&&v.date>today());
+      const sets=[{items:past.slice(0,-4),label:'Предыдущие записи'},{items:past.slice(-4)},{items:future,label:'Ожидаемые записи'}];
+      return sets.filter(set=>set.items.length).map(set=>`${set.label?`<details class="recording-archive"><summary>${set.label} <span class="archive-count">${set.items.length}</span></summary>`:''}<div class="recording-list">${set.items.map(v=>{
+        const ready=recordingStatus(v)==='published'&&url(v.url),copy=recordingCopy(v),module=(v.module||'').trim();
+        return `<article class="recording-row ${ready?'':'is-pending'}"><div class="recording-meta"><span class="content-status ${ready?'is-published':'is-upcoming'}">${ready?'Запись опубликована':'Видео ещё не опубликовано'}</span>${v.date?`<time datetime="${esc(v.date)}">${esc(dateLabel(v.date))}</time>`:''}</div><div class="recording-copy">${module&&!['записи занятий',title.trim().toLowerCase()].includes(module.toLowerCase())?`<p class="recording-module-name">${esc(module)}</p>`:''}<h3>${esc(copy.title)}</h3>${copy.text?`<p class="block-text">${esc(copy.text)}</p>`:''}</div>${ready?link(v.url,'Смотреть запись','recording-action'):'<p class="muted">Ссылка появится после публикации видео.</p>'}</article>`;
+      }).join('')}</div>${set.label?'</details>':''}`).join('')||'<div class="empty">Записи появятся здесь после занятий.</div>';
+    }
+    if(b.type==='materials'){
+      const items=[...(d.url||d.text?[{title:'Папка вашей группы',url:d.url,icon:d.icon,text:d.text}]:[]),...(d.resources||[])];
+      if(!items.length)items.push({});
+      return `<div class="resource-grid">${items.map(r=>{
+        const label=(r.title||'').trim();
+        const heading=!label||['Материалы группы','Учебные материалы','Папка вашей группы',title].includes(label)||/^(?:(?:перейти\s+в|открыть)\s+)?(?:google|гугл)[\s-]*папк[ауи]$/i.test(label)?'Папка с материалами':label;
+        return `<article class="resource-folder">${materialArt(r.icon)}<div class="resource-folder-copy"><h3>${esc(heading)}</h3>${r.text?`<p class="block-text">${esc(r.text)}</p>`:''}${url(r.url)?`<a class="resource-action" href="${esc(url(r.url))}" target="_blank" rel="noopener noreferrer">${esc(r.button||'Открыть папку')}<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`:'<p class="muted">Ссылка скоро появится.</p>'}</div></article>`;
+      }).join('')}</div>`;
+    }
+    return `<div class="card information-block">${image(d)}<p class="block-text">${esc(d.text||(b.type==='join'?'Информация о подключении появится перед занятием.':'Администратор добавит информацию.'))}</p>${b.type==='join'&&d.platform?`<p class="muted">Платформа: ${esc(d.platform)}</p>`:''}${link(d.url,d.button||({join:'Подключиться',video:'Смотреть видео',introductions:'Перейти в Holst'}[b.type]||'Подробнее'))}</div>`;
+  };
+  const render=(ctx,g)=>{
+    window.__defenseGroups=ctx.groups;
+    GroupHero.render(document.querySelector('.course-hero'),{...g,program_cover_url:SchoolPrograms.coverFor(ctx.programs[g.program_id]),program_type:ctx.programs[g.program_id]?.program_type});
+    const preparationEnds=(()=>{if(!g.starts_at)return '';const [y,m,d]=g.starts_at.split('-').map(Number),end=new Date(Date.UTC(y,m+1,0)).getUTCDate();return new Date(Date.UTC(y,m,Math.min(d,end))).toISOString().slice(0,10);})();
+    const blocks=getBlocks(g).filter(b=>labels[b.type]&&b.data.visible!==false&&(b.type!=='preparation'||!preparationEnds||today()<preparationEnds)).sort((a,b)=>(a.type==='preparation'?0:1)-(b.type==='preparation'?0:1));
+    const canEdit=!ctx.studentView&&ctx.canEditGroup?.(ctx.groupId)&&new URLSearchParams(location.search).has('preview');
+    const nav=document.querySelector('.course-nav-inner');
+    nav.innerHTML=blocks.map((b,i)=>{
+      const type=b.type==='alias'?resolveAlias(b,ctx.groups)?.block.type:b.type;
+      return ['introductions','video'].includes(type)?'':`<a href="#block-${i}">${esc(b.data.title||labels[b.type])}</a>`;
+    }).join('');
+    const main=document.querySelector('main.shell');
+    main.innerHTML=blocks.map((b,i)=>{
+      const source=b.type==='alias'?resolveAlias(b,ctx.groups):{block:b,group:g},compact=source&&['introductions','video','photos'].includes(source.block.type),title=b.data.title||labels[b.type];
+      return `<section id="block-${i}" class="section${compact?' welcome-section':''}">${`<span class="course-block-anchor" id="course-block-${esc(b.data.block_id)}"></span>`}${canEdit?`<div class="block-edit-tools"><a class="block-edit-link" href="editor.html?group=${encodeURIComponent(ctx.groupId)}&role=${ctx.role}&block=${encodeURIComponent(b.data.block_id)}" aria-label="Редактировать блок: ${esc(title)}">✎ Редактировать</a></div>`:''}${compact?'':`<div class="section-title"><h2>${esc(title)}</h2></div>`}${source?content(source.block,source.group,title):'<div class="empty">Содержимое временно недоступно. Администратор проверит подключение блока.</div>'}</section>`;
+    }).join('');
+    main.classList.add('course-content');
+    window.DefenseDemo?.mount(ctx,blocks);
+    const sections=[...main.children];
+    for(let i=0;i<sections.length-1;i++){
+      if(sections[i].classList.contains('welcome-section')&&sections[i+1].classList.contains('welcome-section')){
+        sections[i].classList.add('welcome-paired');
+        sections[++i].classList.add('welcome-paired');
+      }
+    }
+    window.CourseOverview?.render(ctx,g,blocks.map(b=>{const source=b.type==='alias'?resolveAlias(b,ctx.groups):null;return source?{...source.block,data:{...source.block.data,visible:b.data.visible}}:b;}));
+    main.querySelectorAll?.('.preparation-top').forEach(item=>item.remove());
+    blocks.forEach((b,i)=>{if(b.type==='preparation'){const section=document.getElementById('block-'+i),wrapper=document.createElement('div');wrapper.className='shell preparation-top';document.querySelector('#learning-overview').before(wrapper);wrapper.append(section);}});
+    window.CourseNavigation?.mount();
+    if(!ctx.studentView&&new URLSearchParams(location.search).has('preview')){
+      const bar=document.createElement('div');bar.className='page-edit-banner';bar.innerHTML=`<span>Предпросмотр страницы группы</span><a class="text-link" href="editor.html?group=${encodeURIComponent(ctx.groupId)}&role=${ctx.role}">Редактировать страницу ЛК →</a>`;document.querySelector('.course-hero').before(bar);
+    }
+  };
+  const initEditor=ctx=>{
+    const query=new URLSearchParams(location.search),pid=query.get('program'),gid=query.get('group');
+    const isProgram=Boolean(pid),record=isProgram?ctx.programs[pid]:ctx.groups[gid];
+    const root=document.getElementById('page-editor');if(!root)return;
+    if(!record){root.innerHTML='<h1>Страница не найдена</h1><p>Вернитесь к списку групп или программ.</p>';return;}
+    const allowed=isProgram?ctx.senior:ctx.canEditGroup(gid);
+    let blocks=isProgram?getBlocks({page_blocks:record.page_blocks??template(record.template_key||'mba')}):getBlocks(record);
+    let dirty=false,activeRow=null;
+    root.innerHTML=`<div class="page-heading"><div><div class="eyebrow muted">${isProgram?'Шаблон программы':'Страница группы'}</div><h1>${esc(record.title||record.name)}</h1><p>${isProgram?'Новые группы получат копию этих блоков. Уже созданные группы сохранят своё наполнение.':'Меняйте содержание, порядок и видимость блоков этой группы.'}</p></div><a class="btn outline" href="admin.html?role=${ctx.role}&panel=${isProgram?'programs':'groups'}">Назад к ${isProgram?'программам':'группам'}</a></div><div class="editor-toolbar"><span>${allowed?'Обложка и приветствие — в разделе «Главный экран» ниже.':'Только просмотр — редактирование доступно администратору группы.'}</span>${!isProgram?`<a class="text-link" href="${ctx.groupLink(gid)}&preview=1&role=${ctx.role}" target="_blank" rel="noopener">Посмотреть страницу ↗</a>`:''}</div><nav class="editor-block-nav" aria-label="Блоки для редактирования" tabindex="-1" style="scroll-margin-top:24px"><h2>Блоки страницы</h2><p>Выберите блок, который хотите изменить.</p><div data-editor-links></div></nav><form id="blocks-form"><fieldset ${allowed?'':'disabled'}><div id="blocks-list"></div><div class="editor-add"><button type="button" class="btn outline" id="add-block">Добавить блок</button></div></fieldset><div class="editor-save"><span id="save-state" role="status">Изменений пока нет</span>${allowed?`<div class="editor-save-actions"><button class="btn outline" type="button" data-return-to-blocks>К выбору блока ↑</button><button class="btn" type="submit">Сохранить</button>${!isProgram?'<button class="btn outline" type="submit" name="destination" value="portal">Сохранить и открыть ЛК</button>':''}<a class="btn outline" href="admin.html?role=${ctx.role}&panel=${isProgram?'programs':'groups'}">Отмена</a></div>`:''}</div></form><p class="form-note">Изменения сохраняются в этом браузере. Для публикации на сайте передайте правки разработчику.</p>`;
+    const form=root.querySelector('form'),list=root.querySelector('#blocks-list');
+    form.noValidate=true;
+    const mark=()=>{dirty=true;root.querySelector('#save-state').textContent='Есть несохранённые изменения';};
+    const heroEditor=!isProgram?GroupHero.editor({root:form.querySelector('fieldset'),record,allowed,mark,escape:esc,programCover:SchoolPrograms.coverFor(ctx.programs[record.program_id]),programType:ctx.programs[record.program_id]?.program_type}):null;
+    const advisorEditor=!isProgram?window.CourseOverview?.editor({root:form.querySelector('fieldset'),record,ctx,mark}):null;
+    if(isProgram){root.querySelector('.editor-toolbar span').textContent='Шаблон содержания для новых групп этой программы.';if(SchoolPrograms.coverFor(record)){const cover=document.createElement('div');cover.className='editor-block';cover.innerHTML=`<h2>Обложка программы</h2><img class="program-cover" src="${esc(SchoolPrograms.coverFor(record))}" alt="${esc(record.title)}"><p class="form-note">Используется в ЛК группы, пока для неё не загружена собственная обложка.</p>`;form.querySelector('fieldset').prepend(cover);}}
+
+    const navigation=root.querySelector('.editor-block-nav');
+    root.querySelector('[data-return-to-blocks]')?.addEventListener('click',()=>{navigation.scrollIntoView({block:'start'});navigation.focus({preventScroll:true});});
+    const drawNavigation=()=>{
+      navigation.querySelector('[data-editor-links]').innerHTML=`${!isProgram?'<button type="button" data-editor-jump="hero">Главный экран</button><button type="button" data-editor-jump="advisor">Научный руководитель</button>':''}${blocks.map((b,i)=>`<button type="button" data-editor-jump="${i}"><span>${esc(b.data.title||labels[b.type])}</span>${b.data.visible===false?'<small>Скрыт</small>':''}</button>`).join('')}`;
+    };
+    navigation.addEventListener('click',event=>{
+      const button=event.target.closest('[data-editor-jump]');if(!button)return;
+      const key=button.dataset.editorJump;
+      const target=key==='hero'?root.querySelector('#main-screen'):key==='advisor'?root.querySelector('.advisor-editor'):list.querySelector(`[data-block="${key}"]`);
+      if(!target)return;
+      if(target.tagName==='DETAILS')target.open=true;
+      target.scrollIntoView({block:'start',behavior:'smooth'});
+      const heading=target.querySelector('summary,h2');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}
+    });
+    const field=(i,key,label,value,kind='text',attrs='')=>`<label class="field">${label}${kind==='textarea'?`<textarea data-key="${key}" rows="3" maxlength="5000" ${attrs}>${esc(value)}</textarea>`:`<input data-key="${key}" type="${kind}" value="${esc(value)}" ${attrs}>`}</label>`;
+    const rowFields={
+      consultation_points:[['icon','Иконка','select'],['title','Заголовок пункта'],['text','Текст пункта','textarea']],
+      defense_steps:[['title','Заголовок шага'],['text','Текст шага','textarea']],
+      windows:[['date','Дата','date'],['start','Начало, ЕКБ','time'],['end','Окончание, ЕКБ','time']],
+      sessions:[['date','Дата','date'],['time','Время ЕКБ'],['title','Тема консультации'],['teacher','Преподаватель'],['format','Формат / место'],['comment','Условия посещения','textarea'],['url','Ссылка (необязательно)','url'],['button','Текст ссылки']],
+      chats:[['label','Название чата'],['url','Ссылка','url']],
+      lessons:[['date','Дата','date'],['time','Время ЕКБ'],['title','Занятие','textarea'],['teacher','Преподаватель'],['format','Формат занятия'],['url','Ссылка на занятие','url'],['module','Модуль'],['hours','Академические часы'],['source_id','ID для обновления из таблицы']],
+      videos:[['module','Модуль'],['title','Название записи'],['date','Дата занятия','date'],['status','Статус записи','select'],['text','Описание','textarea'],['url','Ссылка на запись','url']],
+      tasks:[['deadline','Срок','date'],['status','Статус задания','select'],['title','Задание','textarea'],['url','Ссылка на материалы','url'],['module','Модуль'],['button','Текст ссылки']],
+      questions:[['question','Вопрос'],['answer','Ответ','textarea'],['url','Ссылка в ответе','url'],['button','Текст ссылки']],
+      announcements:[['start_date','С','date'],['end_date','По','date'],['text','Текст объявления','textarea']],
+      resources:[['title','Название материала'],['icon','Иконка','select'],['text','Описание','textarea'],['url','Ссылка на материал','url'],['button','Текст кнопки']]
+    };
+    const rowField=(key,r,k,l,t)=>{
+      if(key==='windows')return field(0,k,l,r[k],t,'required');
+      if(key==='announcements')return k==='text'?`<label class="field">${l}<textarea data-key="text" required maxlength="600" rows="2" placeholder="Например, каникулы">${esc(r.text)}</textarea></label>`:field(0,k,l,r[k],'date',`required ${k==='end_date'&&r.start_date?`min="${esc(r.start_date)}"`:''}`);
+      if(t==='select'){
+        const values=key==='consultation_points'?consultationIcons:key==='resources'?materialIcons:key==='videos'?{pending:'Видео ещё не опубликовано',published:'Запись опубликована'}:{upcoming:'Предстоит',past:'Прошедшее'};
+        const selected=key==='consultation_points'?(r.icon||'book'):key==='resources'?materialIcon(r.icon):key==='videos'?recordingStatus(r):(r.status||'upcoming');
+        return `<label class="field">${l}<select data-key="${k}">${Object.entries(values).map(([v,label])=>`<option value="${v}" ${v===selected?'selected':''}>${label}</option>`).join('')}</select></label>`;
+      }
+      const required=['title','label','question','answer'].includes(k)||k==='date'&&['lessons','sessions'].includes(key)||k==='text'&&['consultation_points','defense_steps'].includes(key)||k==='url'&&(['chats','resources'].includes(key)||key==='videos'&&recordingStatus(r)==='published');
+      const attrs=k==='time'?'required pattern="([01]?[0-9]|2[0-3])[:.][0-5][0-9] *[-–—] *([01]?[0-9]|2[0-3])[:.][0-5][0-9]"':required?'required':'';
+      return field(0,k,l,r[k],t||'text',attrs);
+    };
+    const previewParentButton='<button type="button" class="text-button" data-preview-block title="Предпросмотр всего блока" aria-label="Предпросмотр всего блока"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>';
+    const lessonSummary=r=>`<span class="lesson-editor-when"><strong>${esc(r.date?dateLabel(r.date):'Без даты')}</strong><span>${esc(r.time||'Укажите время')}</span></span><span class="lesson-editor-topic"><strong>${esc(r.title||'Новое занятие')}</strong>${lessonNotice(r)}${r.teacher?`<span>${esc(r.teacher)}</span>`:''}</span>${previewParentButton}<span class="lesson-editor-action" aria-hidden="true"></span>`;
+    const lessonRow=(r,n)=>`<details class="editor-row lesson-editor" data-row="${n}" ${r===activeRow?'open':''}><summary aria-label="Редактировать занятие: ${esc(r.date?dateLabel(r.date):'без даты')}, ${esc(r.time||'время не указано')}, ${esc(r.title||'новое занятие')}">${lessonSummary(r)}</summary><div class="lesson-editor-body"><div class="lesson-editor-fields">${rowFields.lessons.slice(0,6).map(([k,l,t])=>`<div class="${['title','url'].includes(k)?'lesson-field-wide':''}">${rowField('lessons',r,k,l,t)}</div>`).join('')}</div><div class="lesson-note-editor"><h4>Пометка для слушателя</h4><label class="check"><input type="checkbox" data-key="highlight" ${r.highlight?'checked':''}>Выделить занятие</label><label class="field">Особенность занятия<select data-key="highlight_type">${Object.entries(lessonHighlights).map(([value,label])=>`<option value="${value}" ${value===(r.highlight_type||'important')?'selected':''}>${label}</option>`).join('')}</select></label><label class="field">Комментарий для слушателя<textarea data-key="comment" rows="2" maxlength="160">${esc(r.comment)}</textarea></label><p class="form-note">Необязательно, до 160 знаков. Комментарий виден и без цветового выделения.</p></div><details class="lesson-editor-extra"><summary>Дополнительно</summary><div class="lesson-editor-fields">${rowFields.lessons.slice(6).map(([k,l,t])=>rowField('lessons',r,k,l,t)).join('')}</div></details><div class="lesson-editor-controls"><button type="button" class="btn outline" data-close-row>Готово</button><button type="button" class="text-button danger" data-remove-row="lessons" data-row-index="${n}">Удалить занятие</button></div></div></details>`;
+    const taskSummary=r=>`<span class="lesson-editor-when"><strong>${esc(r.deadline?dateLabel(r.deadline):'Без срока')}</strong><span>${r.status==='past'?'Прошедшее':'Предстоит'}</span></span><span class="lesson-editor-topic"><strong>${esc(r.title||'Новое задание')}</strong>${r.module?`<span>${esc(r.module)}</span>`:''}</span>${previewParentButton}<span class="lesson-editor-action" aria-hidden="true"></span>`;
+    const taskRow=(r,n)=>`<details class="editor-row lesson-editor task-editor" data-row="${n}" ${r===activeRow?'open':''}><summary>${taskSummary(r)}</summary><div class="lesson-editor-body"><div class="lesson-editor-fields">${rowFields.tasks.slice(0,4).map(([k,l,t])=>`<div class="${['title','url'].includes(k)?'lesson-field-wide':''}">${rowField('tasks',r,k,l,t)}</div>`).join('')}</div><details class="lesson-editor-extra"><summary>Дополнительно</summary><div class="lesson-editor-fields">${rowFields.tasks.slice(4).map(([k,l,t])=>rowField('tasks',r,k,l,t)).join('')}</div></details><div class="lesson-editor-controls"><button type="button" class="btn outline" data-close-row>Готово</button><button type="button" class="text-button danger" data-remove-row="tasks" data-row-index="${n}">Удалить задание</button></div></div></details>`;
+
+    const recordingSummary=r=>`<span class="lesson-editor-when"><strong>${esc(r.date?dateLabel(r.date):'Без даты')}</strong><span>${recordingStatus(r)==='published'?'Опубликована':'Ожидает видео'}</span></span><span class="lesson-editor-topic"><strong>${esc(r.title||'Новая запись')}</strong>${r.module?`<span>${esc(r.module)}</span>`:''}</span><button type="button" class="recording-copy-button" data-copy-recording aria-label="Копировать запись">Копировать</button>${previewParentButton}<span class="lesson-editor-action" aria-hidden="true"></span>`;
+    const recordingRow=(r,n)=>`<details class="editor-row lesson-editor recording-editor" data-row="${n}" ${r===activeRow?'open':''}><summary>${recordingSummary(r)}</summary><div class="lesson-editor-body"><div class="lesson-editor-fields">${[rowFields.videos[2],rowFields.videos[3],rowFields.videos[1],rowFields.videos[5]].map(([k,l,t])=>`<div class="${['title','url'].includes(k)?'lesson-field-wide':''}">${rowField('videos',r,k,l,t)}</div>`).join('')}</div><details class="lesson-editor-extra"><summary>Дополнительно</summary><div class="lesson-editor-fields">${[rowFields.videos[0],rowFields.videos[4]].map(([k,l,t])=>`<div class="lesson-field-wide">${rowField('videos',r,k,l,t)}</div>`).join('')}</div></details><div class="lesson-editor-controls"><button type="button" class="btn outline" data-close-row>Готово</button><button type="button" class="text-button danger" data-remove-row="videos" data-row-index="${n}">Удалить запись</button></div></div></details>`;
+    const rows=(d,key)=>`<div class="editor-rows" data-rows="${key}">${['lessons','tasks','videos'].includes(key)?`<p class="form-note">Нажмите на ${key==='tasks'?'задание':'занятие'}, чтобы изменить его.</p>`:''}${(d[key]||[]).map((r,n)=>key==='lessons'?lessonRow(r,n):key==='tasks'?taskRow(r,n):key==='videos'?recordingRow(r,n):`<div class="editor-row" data-row="${n}"><div class="block-controls">${previewParentButton}</div><div class="form-grid">${rowFields[key].map(([k,l,t])=>rowField(key,r,k,l,t)).join('')}</div><button type="button" class="text-button danger" data-remove-row="${key}" data-row-index="${n}">Удалить строку</button></div>`).join('')}<button type="button" class="btn outline" data-add-row="${key}">Добавить ${{windows:'окно',consultation_points:'пункт',defense_steps:'шаг',sessions:'консультацию',chats:'чат',lessons:'занятие',videos:'запись',tasks:'задание',questions:'вопрос',resources:'материал',announcements:'объявление'}[key]}</button></div>`;
+    const draw=()=>{
+      const openBlocks=new Set([...list.querySelectorAll('.editor-block[open]')].map(el=>el.dataset.courseBlock));
+      list.innerHTML=blocks.map((b,i)=>{const d=b.data;let fields='';
+        if(b.type==='contacts')fields=`<div class="alias-note">Фото и общие контакты меняются в профиле сотрудника. <a href="admin.html?role=${ctx.role}&panel=profiles" target="_blank" rel="noopener">Открыть «Администраторы и фото» ↗</a></div>`+field(i,'text','Описание',d.text,'textarea')+field(i,'contact_url','Ссылка для связи с администратором',d.contact_url,'url')+field(i,'chat_text','Описание чатов',d.chat_text??chatDescription,'textarea')+rows(d,'chats');
+        else if(b.type==='alias'){
+          const sources=Object.entries(ctx.groups).filter(([id])=>id!==gid&&(ctx.canEditGroup(id)||id===d.source_group));
+          const source=ctx.groups[d.source_group],sourceBlocks=source?getBlocks(source).filter(x=>x.type!=='alias'):[];
+          fields=`<div class="alias-note"><strong>Содержимое обновляется из исходного ЛК</strong><p>Редактируйте записи в источнике. Здесь можно менять заголовок, порядок и видимость подключения.</p>${source?`<a href="editor.html?group=${encodeURIComponent(d.source_group)}&role=${ctx.role}" target="_blank" rel="noopener">Источник: ${esc(source.name)} / ${esc(source.code)} ↗</a>`:''}</div><label class="field">ЛК-источник<select data-key="source_group"><option value="">Выберите группу</option>${sources.map(([id,g])=>`<option value="${id}" ${id===d.source_group?'selected':''}>${esc(g.name)} — ${esc(g.code)}</option>`).join('')}</select></label><label class="field">Исходный блок<select data-key="source_block" required><option value="">Выберите блок</option>${sourceBlocks.map(x=>`<option value="${esc(x.data.block_id)}" ${x.data.block_id===d.source_block?'selected':''}>${esc(x.data.title||labels[x.type])}</option>`).join('')}</select></label>`;
+        }
+        else if(b.type==='coursework')fields=field(i,'intro','Введение',d.intro,'textarea')+`<p class="form-note">Число консультаций и все условия можно изменить для этой группы.</p><label class="field">Посещение консультаций<select data-key="mode"><option value="free" ${d.mode!=='individual'?'selected':''}>Свободное посещение</option><option value="individual" ${d.mode==='individual'?'selected':''}>Индивидуальные консультации по записи</option></select></label>`+field(i,'attendance_text','Условия посещения',d.attendance_text,'textarea')+'<p class="form-note">Если оставить пустым, появится стандартный текст выбранного режима.</p><h3>О консультациях</h3>'+rows(d,'consultation_points')+'<h3>Защита курсовой работы</h3>'+rows(d,'defense_steps');
+        else if(b.type==='defense'){d.windows??=window.DefenseDemo.windows(d);fields=`<label class="check"><input data-key="open" type="checkbox" ${d.open!==false?'checked':''}>Запись открыта</label>`+field(i,'text','Информация о защите',d.text,'textarea')+'<p class="form-note">Время Екатеринбурга (UTC+5). Одно окно — одна защита, 1–2 участника. Записями управляйте на странице ЛК.</p><button type="button" class="btn outline" data-generate-defense>Создать окна по интервалу</button>'+rows(d,'windows');}
+        else if(b.type==='consultations')fields=field(i,'text','Описание расписания',d.text,'textarea')+`<p class="form-note">Чтобы использовать это расписание в других группах, добавьте там «Общий блок из другого ЛК» и выберите эту группу и этот блок. Изменения в источнике обновятся во всех подключённых группах.</p><label class="check"><input data-key="show_moscow" type="checkbox" ${d.show_moscow?'checked':''}>Показывать время Москвы рядом с Екатеринбургом</label><label class="check"><input data-key="collapse_past" type="checkbox" ${d.collapse_past?'checked':''}>Сворачивать прошедшие месяцы</label>`+rows(d,'sessions');
+        else if(b.type==='schedule')fields=`<label class="check"><input data-key="show_moscow" type="checkbox" ${d.show_moscow?'checked':''}>Показывать время Москвы рядом с Екатеринбургом</label><label class="check"><input data-key="collapse_past" type="checkbox" ${d.collapse_past?'checked':''}>Сворачивать полностью прошедшие месяцы</label>${field(i,'source_url','Ссылка на Google Таблицу или файл расписания',d.source_url,'url')}${!isProgram?'<button type="button" class="btn outline" data-import-schedule>Изменить расписание</button>':''}<p class="form-note">Можно заполнить вручную или загрузить таблицу с предпросмотром изменений.</p>${rows(d,'lessons')}<h3>Объявления в расписании</h3><p class="form-note">Укажите период и текст. Объявление появится между занятиями по дате начала и останется в архиве расписания.</p>${rows(d,'announcements')}`;
+        else if(b.type==='recordings')fields='<p class="form-note">Для будущего занятия выберите «Видео ещё не опубликовано». Ссылку можно добавить позже в ту же карточку.</p>'+rows(d,'videos');
+        else if(b.type==='homework')fields='<p class="form-note">Общий статус для группы: «Прошедшее» или «Предстоит». Это не персональная отметка выполнения.</p>'+rows(d,'tasks');
+        else if(['faq','preparation'].includes(b.type))fields=(b.type==='preparation'?'<p class="form-note">Показывается вверху страницы до окончания первого месяца после старта. После этого остаётся в редакторе.</p>':'')+rows(d,'questions');
+        else if(b.type==='materials')fields=rowField('resources',d,'icon','Иконка основной папки','select')+field(i,'url','Ссылка на папку группы (необязательно)',d.url,'url')+field(i,'text','Описание основной папки',d.text,'textarea')+rows(d,'resources');
+        else fields=field(i,'text','Текст',d.text,'textarea')+(b.type==='join'?field(i,'platform','Платформа (Zoom, Контур.Толк и другие)',d.platform):'')+field(i,'url',b.type==='materials'?'Ссылка на папку группы':'Ссылка',d.url,'url')+(b.type==='materials'?'':field(i,'button','Текст кнопки',d.button));
+        if(['video','introductions','photos'].includes(b.type))fields+=field(i,'image_url','Ссылка на изображение (необязательно)',d.image_url,'url')+field(i,'image_alt','Описание изображения',d.image_alt);
+        return `<details class="editor-block" data-block="${i}" data-course-block="${esc(d.block_id)}" ${openBlocks.has(d.block_id)?'open':''}><summary>${esc(d.title||labels[b.type])}<small>${esc(labels[b.type])}</small></summary><div class="editor-block-body"><div class="block-controls"><button type="button" data-preview-block>Предпросмотр</button><label class="check"><input data-key="visible" type="checkbox" ${d.visible!==false?'checked':''}>Показывать блок</label><button type="button" data-move="-1" ${i===0?'disabled':''} aria-label="Поднять блок">↑ Выше</button><button type="button" data-move="1" ${i===blocks.length-1?'disabled':''} aria-label="Опустить блок">↓ Ниже</button><button type="button" data-remove-block class="danger">Удалить блок</button></div>${field(i,'title','Заголовок блока',d.title,'text','required maxlength="180"')}${!isProgram&&b.type!=='alias'&&usedBy(gid,d.block_id,ctx.groups).length?`<div class="alias-note"><strong>Этот блок — источник для других ЛК</strong><p>Изменения отобразятся в: ${usedBy(gid,d.block_id,ctx.groups).map(([id,g])=>`<a href="editor.html?group=${encodeURIComponent(id)}&role=${ctx.role}" target="_blank" rel="noopener">${esc(g.name)} / ${esc(g.code)}</a>`).join(', ')}.</p><p>Если скрыть или удалить источник, связанные блоки станут недоступны.</p></div>`:''}${fields}</div></details>`;
+      }).join('');
+      drawNavigation();
+    };
+    const sync=()=>{list.querySelectorAll('[data-block]').forEach(el=>{const d=blocks[Number(el.dataset.block)].data;el.querySelectorAll('[data-key]').forEach(input=>{const row=input.closest('[data-row]');const obj=row?d[row.closest('[data-rows]').dataset.rows][Number(row.dataset.row)]:d;obj[input.dataset.key]=input.type==='checkbox'?input.checked:input.value.trim();});});};
+    list.addEventListener('input',event=>{mark();if(!event.target.closest('[data-row]')&&['title','visible'].includes(event.target.dataset.key)){sync();drawNavigation();}const row=event.target.closest('.lesson-editor');if(!row)return;const values=Object.fromEntries([...row.querySelectorAll('[data-key]')].map(input=>[input.dataset.key,input.type==='checkbox'?input.checked:input.value]));const isTask=row.classList.contains('task-editor'),isRecording=row.classList.contains('recording-editor');row.querySelector('summary').innerHTML=isRecording?recordingSummary(values):isTask?taskSummary(values):lessonSummary(values);if(!isTask&&!isRecording)row.querySelector('summary').setAttribute('aria-label',`Редактировать занятие: ${values.date?dateLabel(values.date):'без даты'}, ${values.time||'время не указано'}, ${values.title||'новое занятие'}`);});
+    list.addEventListener('toggle',event=>{const row=event.target;if(!row.matches('.lesson-editor'))return;const lesson=blocks[Number(row.closest('[data-block]').dataset.block)].data[row.closest('[data-rows]').dataset.rows][Number(row.dataset.row)];if(row.open){list.querySelectorAll('.lesson-editor[open]').forEach(other=>{if(other!==row)other.open=false;});activeRow=lesson;}else if(activeRow===lesson)activeRow=null;},true);
+    list.addEventListener('change',event=>{if(event.target.dataset.key==='status'&&event.target.closest('[data-rows=videos]')){const input=event.target.closest('[data-row]').querySelector('[data-key=url]');input.required=event.target.value==='published';input.setCustomValidity('');}if(event.target.dataset.key==='source_group'){sync();blocks[Number(event.target.closest('[data-block]').dataset.block)].data.source_block='';mark();draw();}});
+    const openSchedule=d=>ScheduleImportUI.open({data:d,group:record,onApply:(lessons,source)=>{d.lessons=lessons;d.source_url=source;activeRow=null;mark();draw();}});
+    const requestSchedule=d=>{
+      if(!dirty){openSchedule(d);return;}
+      const dialog=document.createElement('dialog');dialog.className='schedule-import-dialog schedule-leave-dialog';
+      dialog.innerHTML='<h2>Есть несохранённые изменения</h2><p>Вы изменили расписание или другие блоки ЛК. Сохранить изменения всей страницы перед переходом? Если продолжить без сохранения, эти правки будут потеряны.</p><div class="import-actions"><button type="button" class="btn" data-save-continue>Сохранить и продолжить</button><button type="button" class="btn outline" data-discard-continue>Продолжить без сохранения</button><button type="button" class="text-button" data-stay>Остаться в редакторе</button></div>';
+      dialog.querySelector('[data-stay]').onclick=()=>dialog.close();
+      dialog.querySelector('[data-save-continue]').onclick=()=>{dialog.close();form.requestSubmit();if(!dirty)openSchedule(d);};
+      dialog.querySelector('[data-discard-continue]').onclick=()=>{dirty=false;const target=new URL(location.href);target.searchParams.set('importSchedule',d.block_id);location.assign(target.href);};
+      dialog.addEventListener('close',()=>dialog.remove());document.body.append(dialog);dialog.showModal();
+    };
+    list.addEventListener('click',event=>{const button=event.target.closest('button'),el=button?.closest('[data-block]');if(!el||!allowed)return;sync();const i=Number(el.dataset.block),d=blocks[i].data;
+      if(button.hasAttribute('data-preview-block')){
+        event.preventDefault();
+        const resolved=blocks[i].type==='alias'?resolveAlias(blocks[i],ctx.groups):{block:blocks[i],group:record};
+        const dialog=document.createElement('dialog');dialog.className='block-preview-dialog';dialog.innerHTML=`<div class="block-preview-heading"><strong>Предпросмотр без сохранения</strong><button type="button" class="btn outline">Продолжить редактирование</button></div><iframe title="Предпросмотр блока" sandbox="allow-popups allow-popups-to-escape-sandbox"></iframe>`;
+        const html=`<!doctype html><html lang="ru"><head><base href="${esc(location.href)}" target="_blank"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="portal.css"><link rel="stylesheet" href="defense-booking.css?v=20261126-compact-2"><link rel="stylesheet" href="course-page.css?v=20261125-coursework-1"></head><body style="padding:24px"><h2>${esc(d.title)}</h2>${resolved?content(resolved.block,resolved.group,d.title):'<p>Источник не выбран.</p>'}</body></html>`;
+        dialog.querySelector('iframe').srcdoc=html;dialog.querySelector('button').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{dialog.remove();button.focus();});document.body.append(dialog);dialog.showModal();return;
+      }
+      if(button.hasAttribute('data-close-row')){const row=button.closest('.lesson-editor');row.open=false;activeRow=null;row.querySelector('summary').focus();return;}
+      if(button.hasAttribute('data-generate-defense')){window.DefenseDemo.generate(d,()=>{mark();draw();});return;}
+      if(button.hasAttribute('data-import-schedule')){requestSchedule(d);return;}
+      if(button.hasAttribute('data-remove-block'))blocks.splice(i,1);
+      else if(button.dataset.move){const to=i+Number(button.dataset.move);[blocks[i],blocks[to]]=[blocks[to],blocks[i]];}
+      else if(button.dataset.addRow){const added=button.dataset.addRow==='videos'?{status:'pending'}:button.dataset.addRow==='windows'?{id:crypto.randomUUID()}:{};(d[button.dataset.addRow]??=[]).push(added);if(['lessons','tasks','videos'].includes(button.dataset.addRow))activeRow=added;}
+      else if(button.hasAttribute('data-copy-recording')){event.preventDefault();const index=Number(button.closest('[data-row]').dataset.row);activeRow=clone(d.videos[index]);d.videos.splice(index+1,0,activeRow);}
+      else if(button.dataset.removeRow)d[button.dataset.removeRow].splice(Number(button.dataset.rowIndex),1);
+      else return;mark();draw();if(['lessons','tasks','videos'].includes(button.dataset.addRow)||button.hasAttribute('data-copy-recording'))list.querySelector('.lesson-editor[open] input')?.focus();
+    });
+    root.querySelector('#add-block').addEventListener('click',()=>{
+      if(!allowed)return;
+      window.CourseBlockPicker.open([...Object.entries(labels).map(([id,label])=>({id,label})),{id:'graduation',label:'Поздравление и сертификаты'}], id=>{
+        sync();
+        const next=block(id==='graduation'?'info':id);
+        if(id==='graduation')Object.assign(next.data,{title:'Итоги обучения',text:'Поздравляем с окончанием обучения!',button:'Сертификаты'});
+        blocks.push(next);mark();draw();list.lastElementChild.open=true;list.lastElementChild.scrollIntoView({block:'start',behavior:'smooth'});
+        list.lastElementChild.querySelector('input,textarea,select')?.focus({preventScroll:true});
+      });
+    });
+    form.addEventListener('submit',event=>{event.preventDefault();if(!allowed)return;form.querySelectorAll('input[type=url]').forEach(input=>input.setCustomValidity(input.value&&!url(input.value)?'Укажите http:// или https:// ссылку':''));const invalid=[...form.elements].find(input=>input.willValidate&&!input.validity.valid);if(invalid){let parent=invalid.parentElement;while(parent&&parent!==form){if(parent.tagName==='DETAILS')parent.open=true;parent=parent.parentElement;}invalid.focus();invalid.reportValidity();return;}if(heroEditor&&!heroEditor.save())return;advisorEditor?.save();sync();let savedBlocks;try{savedBlocks=window.DefenseDemo.prepare(blocks,gid);}catch(error){root.querySelector('#save-state').textContent=error.message;return;}record.page_blocks=savedBlocks;if(!isProgram)ctx.state.groupOverrides[gid]=record;if(!ctx.save()){root.querySelector('#save-state').textContent='Не удалось сохранить в браузере. Изменения остаются в форме.';return;}dirty=false;root.querySelector('#save-state').textContent='Сохранено. Можно открыть предпросмотр.';if(!isProgram&&event.submitter?.value==='portal')location.href=ctx.groupLink(gid)+'&preview=1&role='+ctx.role+(query.get('block')?'#course-block-'+encodeURIComponent(query.get('block')):'');});
+    form.addEventListener('input',event=>{event.target.setCustomValidity?.('');if(event.target.dataset.key==='start_date'&&event.target.closest('[data-rows=announcements]'))event.target.closest('[data-row]').querySelector('[data-key=end_date]').min=event.target.value;});
+    window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
+    draw();
+    const importBlock=query.get('importSchedule');
+    if(importBlock){const block=blocks.find(b=>b.type==='schedule'&&b.data.block_id===importBlock)||blocks.find(b=>b.type==='schedule');if(block&&allowed&&!isProgram)openSchedule(block.data);const clean=new URL(location.href);clean.searchParams.delete('importSchedule');history.replaceState(null,'',clean.href);}
+    const selected=query.get('block');
+    if(selected){const target=[...list.querySelectorAll('[data-course-block]')].find(el=>el.dataset.courseBlock===selected);if(target){list.querySelectorAll('.editor-block').forEach(el=>el.open=el===target);target.scrollIntoView({block:'start'});}}
+    if(!isProgram){const back=document.createElement('a');back.className='btn outline';back.href=ctx.groupLink(gid)+'&preview=1&role='+ctx.role+(selected?'#course-block-'+encodeURIComponent(selected):'');back.textContent='Вернуться к просмотру';root.querySelector('.editor-toolbar').append(back);}
+  };
+  return {templates,template,getBlocks,initEditor,render,schedule};
+})();
+
