@@ -12,9 +12,9 @@ function showToast(message) {
   toastTimer = setTimeout(() => { $('#toast').hidden = true; }, 4500);
 }
 function route(moveFocus = false) {
-  const page = location.hash.slice(1) || 'brand';
+  const page = location.hash.slice(1) || 'library';
   if (page === 'main') { $('#main').focus(); return; }
-  const validPage = ['brand', 'pilot', 'concept'].includes(page) ? page : 'brand';
+  const validPage = ['library', 'brand', 'pilot', 'concept'].includes(page) ? page : 'library';
   document.querySelectorAll('.page').forEach((element) => { element.hidden = element.id !== `page-${validPage}`; });
   document.querySelectorAll('[data-page]').forEach((link) => {
     if (link.dataset.page === validPage) link.setAttribute('aria-current', 'page');
