@@ -1,7 +1,7 @@
 import {escapeHtml as h} from './course-view.mjs?v=20261126-public-safe-1';
-import {getCourse,active,percent,shortDate,fullDate,findEnrollment} from './domain.mjs?v=20261126-public-safe-1';
+import {getCourse,active,percent,shortDate,fullDate,findEnrollment} from './domain.mjs?v=20261126-student-access-1';
 import {paidCourses,isPaidCourse} from './paid-catalog.mjs?v=20261126-public-safe-1';
-import {paymentLabels} from './paid-domain.mjs?v=20261126-public-safe-1';
+import {paymentLabels} from './paid-domain.mjs?v=20261126-student-access-1';
 const money=n=>new Intl.NumberFormat('ru-RU',{style:'currency',currency:'RUB',maximumFractionDigits:0}).format(n/100);
 export const paymentBadge=o=>`<span class="chip ${o.status==='paid'?'green':o.status==='review'?'amber':['failed','refunded'].includes(o.status)?'red':'gray'}">${paymentLabels[o.status]}</span>`;
 export const accessLabel=(s,e)=>!e?'Не выдан':e.accessStatus==='revoked'?'Закрыт после возврата':active(s,e)?'Доступ открыт':'Срок истёк';

@@ -1,5 +1,5 @@
 import {catalog} from './data.mjs?v=20261126-public-safe-1';
-import {fullDate} from './domain.mjs?v=20261126-public-safe-1';
+import {fullDate} from './domain.mjs?v=20261126-student-access-1';
 
 export function logicPage(state,h) {
   const sections=[['principles','01 — Основные правила'],['journey','02 — Путь слушателя'],['management','03 — Управление'],['integration','04 — Связь с лендингами'],['identity','05 — Данные и доступ'],['migration','06 — Перенос с Tilda'],['scope','07 — Готовность и границы'],['sources','08 — Источники']];

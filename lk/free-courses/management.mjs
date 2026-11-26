@@ -1,4 +1,4 @@
-import {getCourse,active} from './domain.mjs?v=20261126-public-safe-1';
+import {getCourse,active} from './domain.mjs?v=20261126-student-access-1';
 import {isPaidCourse} from './paid-catalog.mjs?v=20261126-public-safe-1';
 import {managementNav} from './paid-view.mjs?v=20261126-public-safe-1';
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

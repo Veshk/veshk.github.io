@@ -2,11 +2,14 @@
 'use strict';
 (function (root) {
   const sampleNames = ['Анна Петрова','Иван Соловьёв','Софья Новикова','Михаил Орлов','Анастасия Белова','Дмитрий Смирнов','Екатерина Соколова','Александр Волков','Марина Кузьмина','Андрей Лебедев','Ольга Фролова','Павел Крылов'];
-  const create = ({groups, sampleGroups, requests, closes, canManageGroup = () => false, canReviewUnassigned = false, staffEmails = [], canViewRequest = () => true, today = () => new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Yekaterinburg'}).format(new Date())}) => {
+  const create = ({groups, sampleGroups, requests, closes, accesses = {}, canManageGroup = () => false, canReviewUnassigned = false, staffEmails = [], canViewRequest = () => true, today = () => new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Yekaterinburg'}).format(new Date())}) => {
     const fixtures = Object.keys(sampleGroups).map((group,i) => ({id:'student-'+i,name:sampleNames[i],email:`student-${i+1}@vesh.test`,groups:i===0&&sampleGroups.kd26&&sampleGroups.mba?['kd26','mba']:[group],visits:i%4===0?[]:[`2026-11-0${(i%5)+1}T0${(i%3)+6}:15:00Z`,'2026-10-28T09:30:00Z','2026-10-20T05:00:00Z']}));
+    const untilFor = (person, groupId) => (typeof accesses[person.email.toLowerCase()]?.[groupId]==='string'?accesses[person.email.toLowerCase()][groupId]:accesses[person.email.toLowerCase()]?.[groupId]?.until) || closes(groups[groupId]);
+    const fromFor = (person,groupId) => accesses[person.email.toLowerCase()]?.[groupId]?.from || '';
+    const availableFor = (person,groupId) => fromFor(person,groupId)<=today() && untilFor(person,groupId)>=today();
     const statusFor = (person, groupId = '') => {
       const enrolled = person.groups.filter(id => groups[id] && (!groupId || id === groupId));
-      return enrolled.length ? (enrolled.some(id => closes(groups[id]) >= today()) ? 'active' : 'closed') : ((person.pendingApplications || []).some(r => !groupId || r.group === groupId) ? 'waiting' : 'pending');
+      return enrolled.length ? (enrolled.some(id => availableFor(person,id)) ? 'active' : (enrolled.some(id=>fromFor(person,id)>today())?'scheduled':'closed')) : ((person.pendingApplications || []).some(r => !groupId || r.group === groupId) ? 'waiting' : 'pending');
     };
     const rows = () => {
       const accounts = new Map();
@@ -34,7 +37,18 @@
       if(mode==='approved')request.status='approved';
       return request;
     };
-    return {rows,add,statusFor,participants:groupId => rows().filter(person => person.groups.includes(groupId)),applicants:groupId => rows().filter(person => person.pendingGroups.includes(groupId)),belongsTo:(person,groupId)=>person.groups.includes(groupId)||person.pendingGroups.includes(groupId)};
+    const grant = (studentId,group,until,from=today()) => {
+      const person=rows().find(p=>p.id===studentId);
+      const parsed=new Date(until+'T12:00:00Z');
+      const start=new Date(from+'T12:00:00Z');
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(from)||!Number.isFinite(start.getTime())||start.toISOString().slice(0,10)!==from||from>until)throw Error('Дата начала должна быть не позже даты окончания');
+      if(!person||!groups[group]||!canManageGroup(group))throw Error('Нет прав на доступ к этой группе');
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(until)||!Number.isFinite(parsed.getTime())||parsed.toISOString().slice(0,10)!==until||until<today())throw Error('Выберите сегодняшнюю или будущую дату');
+      if(!person.groups.includes(group))add({name:person.name,email:person.email,group,mode:'approved'});
+      const key=person.email.toLowerCase();accesses[key]||={};accesses[key][group]={from,until};
+      return person;
+    };
+    return {rows,add,grant,untilFor,fromFor,availableFor,statusFor,participants:groupId => rows().filter(person => person.groups.includes(groupId)),applicants:groupId => rows().filter(person => person.pendingGroups.includes(groupId)),belongsTo:(person,groupId)=>person.groups.includes(groupId)||person.pendingGroups.includes(groupId)};
   };
   const api = {create};
   if (typeof module === 'object' && module.exports) module.exports = api;

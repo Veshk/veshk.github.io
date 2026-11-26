@@ -4,7 +4,7 @@ export { courses, seed };
 export const normalizeEmail = value => String(value).trim().toLowerCase();
 export const id = prefix => `${prefix}-${globalThis.crypto.randomUUID()}`;
 export const getCourse = courseId => courses.find(c => c.id === courseId);
-export const active = (state, enrollment) => Boolean(enrollment && enrollment.accessStatus!=='revoked' && Date.parse(enrollment.until) > Date.parse(state.now));
+export const active = (state, enrollment) => Boolean(enrollment && enrollment.accessStatus!=='revoked' && Date.parse(enrollment.start)<=Date.parse(state.now) && Date.parse(enrollment.until) > Date.parse(state.now));
 export const pending = (state, enrollmentId) => state.requests.find(r => r.enrollmentId === enrollmentId && r.status === 'pending');
 export const findEnrollment = (state, userId, courseId) => state.enrollments.find(e => e.userId === userId && e.courseId === courseId);
 export const percent = enrollment => Math.round(enrollment.done.length / getCourse(enrollment.courseId).lessons.length * 100);

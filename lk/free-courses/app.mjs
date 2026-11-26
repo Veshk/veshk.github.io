@@ -1,13 +1,13 @@
-import {feedbackMenu,feedbackForm,feedbackResponses,submitCourseFeedback} from './feedback.mjs?v=20261126-public-safe-1';
+import {feedbackMenu,feedbackForm,feedbackResponses,submitCourseFeedback} from './feedback.mjs?v=20261126-student-access-1';
 import {recordedPage,setupRecordedPage,refreshRecordedModules} from './recorded-page.mjs?v=20261126-public-safe-1';
-import {managementHub,peoplePage,peopleTable} from './management.mjs?v=20261126-public-safe-1';
+import {managementHub,peoplePage,peopleTable} from './management.mjs?v=20261126-student-access-1';
 import {ensurePaidDemo,isPaidCourse} from './paid-catalog.mjs?v=20261126-public-safe-1';
-import {applyDemoPayment} from './paid-domain.mjs?v=20261126-public-safe-1';
-import {paidAdmin,paidLogic,orderDialog,paidPerson,unpaidCard,learnerOrder,managementNav,accessLabel} from './paid-view.mjs?v=20261126-public-safe-1';
+import {applyDemoPayment} from './paid-domain.mjs?v=20261126-student-access-1';
+import {paidAdmin,paidLogic,orderDialog,paidPerson,unpaidCard,learnerOrder,managementNav,accessLabel} from './paid-view.mjs?v=20261126-student-access-1';
 import {mountKinescope} from './lesson-player.mjs?v=20261126-public-safe-1';
 import {lessonMedia,courseMaterials,courseAbout} from './course-view.mjs?v=20261126-public-safe-1';
-import {courses,seed,getCourse,active,pending,findEnrollment,percent,shortDate,fullDate,suggestedExtension,register,requestExtension,extend,retryMail,markLesson,completeLesson} from './domain.mjs?v=20261126-public-safe-1';
-import {logicPage} from './logic.mjs?v=20261126-public-safe-1';
+import {courses,seed,getCourse,active,pending,findEnrollment,percent,shortDate,fullDate,suggestedExtension,register,requestExtension,extend,retryMail,markLesson,completeLesson} from './domain.mjs?v=20261126-student-access-1';
+import {logicPage} from './logic.mjs?v=20261126-student-access-1';
 import {intakePage} from './intake.mjs?v=20261126-public-safe-1';
 
 const KEY='vesh.free-courses.public.v2';

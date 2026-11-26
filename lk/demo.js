@@ -80,7 +80,7 @@
   const viewQuery=new URLSearchParams(location.search);
   const studentView=viewQuery.get('student_view')==='1'||viewQuery.has('as_student');
   const viewRole=senior?'senior':role;
-  const studentAccounts=window.StudentDirectory?.create({groups,sampleGroups:directory.groups,requests:state.requests,closes});
+  const studentAccounts=window.StudentDirectory?.create({groups,sampleGroups:directory.groups,requests:state.requests,closes,accesses:state.studentAccess||={}});
   const viewedStudent=viewQuery.has('as_student')?studentAccounts?.rows().find(person=>person.id===viewQuery.get('as_student')):null;
   const previewQuery=studentView?'&'+(viewedStudent?'as_student='+encodeURIComponent(viewedStudent.id):'student_view=1')+'&role='+encodeURIComponent(viewRole):'';
   const previewHome='courses.html?list=1'+previewQuery;
@@ -102,9 +102,9 @@
     const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Yekaterinburg'}).format(new Date());
     const cards=document.querySelector('.cards');
     cards.innerHTML=(studentView&&!viewedStudent?Object.keys(groups):student?.groups||[]).map(id=>{
-      const g=groups[id],available=studentView&&!viewedStudent||closes(g)>=today,finished=g.graduates_at<today;
-      const status=!available?'Доступ завершён':finished?'Обучение завершено':g.starts_at>today?'Доступ открыт':'Идёт обучение';
-      return `<article class="card course-tile" data-learning-group="${escape(id)}"><div class="tile-cover course-hero"><div class="eyebrow">${escape(g.code)} — ${escape(g.format)}</div><h2>${escape(g.name)}</h2></div><div class="tile-bottom"><div><span class="badge ${!available||finished?'closed':''}">${status}</span><p class="learning-dates">Начало обучения ${dateLabel(g.starts_at)}</p>${available?`<p class="learning-access">Материалы доступны до ${dateLabel(closes(g))}</p>`:''}</div>${available?`<a class="btn" href="${groupLink(id)+previewQuery}">Перейти ↗</a>`:''}</div></article>`;
+      const g=groups[id],available=studentView&&!viewedStudent||(viewedStudent?studentAccounts.availableFor(viewedStudent,id):closes(g)>=today),finished=g.graduates_at<today;
+      const status=!available?(viewedStudent&&studentAccounts.fromFor(viewedStudent,id)>today?'Доступ с '+dateLabel(studentAccounts.fromFor(viewedStudent,id)):'Доступ завершён'):finished?'Обучение завершено':g.starts_at>today?'Доступ открыт':'Идёт обучение';
+      return `<article class="card course-tile" data-learning-group="${escape(id)}"><div class="tile-cover course-hero"><div class="eyebrow">${escape(g.code)} — ${escape(g.format)}</div><h2>${escape(g.name)}</h2></div><div class="tile-bottom"><div><span class="badge ${!available||finished?'closed':''}">${status}</span><p class="learning-dates">Начало обучения ${dateLabel(g.starts_at)}</p>${available?`<p class="learning-access">Материалы доступны до ${dateLabel(viewedStudent?studentAccounts.untilFor(viewedStudent,id):closes(g))}</p>`:''}</div>${available?`<a class="btn" href="${groupLink(id)+previewQuery}">Перейти ↗</a>`:''}</div></article>`;
     }).join('');
     if(!cards.children.length)cards.innerHTML='<div class="card full"><h2>Обучение пока не открыто</h2><p>Здесь появятся программы после одобрения заявки</p></div>';
     if(studentView&&viewedStudent?.pendingApplications.length){const section=document.createElement('section');section.className='section';section.innerHTML='<h2>Мои заявки</h2>'+viewedStudent.pendingApplications.map(r=>`<div class="request-row"><div class="details"><h3>${escape(groups[r.group]?.name||'Помощь с выбором группы')}</h3><small>${escape(groups[r.group]?.code||'')}</small></div><span class="badge wait">На проверке</span></div>`).join('');cards.after(section);}
@@ -164,7 +164,7 @@
   if(location.pathname.endsWith('editor.html')){CoursePages.initEditor(pageContext);return;}
   if(pageGroup&&(location.pathname.endsWith('course.html')||location.pathname.endsWith('excel.html'))){
 
-    if(viewedStudent&&(!viewedStudent.groups.includes(pageContext.groupId)||closes(pageGroup)<new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Yekaterinburg'}).format(new Date()))){document.querySelector('.course-hero')?.remove();document.querySelector('.course-nav')?.remove();document.querySelector('main.shell').innerHTML='<div class="page-heading"><h1>Доступ к группе не открыт</h1></div><p>У этого слушателя нет действующего доступа к материалам группы</p>';}
+    if(viewedStudent&&(!viewedStudent.groups.includes(pageContext.groupId)||!studentAccounts.availableFor(viewedStudent,pageContext.groupId))){document.querySelector('.course-hero')?.remove();document.querySelector('.course-nav')?.remove();document.querySelector('main.shell').innerHTML='<div class="page-heading"><h1>Доступ к группе не открыт</h1></div><p>У этого слушателя нет действующего доступа к материалам группы</p>';}
     else {CoursePages.render(pageContext,pageGroup);announcements?.mountStudent();}
   }
   mountStudentView();
@@ -240,9 +240,8 @@
     const g=groups[id],p=programs[g.program_id];title.textContent=g.name;
     const entries=[['Программа',p?.title||'Нужно выбрать'],['ТЕГ программы',p?.tag||'Не указан'],['Раздел',p?.section||'Не указан'],['ТЕГ группы',g.code],['№ группы',g.number||'Не указан'],['Статус группы',g.status||'Не указан'],['Тип группы',g.group_type||'Не указан'],['Администратор',g.owner],['Дата запуска',dateLabel(g.starts_at)],['Дата выпуска',dateLabel(g.graduates_at)],['Доступ после выпуска, дней',g.access_days??30],['Дата архивации',dateLabel(closes(g,false))],['Продление до',g.extended_until?dateLabel(g.extended_until):'Без продления'],['Доступ до включительно',dateLabel(closes(g))],['Приём заявок',isRegistrationOpen(g)?'Открыт':'Закрыт'],['Заполнение завершено',g.setup_completed?'Да':'Нет']];
     body.innerHTML=`<p>${canEditGroup(id)?'Доступно редактирование':'Только просмотр'}</p><p><button type="button" class="group-action group-participants" data-participants-open="${escape(id)}">Зачислено: <strong>${catalogs.participantCount(id)}</strong> Ожидают одобрения: <strong>${catalogs.pendingCount(id)}</strong> Открыть список →</button></p><dl class="dialog-fields">${entries.map(([name,value])=>`<div><dt>${name}</dt><dd>${escape(value)}</dd></div>`).join('')}<div class="full"><dt>Чат группы</dt><dd>${safeUrl(g.chat_url)?`<a class="text-link" href="${escape(safeUrl(g.chat_url))}" target="_blank" rel="noopener">Открыть чат ↗</a>`:'Не указан'}</dd></div><div class="full"><dt>Комментарий администратора</dt><dd>${escape(g.admin_notes||'Нет комментария')}</dd></div></dl>`;
-    dialog.querySelector('.dialog-actions').insertAdjacentHTML('afterbegin',`<a data-group-portal-action class="btn outline" href="${groupLink(id)}&preview=1&role=${role}" target="_blank" rel="noopener">Открыть ЛК ↗</a> ${canEditGroup(id)?`<button type="button" data-group-portal-action data-group-add-student class="btn">Добавить слушателя</button><a data-group-portal-action class="btn" href="editor.html?group=${encodeURIComponent(id)}&role=${role}">Редактировать ЛК</a>`:''}`);
+    dialog.querySelector('.dialog-actions').insertAdjacentHTML('afterbegin',`<a data-group-portal-action class="btn outline" href="${groupLink(id)}&preview=1&role=${role}" target="_blank" rel="noopener">Открыть ЛК ↗</a> ${canEditGroup(id)?`<a data-group-portal-action class="btn" href="editor.html?group=${encodeURIComponent(id)}&role=${role}">Редактировать ЛК</a>`:''}`);
   };
-  dialog.addEventListener('click',event=>{if(event.target.closest('[data-group-add-student]')){const id=selectedId;if(!canEditGroup(id))return;close();navigateStudents(id);catalogs.openAddStudent(id);}});
   const render=()=>{
     document.getElementById('pending-count').textContent=state.requests.filter(r=>r.status==='pending').length;
     catalogs.renderRequests();

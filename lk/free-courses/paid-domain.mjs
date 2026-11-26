@@ -1,4 +1,4 @@
-import {getCourse,id,findEnrollment} from './domain.mjs?v=20261126-public-safe-1';
+import {getCourse,id,findEnrollment} from './domain.mjs?v=20261126-student-access-1';
 import {isPaidCourse} from './paid-catalog.mjs?v=20261126-public-safe-1';
 
 export const paymentLabels={pending:'Ждёт оплаты',paid:'Оплачен',failed:'Оплата не прошла',review:'Нужна сверка',refunded:'Возврат подтверждён'};

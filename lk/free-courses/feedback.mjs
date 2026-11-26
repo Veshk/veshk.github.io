@@ -1,4 +1,4 @@
-import {active, getCourse} from './domain.mjs?v=20261126-public-safe-1';
+import {active, getCourse} from './domain.mjs?v=20261126-student-access-1';
 import {escapeHtml as h} from './course-view.mjs?v=20261126-public-safe-1';
 
 export function submitCourseFeedback(state, enrollmentId, values) {
