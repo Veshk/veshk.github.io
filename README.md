@@ -11,6 +11,7 @@
 | Демонстрация личного кабинета | [/lk/](https://veshk.github.io/lk/) |
 | Прототип курсов | [/lk/free-courses/](https://veshk.github.io/lk/free-courses/) |
 | Презентация личного кабинета | [/lk-presentation/](https://veshk.github.io/lk-presentation/) |
+| Студия ВЭШ — дизайн-центр | [/brand-studio/](https://veshk.github.io/brand-studio/) |
 | Генератор карточек | [/card-studio/](https://veshk.github.io/card-studio/) |
 | Генератор UTM | [/utm/](https://veshk.github.io/utm/) |
 | Публичные материалы | [/materialy/](https://veshk.github.io/materialy/) |
