@@ -42,15 +42,18 @@ window.AdminCatalog={init(ctx){
   const date=v=>v?new Intl.DateTimeFormat('ru-RU',{timeZone:'Asia/Yekaterinburg',dateStyle:'short',timeStyle:'short'}).format(new Date(v)):'Ещё не посещал';
   const studentRows=directory.rows;
   const addDialog=document.createElement('dialog');addDialog.setAttribute('aria-labelledby','add-student-title');document.body.append(addDialog);
-  students.querySelector('[data-student-add]').addEventListener('click',()=>{
+  const openAddStudent=(groupId=document.getElementById('student-group').value)=>{
+    if(groupId&&!ctx.canEditGroup(groupId))return;
     addDialog.innerHTML=`<form><button type="button" class="dialog-close" aria-label="Закрыть" data-cancel>×</button><h2 id="add-student-title">Добавить слушателя</h2><p>Если аккаунт с такой почтой уже есть, используем его</p><label class="field">ФИО<input name="name" required maxlength="190"></label><label class="field">Почта для входа<input name="email" type="email" required maxlength="190"></label><label class="field">Группа<select name="group">${ctx.state.reviewers.includes(ctx.role)?'<option value="">Группа пока не выбрана</option>':''}${opts(Object.entries(ctx.groups).filter(([id])=>ctx.canEditGroup(id)).map(([id,g])=>[id,g.code+' — '+g.name]))}</select></label><label class="field">Доступ<select name="mode"><option value="pending">Создать заявку — доступ пока закрыт</option><option value="approved">Зачислить в группу и открыть доступ</option></select></label><label class="check" data-mail-option hidden><input name="send_email" type="checkbox" checked>Отправить письмо о доступе</label><p class="form-note" data-mail-kind hidden>Первый вход: «Создать пароль». Ссылка действует 3 дня (72 часа)</p><p class="form-note">Прототип — данные сохраняются только в браузере, письма не отправляются</p><p data-error role="alert"></p><div class="dialog-actions"><button type="button" class="btn outline" data-cancel>Отмена</button><button class="btn">Добавить слушателя</button></div></form>`;
     const form=addDialog.querySelector('form');
+    if(groupId){form.elements.group.value=groupId;form.elements.group.disabled=true;}
     const update=()=>{const active=form.elements.mode.value==='approved';form.querySelector('[data-mail-option]').hidden=!active;form.querySelector('[data-mail-kind]').hidden=!active;const existing=studentRows().find(p=>p.email.toLowerCase()===form.elements.email.value.trim().toLowerCase()&&p.groups.length);form.querySelector('[data-mail-kind]').textContent=existing?'Доступ открыт — письмо со входом по действующему паролю':'Первый вход: «Создать пароль». Ссылка действует 3 дня (72 часа)';};
     form.addEventListener('input',update);
     form.querySelectorAll('[data-cancel]').forEach(button=>button.addEventListener('click',()=>addDialog.close()));
-    form.addEventListener('submit',event=>{event.preventDefault();try{const values=Object.fromEntries(new FormData(form));const row=directory.add(values);if(values.mode==='approved')row.send_email=!!values.send_email;ctx.save();addDialog.close();renderStudents();renderRequests();document.getElementById('pending-count').textContent=ctx.state.requests.filter(r=>r.status==='pending').length;}catch(error){form.querySelector('[data-error]').textContent=error.message;}});
+    form.addEventListener('submit',event=>{event.preventDefault();try{const values=Object.fromEntries(new FormData(form));if(groupId)values.group=groupId;const row=directory.add(values);if(values.mode==='approved')row.send_email=!!values.send_email;ctx.save();addDialog.close();renderStudents();renderRequests();document.getElementById('pending-count').textContent=ctx.state.requests.filter(r=>r.status==='pending').length;}catch(error){form.querySelector('[data-error]').textContent=error.message;}});
     addDialog.showModal();
-  });
+  };
+  students.querySelector('[data-student-add]').addEventListener('click',()=>openAddStudent());
   const groupContext=document.getElementById('student-group-context');
   groupContext.addEventListener('click',e=>{if(e.target.closest('[data-participants-back]'))ctx.showGroups();});
   function selectGroup(id){
@@ -60,6 +63,7 @@ window.AdminCatalog={init(ctx){
   function renderStudents(){
     const select=document.getElementById('student-group'),selected=select.value;select.innerHTML='<option value="">Все группы</option>'+opts(Object.entries(ctx.groups).map(([id,g])=>[id,g.code]));select.value=selected;
     const groupId=select.value,group=ctx.groups[groupId];
+    students.querySelector('[data-student-add]').hidden=!!groupId&&!ctx.canEditGroup(groupId);
     const all=studentRows().filter(p=>!groupId||directory.belongsTo(p,groupId)).map(p=>({...p,status:directory.statusFor(p,groupId)})),rows=sorted(all.filter(p=>(p.name+' '+p.email).toLocaleLowerCase('ru').includes(value('student-search').trim().toLocaleLowerCase('ru'))&&(!value('student-group')||directory.belongsTo(p,value('student-group')))&&(!value('student-status')||(value('student-status')==='waiting'?p.pendingApplications.some(r=>!groupId||r.group===groupId):p.status===value('student-status')))&&(!value('student-visits')||(value('student-visits')==='never'?!p.last:!!p.last))),'students');
     groupContext.hidden=!group;
     groupContext.innerHTML=group?`<button class="text-button" data-participants-back>← К группам</button><h2 tabindex="-1">Участники группы «${esc(group.name)}»</h2><p>${esc(group.code)} Зачислено: <strong>${directory.participants(groupId).length}</strong> Ожидают одобрения: <strong>${directory.applicants(groupId).length}</strong></p><p class="form-note">Зачисленные слушатели и ожидающие одобрения. Заявка сама по себе не открывает доступ к обучению.</p>`:'';
@@ -83,5 +87,5 @@ window.AdminCatalog={init(ctx){
   document.getElementById('program-presence').onchange=renderPrograms;
   ['program-source-filter','program-type-filter','program-format-filter'].forEach(id=>document.getElementById(id).onchange=renderPrograms);
   ['student-search','student-group','student-status','student-visits'].forEach(id=>document.getElementById(id).addEventListener(id==='student-search'?'input':'change',renderStudents));
-  return {renderPrograms,renderRequests,renderStudents,selectGroup,participantCount:id=>directory.participants(id).length,pendingCount:id=>directory.applicants(id).length};
+  return {renderPrograms,renderRequests,renderStudents,selectGroup,openAddStudent,participantCount:id=>directory.participants(id).length,pendingCount:id=>directory.applicants(id).length};
 }};

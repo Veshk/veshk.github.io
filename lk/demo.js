@@ -240,8 +240,9 @@
     const g=groups[id],p=programs[g.program_id];title.textContent=g.name;
     const entries=[['Программа',p?.title||'Нужно выбрать'],['ТЕГ программы',p?.tag||'Не указан'],['Раздел',p?.section||'Не указан'],['ТЕГ группы',g.code],['№ группы',g.number||'Не указан'],['Статус группы',g.status||'Не указан'],['Тип группы',g.group_type||'Не указан'],['Администратор',g.owner],['Дата запуска',dateLabel(g.starts_at)],['Дата выпуска',dateLabel(g.graduates_at)],['Доступ после выпуска, дней',g.access_days??30],['Дата архивации',dateLabel(closes(g,false))],['Продление до',g.extended_until?dateLabel(g.extended_until):'Без продления'],['Доступ до включительно',dateLabel(closes(g))],['Приём заявок',isRegistrationOpen(g)?'Открыт':'Закрыт'],['Заполнение завершено',g.setup_completed?'Да':'Нет']];
     body.innerHTML=`<p>${canEditGroup(id)?'Доступно редактирование':'Только просмотр'}</p><p><button type="button" class="group-action group-participants" data-participants-open="${escape(id)}">Зачислено: <strong>${catalogs.participantCount(id)}</strong> Ожидают одобрения: <strong>${catalogs.pendingCount(id)}</strong> Открыть список →</button></p><dl class="dialog-fields">${entries.map(([name,value])=>`<div><dt>${name}</dt><dd>${escape(value)}</dd></div>`).join('')}<div class="full"><dt>Чат группы</dt><dd>${safeUrl(g.chat_url)?`<a class="text-link" href="${escape(safeUrl(g.chat_url))}" target="_blank" rel="noopener">Открыть чат ↗</a>`:'Не указан'}</dd></div><div class="full"><dt>Комментарий администратора</dt><dd>${escape(g.admin_notes||'Нет комментария')}</dd></div></dl>`;
-    dialog.querySelector('.dialog-actions').insertAdjacentHTML('afterbegin',`<a data-group-portal-action class="btn outline" href="${groupLink(id)}&preview=1&role=${role}" target="_blank" rel="noopener">Открыть ЛК ↗</a> ${canEditGroup(id)?`<a data-group-portal-action class="btn" href="editor.html?group=${encodeURIComponent(id)}&role=${role}">Редактировать ЛК</a>`:''}`);
+    dialog.querySelector('.dialog-actions').insertAdjacentHTML('afterbegin',`<a data-group-portal-action class="btn outline" href="${groupLink(id)}&preview=1&role=${role}" target="_blank" rel="noopener">Открыть ЛК ↗</a> ${canEditGroup(id)?`<button type="button" data-group-portal-action data-group-add-student class="btn">Добавить слушателя</button><a data-group-portal-action class="btn" href="editor.html?group=${encodeURIComponent(id)}&role=${role}">Редактировать ЛК</a>`:''}`);
   };
+  dialog.addEventListener('click',event=>{if(event.target.closest('[data-group-add-student]')){const id=selectedId;if(!canEditGroup(id))return;close();navigateStudents(id);catalogs.openAddStudent(id);}});
   const render=()=>{
     document.getElementById('pending-count').textContent=state.requests.filter(r=>r.status==='pending').length;
     catalogs.renderRequests();
@@ -295,7 +296,7 @@
     advisorDirectory?.render();
     schedules.render();
   };
-  const navigateStudents=id=>{close();catalogs.selectGroup(id);showPanel('students');document.querySelector('#student-group-context h2')?.focus();};
+  const navigateStudents=id=>{close();const url=new URL(location.href);url.searchParams.delete('group_view');history.replaceState(null,'',url);catalogs.selectGroup(id);showPanel('students');document.querySelector('#student-group-context h2')?.focus();};
   dialog.addEventListener('click',event=>{const button=event.target.closest('[data-participants-open]');if(button)navigateStudents(button.dataset.participantsOpen);});
   const navigateGroups=(owner='',program='')=>{
     groupTable.resetFilters();document.getElementById('group-owner-filter').value=owner;
