@@ -1,4 +1,4 @@
-/* Approved login composition: left aligned, headline centered vertically. */
+/* Approved login composition: left aligned, copy centered between brand and footer. */
 @font-face {
     font-family: 'VESH Soul Adventures';
     font-style: normal;
@@ -14,7 +14,7 @@
 .auth-page .auth-story {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: 1fr auto 1fr;
+    grid-template-rows: auto minmax(0, 1fr) auto;
     min-height: max(620px, 100svh);
     min-width: 0;
     padding: clamp(24px, 2.5vw, 64px);
@@ -40,29 +40,34 @@
 
 .auth-page .auth-story > .brand {
     align-self: start;
-    justify-self: start;
+    justify-self: stretch;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 22px;
+    min-width: 0;
 }
 
 .auth-page .auth-story .logo {
+    flex: 0 0 auto;
     width: 105px;
     height: 44px;
 }
 
 .auth-page .login-story-copy {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: 1fr auto 1fr;
+    display: block;
     align-self: center;
     min-width: 0;
     max-width: none;
     margin: 0;
-    padding: 24px 0;
+    padding: 0;
     text-align: left;
 }
 
-.auth-page .login-story-copy > .story-tagline {
-    align-self: end;
-    margin: 0 0 34px;
+.auth-page .auth-story > .brand > .story-tagline {
+    flex: 1;
+    min-width: 210px;
+    margin: 0;
+    white-space: nowrap;
     font-family: 'VESH Soul Adventures', cursive;
     font-size: clamp(37px, 3.8vw, 68px);
     font-weight: 400;
@@ -98,14 +103,23 @@
     font-size: 11px;
 }
 
+@media (max-width: 1100px) {
+    .auth-page .auth-story > .brand { gap: 12px; }
+    .auth-page .auth-story > .brand > .story-tagline { font-size: 40px; }
+}
+
 @media (max-width: 720px) {
+    .auth-page .auth-story > .brand { flex-direction: column; align-items: flex-start; gap: 8px; }
     .auth-page .auth-story {
         min-height: 620px;
         padding: 24px;
     }
 
-    .auth-page .login-story-copy > .story-tagline {
-        margin-bottom: 28px;
+    .auth-page .auth-story > .brand > .story-tagline {
+        flex: none;
+        min-width: 0;
+        max-width: 100%;
+        margin: 0;
         font-size: 37px;
     }
 
