@@ -1,0 +1,39 @@
+/* Login screen: approved "Thin lines" background, 2026-11-27. */
+@font-face {
+    font-family: 'Manrope Login';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('brand/manrope-500.ttf') format('truetype');
+}
+
+.auth-page .auth-story {
+    overflow: hidden;
+    background: #19383f;
+}
+
+.auth-page .auth-story::before {
+    background: radial-gradient(ellipse at 100% 5%, #527a81, transparent 65%);
+    opacity: .65;
+    pointer-events: none;
+}
+
+.auth-page .auth-story::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: url('brand/login-lines.svg') center / 100% 100% no-repeat;
+    opacity: .65;
+    pointer-events: none;
+}
+
+.auth-page .story-copy > .eyebrow {
+    font-family: 'Manrope Login', Arial, sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: .005em;
+    text-transform: none;
+    color: #e1ebec;
+}
