@@ -1,0 +1,73 @@
+/* Compact learning cards and self-study navigation, 2026-11-27. */
+.learning-home .cards{gap:18px;align-items:start}
+.learning-home .course-tile{min-width:0}
+.learning-home .course-tile .tile-cover{min-height:140px;padding:17px;gap:10px;justify-content:flex-start;flex:none}
+.learning-home .course-tile .tile-cover h2{font-size:22px;line-height:1.25;font-weight:400;letter-spacing:-.02em;max-width:none;margin:8px 0 0;overflow-wrap:anywhere}
+.learning-home .course-tile .tile-cover .eyebrow{font-size:11px}
+.learning-home .course-tile .tile-expert{font-size:12px;line-height:1.45;margin:0;max-width:none;color:inherit}
+.learning-home .course-tile .tile-expert span{opacity:.8}
+.learning-home .course-tile .tile-bottom{padding:14px 16px;gap:12px;font-size:12px;align-items:flex-start;flex-wrap:nowrap}
+.learning-home .course-tile .tile-bottom>div{min-width:0;flex:1}
+.learning-home .course-tile .learning-dates{font-size:12px;line-height:1.45;margin-top:7px}
+.learning-home .course-tile .learning-access{font-size:11px;line-height:1.45;margin-top:4px}
+.learning-home .course-tile .badge{padding:3px 8px;font-size:11px;max-width:100%;white-space:normal}
+.learning-home .course-tile .btn{min-height:36px;padding:8px 13px;gap:8px;font-size:12px;line-height:1.4;max-width:100%;text-align:center}
+.learning-home .course-tile progress{display:block;width:130px;max-width:100%;height:5px;margin-top:6px;accent-color:#226d8d}
+.learning-home .section-title{margin-top:30px;margin-bottom:15px;gap:16px;flex-wrap:wrap}
+.learning-home .section-title h2{font-size:22px;line-height:1.3}
+.learning-home .section-title .text-link{font-size:12px}
+.learning-home .learning-category{margin-bottom:36px}
+
+.self-study.self-study{padding-top:24px}
+.self-study>.text-link{font-size:12px}
+.self-study .self-study-hero{margin:18px 0;padding:27px 36px;gap:10px}
+.self-study .self-study-hero h1{font-size:clamp(22px,3vw,36px);line-height:1.2;max-width:1000px;overflow-wrap:anywhere}
+.self-study .self-study-hero>p{font-size:12px;line-height:1.5}
+.self-study>p{font-size:12px}
+.self-study .self-study-progress{margin-left:18px}
+.self-study .alert,.self-study .self-study-notice{padding:11px 14px;font-size:12px;margin-bottom:17px}
+.self-study .self-study-grid{gap:21px;margin:18px 0 45px;grid-template-columns:minmax(220px,1fr) minmax(0,2.7fr)}
+.self-study .self-study-menu,.self-study .self-study-lesson{padding:20px;min-width:0}
+.self-study .self-study-menu h2{font-size:17px;margin-bottom:15px}
+.self-study .self-study-menu a{font-size:12px;line-height:1.5;padding:9px 6px;gap:6px;grid-template-columns:18px minmax(0,1fr) 24px;overflow-wrap:anywhere}
+.self-study .self-study-menu small{font-size:11px;margin-top:4px}
+.self-study .lesson-completion{width:24px;height:24px;font-size:16px}
+.self-study .self-study-lesson h2{font-size:22px;margin:9px 0 15px}
+.self-study .self-study-lesson h3{font-size:16px;margin-top:18px}
+.self-study .self-study-video{margin:18px 0}
+.self-study .btn{min-height:36px;padding:8px 16px;font-size:12px;gap:12px}
+.self-study .aos-panel,.rc-course .aos-panel{padding:23px;min-width:0}
+.self-study .aos-panel h2,.rc-course .aos-panel h2{font-size:22px;margin:6px 0 12px}
+.self-study .aos-menu,.rc-course .aos-menu{padding:13px 12px!important;font-size:12px!important}
+
+.rc-course.rc-course{padding-top:18px;padding-bottom:48px}
+.rc-course .rc-breadcrumb{margin-bottom:18px;gap:9px 21px}
+.rc-course .rc-hero-content{padding:29px 32px}
+.rc-course .rc-hero h1{font-size:35px;line-height:1.15;margin:15px 0 23px;overflow-wrap:anywhere}
+.rc-course .rc-facts{gap:18px 40px}
+.rc-course .rc-facts strong{font-size:12px}
+.rc-course .rc-status{padding:17px 24px;gap:23px}
+.rc-course .rc-access{padding-left:23px}
+.rc-course .rc-access strong{font-size:12px}
+.rc-course .rc-nav{gap:23px;margin:12px 0 23px}
+.rc-course .rc-nav a{padding:13px 0;font-size:12px}
+.rc-course .rc-layout{grid-template-columns:240px minmax(0,1fr);gap:21px}
+.rc-course .rc-program{padding:0}
+.rc-course .rc-program>summary{padding:15px;font-size:13px}
+.rc-course .rc-module{padding:0}
+.rc-course .rc-module>summary{padding:13px 12px;gap:7px}
+.rc-course .rc-module li a{padding:8px 13px;gap:9px}
+.rc-course .rc-panel{padding:21px}
+.rc-course .rc-panel h2,.rc-course .rc-lesson h2{font-size:21px;margin:11px 0 18px}
+.rc-course .rc-workspace{gap:18px}
+.rc-course .btn{min-height:35px;padding:8px 16px;gap:12px}
+.rc-course .rc-completion{margin-top:17px;gap:12px}
+.rc-course .rc-lesson-navigation{padding-top:15px;margin-top:18px;gap:12px}
+.rc-course .alert{font-size:12px;padding:11px 14px;margin-bottom:17px}
+
+@media(max-width:1100px){.rc-course .rc-hero h1{font-size:29px}}
+@media(max-width:860px){.rc-course .rc-layout{grid-template-columns:1fr}.rc-course .rc-hero-content{padding:23px}.rc-course .rc-hero h1{font-size:26px}}
+@media(max-width:780px){.self-study .self-study-grid{grid-template-columns:1fr}.self-study .self-study-hero{padding:21px 18px;gap:9px}.self-study .self-study-menu,.self-study .self-study-lesson{padding:15px}.self-study .self-study-progress{margin:6px 0 0}.self-study .self-study-lesson h2{font-size:19px}}
+@media(max-width:700px){.learning-home .course-tile .tile-cover{min-height:125px;padding:15px}.learning-home .course-tile .tile-cover h2{font-size:22px}.learning-home .course-tile .tile-bottom{padding:12px 14px;flex-wrap:wrap}.learning-home .course-tile .tile-bottom>div{flex-basis:180px}.learning-home .course-tile .tile-bottom>.btn{margin-left:auto}.learning-home .section-title h2{font-size:22px}}
+@media(max-width:540px){.rc-course .rc-hero-content{padding:20px 17px}.rc-course .rc-hero h1{font-size:23px;margin:13px 0 19px}.rc-course .rc-status{padding:15px;gap:15px}.rc-course .rc-access{padding:12px 0 0}.rc-course .rc-panel{padding:15px}.rc-course .rc-panel h2,.rc-course .rc-lesson h2{font-size:18px}.self-study .aos-panel,.rc-course .aos-panel{padding:15px}.self-study .aos-panel h2,.rc-course .aos-panel h2{font-size:19px}}
+@media(pointer:coarse){.learning-home .course-tile .btn,.self-study .btn,.rc-course .btn,.self-study .self-study-menu a,.rc-course .rc-module li a,.rc-course .rc-program>summary,.rc-course .rc-module>summary,.rc-course .rc-nav a{min-height:44px}}
