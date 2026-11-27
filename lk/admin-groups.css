@@ -31,7 +31,7 @@
 .group-name{background:none;border:0;padding:0;color:var(--ink);font-size:13px;font-weight:550;text-align:left;white-space:normal;line-height:1.4;min-width:220px;max-width:290px}
 .group-name:hover{color:var(--blue);text-decoration:underline;text-underline-offset:3px}
 .group-subtitle{display:block;font-size:10px;color:#73818a;margin-top:4px}
-.group-code{font-size:11px;letter-spacing:.01em;font-variant-numeric:tabular-nums}
+.group-code{font-size:11px;letter-spacing:normal;font-variant-numeric:tabular-nums;font-family:Manrope,Arial,sans-serif;font-weight:500}
 .group-status{display:inline-flex;align-items:center;gap:6px;border-radius:5px;padding:5px 8px;font-size:11px;line-height:1.3;font-weight:500;white-space:nowrap;background:#edf0f3;color:#53616c}
 .group-status>span{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
 .status-blue{background:#e5efff;color:#2452a0}.status-green{background:#e1f3e6;color:#206342}.status-amber{background:#fff0cb;color:#81550a}.status-gray{background:#eaf0f3;color:#586774}.status-rose{background:#fbe5e8;color:#993e50}.status-purple{background:#eee7fc;color:#67409b}.status-cyan{background:#def3f6;color:#226878}
@@ -45,7 +45,7 @@
 .group-divider th{background:#edf2f6;padding:0 12px;height:45px;text-align:left}
 .group-grid .group-divider th:first-child{position:static;box-shadow:none}
 .group-divider button{position:sticky;left:12px;display:inline-flex;align-items:center;gap:10px;border:0;background:transparent;padding:10px 0;font-size:12px;color:#364c5a}
-.group-divider-label{font-size:9px;text-transform:uppercase;letter-spacing:var(--label-spacing,.03em);color:#71838e}.group-divider strong{font-weight:550}
+.group-divider-label{font-size:9px;text-transform:none;letter-spacing:normal;color:#71838e;font-family:Manrope,Arial,sans-serif;font-weight:500}.group-divider strong{font-weight:550}
 .group-bucket-count{font-size:10px;min-width:20px;padding:2px 6px;border:1px solid #d6e0e7;border-radius:10px;color:#617381;background:#f9fbfc}.group-chevron{font-size:12px;color:#667d8c}
 .group-footnote{font-size:11px;color:var(--muted);margin:12px 0 0}.group-footnote span{margin-left:12px}
 .group-grid .group-empty{position:static;text-align:center;padding:42px 20px;box-shadow:none}.group-empty strong{font-size:15px;font-weight:500}.group-empty p{font-size:12px;color:var(--muted);margin:8px 0 16px}

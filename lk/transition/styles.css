@@ -1,3 +1,4 @@
+@import url('../brand/fonts.css?v=20261127-type-1');
 
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 #lk-transition-options { --lk-accent: #226d8d; --lk-radius: 10px; --lk-pad: 32px; }
@@ -12,7 +13,7 @@
 #lk-transition-options h2 { font:700 23px/1.25 Roboto,Arial,sans-serif; margin:0 0 12px; }
 #lk-transition-options h3 { font:700 18px/1.3 Roboto,Arial,sans-serif; margin:0 0 8px; }
 #lk-transition-options p { margin:0 0 14px; }
-#lk-transition-options .lk-kicker { text-transform:uppercase; letter-spacing:1.1px; font-size:12px; font-weight:700; color:var(--lk-muted); }
+#lk-transition-options .lk-kicker { text-transform:none; letter-spacing:normal; font-size:12px;  color:var(--lk-muted); ;font-family:Manrope,Arial,sans-serif;font-weight:500}
 #lk-transition-options .lk-intro { max-width:760px; color:var(--lk-muted); margin-bottom:26px; }
 #lk-transition-options .lk-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 #lk-transition-options .lk-choice { padding:24px; background:var(--lk-paper); border:1px solid var(--lk-line); border-radius:var(--lk-radius); display:flex; flex-direction:column; align-items:flex-start; }

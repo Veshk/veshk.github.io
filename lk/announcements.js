@@ -1,6 +1,6 @@
 'use strict';
 window.GroupAnnouncementsDemo={init(ctx){
- const key='vesh-announcements-v1',historyKey='vesh-notifications-v1',personalKey='vesh-personal-notifications-v1';
+ const key='vesh-announcements-v1',historyKey='vesh-notifications-v1',personalKey='vesh-personal-notifications-v1',supportKey='vesh-support-notifications-v1';
  const recipient=()=>ctx.viewedStudent?.id||'student-0';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const read=k=>{try{const x=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(x)?x:[];}catch{return[];}};
@@ -27,8 +27,8 @@ window.GroupAnnouncementsDemo={init(ctx){
  function render(){if(!panel)return;const rows=read(key).filter(a=>ctx.canEditGroup(a.group));panel.querySelector('[data-ann-rows]').innerHTML=rows.map(a=>`<article class="notification-item"><small>${esc(ctx.groups[a.group]?.code)} / ${esc(a.tag)} / ${a.withdrawn?'Снято':!a.publish?'Черновик':active(a)?'Опубликовано':Date.parse(a.until)<=Date.now()?'Показ завершён':'Запланировано'}</small><p style="white-space:pre-wrap">${esc(a.body)}</p><p class="muted">${date(a.from)} — ${date(a.until)} ЕКБ</p><div class="dialog-actions"><button class="btn outline" data-edit="${esc(a.id)}">Изменить</button>${active(a)?`<button class="btn outline" data-mail="${esc(a.id)}">${a.mail?'Отправка показана':'Отправить письмо'}</button><button class="text-button" data-withdraw="${esc(a.id)}">Снять с показа</button>`:''}<a class="text-link" href="${groupUrl(a)}">Открыть группу →</a></div></article>`).join('')||'<p>Объявлений пока нет</p>';}
  function history(){const rows=read(historyKey);for(const a of read(key).filter(active)){let n=rows.find(n=>n.id===a.id);if(!n){rows.unshift({...a,read:false});}else if(n.body!==a.body||n.tag!==a.tag){Object.assign(n,a,{read:false});}}write(historyKey,rows);return rows;}
 
- function messages(){return [...history(),...read(personalKey).filter(n=>n.recipient===recipient())].sort((a,b)=>Date.parse(b.from)-Date.parse(a.from));}
- function markRead(){if(ctx.studentView)return;write(historyKey,read(historyKey).map(n=>({...n,read:true})));write(personalKey,read(personalKey).map(n=>n.recipient===recipient()?{...n,read:true}:n));}
+ function messages(){return [...history(),...(recipient()==='student-0'?read(supportKey):[]),...read(personalKey).filter(n=>n.recipient===recipient())].sort((a,b)=>Date.parse(b.from)-Date.parse(a.from));}
+ function markRead(){if(ctx.studentView)return;if(recipient()==='student-0')write(supportKey,read(supportKey).map(n=>({...n,read:true})));window.dispatchEvent(new Event('support-notifications-changed'));write(historyKey,read(historyKey).map(n=>({...n,read:true})));write(personalKey,read(personalKey).map(n=>n.recipient===recipient()?{...n,read:true}:n));}
  ctx.canNotify=p=>ctx.senior||[...p.groups,...(p.pendingGroups||[])].some(ctx.canEditGroup)||(ctx.state.reviewers.includes(ctx.role)&&p.pendingApplications?.some(r=>!r.group));
  ctx.composePersonal=p=>{
   if(!ctx.canNotify(p))return;
@@ -40,7 +40,7 @@ window.GroupAnnouncementsDemo={init(ctx){
  };
  function inbox(){
   const rows=messages(),dialog=document.createElement('dialog');dialog.className='announcement-editor';
-  dialog.innerHTML='<header class="notifications-heading"><div><h2>Уведомления</h2><p class="form-note">Объявления и личные сообщения</p></div>'+(!ctx.studentView&&rows.some(n=>!n.read)?'<button class="btn outline" data-read>Прочитать все</button>':'')+'</header>'+rows.map(n=>'<article class="notification-item '+(n.read?'':'notification-unread')+'"><div class="notification-meta"><span>'+date(n.from)+'</span><span>'+esc(n.kind==='personal'?'Личное сообщение':ctx.groups[n.group]?.code)+'</span>'+(n.read?'':'<span class="notification-new">Новое</span>')+'</div><h2>'+esc(n.tag)+'</h2><p class="notification-body">'+esc(n.body)+'</p>'+(n.sender?'<p class="muted notification-sender">'+esc(n.sender)+'</p>':'')+(n.group?'<a class="text-link" href="'+groupUrl(n)+'">Открыть группу →</a>':'')+'</article>').join('')+(rows.length?'':'<div class="notifications-empty"><h2>Уведомлений пока нет</h2><p class="muted">Здесь появятся объявления и сообщения от вашей учебной команды</p></div>')+'<button class="btn outline" data-close>Закрыть</button>';
+  dialog.innerHTML='<header class="notifications-heading"><div><h2>Уведомления</h2><p class="form-note">Объявления и личные сообщения</p></div>'+(!ctx.studentView&&rows.some(n=>!n.read)?'<button class="btn outline" data-read>Прочитать все</button>':'')+'</header>'+rows.map(n=>'<article class="notification-item '+(n.read?'':'notification-unread')+'"><div class="notification-meta"><span>'+date(n.from)+'</span><span>'+esc(n.kind==='support_reply'?'Техподдержка':n.kind==='personal'?'Личное сообщение':ctx.groups[n.group]?.code)+'</span>'+(n.read?'':'<span class="notification-new">Новое</span>')+'</div><h2>'+esc(n.tag)+'</h2><p class="notification-body">'+esc(n.body)+'</p>'+(n.sender?'<p class="muted notification-sender">'+esc(n.sender)+'</p>':'')+(n.kind==='support_reply'?'<a class="text-link" href="support.html?ticket='+Number(n.ticketId)+'">Открыть обращение →</a>':'')+(n.group?'<a class="text-link" href="'+groupUrl(n)+'">Открыть группу →</a>':'')+'</article>').join('')+(rows.length?'':'<div class="notifications-empty"><h2>Уведомлений пока нет</h2><p class="muted">Здесь появятся объявления и сообщения от вашей учебной команды</p></div>')+'<button class="btn outline" data-close>Закрыть</button>';
   dialog.querySelector('[data-read]')?.addEventListener('click',()=>{markRead();dialog.close();mountStudent();inbox();});
   dialog.querySelector('[data-close]').onclick=()=>dialog.close();dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
  }
@@ -73,5 +73,7 @@ window.GroupAnnouncementsDemo={init(ctx){
   personalPanel.querySelector('[data-history-student]').value=new URLSearchParams(location.search).get('history_student')||'';renderPersonalHistory();
   personalPanel.addEventListener('input',renderPersonalHistory);personalPanel.addEventListener('change',renderPersonalHistory);personalPanel.addEventListener('click',e=>{const b=e.target.closest('[data-history-open]');if(b)openPersonalHistory(b.dataset.historyOpen);});
  }
+ window.addEventListener('support-notifications-changed',mountStudent);
+ window.addEventListener('storage',event=>{if(event.key===supportKey)mountStudent();});
  return {render,mountStudent,renderPersonalHistory};
 }};
