@@ -127,3 +127,9 @@
         font-size: 34px;
     }
 }
+
+/* Keep the existing contact footer within very narrow login screens. */
+@media (max-width: 360px) {
+    .school-footer-inner, .school-footer-links { grid-template-columns: minmax(0, 1fr); }
+    .school-footer-social { justify-content: start; }
+}
