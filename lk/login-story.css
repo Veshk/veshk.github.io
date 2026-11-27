@@ -72,7 +72,7 @@
     font-size: clamp(37px, 3.8vw, 68px);
     font-weight: 400;
     line-height: .95;
-    letter-spacing: 0;
+    letter-spacing: .012em;
     color: #d6e6e3;
 }
 
@@ -132,4 +132,13 @@
 @media (max-width: 360px) {
     .school-footer-inner, .school-footer-links { grid-template-columns: minmax(0, 1fr); }
     .school-footer-social { justify-content: start; }
+}
+
+/* Align the contact footer with the full-width login composition. */
+.auth-page + .school-footer {
+    padding-inline: clamp(24px, 2.5vw, 64px);
+}
+
+.auth-page + .school-footer .school-footer-inner {
+    max-width: none;
 }
