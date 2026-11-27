@@ -11,6 +11,10 @@
   const noticeKey = 'vesh-support-notifications-v1';
   const notices = () => { try { return JSON.parse(localStorage.getItem(noticeKey)||'[]'); } catch { return []; } };
   function saveNotices(rows) { localStorage.setItem(noticeKey,JSON.stringify(rows)); window.dispatchEvent(new Event('support-notifications-changed')); }
+  const query = new URL(location.href).searchParams;
+  const operator = query.get('mode') === 'staff';
+  const inWorkspace = operator || query.get('workspace') === 'admin' || location.pathname.endsWith('/admin.html');
+  const ownContext = inWorkspace ? '&workspace=admin' : '';
   const categories = {access:'Доступ и вход',video:'Видео',materials:'Материалы и задания',other:'Другая проблема'};
   const demoNotice = 'Демонстрация: сообщения и файлы сохраняются только в этом браузере, в техподдержку не отправляются.';
   const date = (value) => new Date(value).toLocaleString('ru-RU',{dateStyle:'short',timeStyle:'short'});
@@ -32,14 +36,12 @@
     });
   }
   const files = (id) => `<div class="support-upload"><label for="${id}-files">Скриншот или документ <span class="support-optional">необязательно</span></label><input id="${id}-files" type="file" name="attachments" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt" data-support-files aria-describedby="${id}-hint"><p id="${id}-hint" class="support-hint">До 3 файлов по 5 МБ. JPG, PNG, WebP, PDF, Word, Excel или TXT.</p><p class="support-file-status" data-support-file-status aria-live="polite"></p></div>`;
-  const newForm = `<form class="support-form" id="support-demo-new" data-support-form><label for="support-demo-category">С чем нужна помощь?</label><select id="support-demo-category" name="category">${Object.entries(categories).map(([k,v])=>`<option value="${k}" ${k==='other'?'selected':''}>${v}</option>`).join('')}</select><label for="support-demo-subject">Тема обращения</label><input id="support-demo-subject" name="subject" maxlength="160" placeholder="Например, не открывается видео урока" required><label for="support-demo-body">Что произошло?</label><textarea id="support-demo-body" name="body" rows="4" maxlength="5000" placeholder="Опишите, что вы хотели сделать и на каком шаге возникла сложность" required></textarea>${files('support-demo-new')}<p class="support-related" data-repeat-reference hidden></p><p class="support-hint">Страница обращения будет добавлена автоматически. Ответ появится в ЛК.</p><p class="support-hint">${demoNotice}</p><p role="alert" data-demo-error></p><div class="support-actions"><button type="submit" class="support-primary">Отправить обращение</button><a href="${pageUrl()}" class="support-text-link">Мои обращения</a></div></form>`;
-  const style = document.createElement('link'); style.rel='stylesheet'; style.href=url('support.css?v=20261127-support-3');document.head.append(style);
+  const newForm = `<form class="support-form" id="support-demo-new" data-support-form><label for="support-demo-category">С чем нужна помощь?</label><select id="support-demo-category" name="category">${Object.entries(categories).map(([k,v])=>`<option value="${k}" ${k==='other'?'selected':''}>${v}</option>`).join('')}</select><label for="support-demo-subject">Тема обращения</label><input id="support-demo-subject" name="subject" maxlength="160" placeholder="Например, не открывается видео урока" required><label for="support-demo-body">Что произошло?</label><textarea id="support-demo-body" name="body" rows="4" maxlength="5000" placeholder="Опишите, что вы хотели сделать и на каком шаге возникла сложность" required></textarea>${files('support-demo-new')}<p class="support-related" data-repeat-reference hidden></p><p class="support-hint">Страница обращения будет добавлена автоматически. Ответ появится в ЛК.</p><p class="support-hint">${demoNotice}</p><p role="alert" data-demo-error></p><div class="support-actions"><button type="submit" class="support-primary">Отправить обращение</button><a href="${pageUrl(inWorkspace?'?workspace=admin':'')}" class="support-text-link">Мои обращения</a></div></form>`;
+  const style = document.createElement('link'); style.rel='stylesheet'; style.href=url('support.css?v=20261127-support-shell-1');document.head.append(style);
   const widget = document.createElement('div');
   widget.innerHTML = `<a href="${pageUrl('?new=1')}" class="support-launcher" data-support-open aria-haspopup="dialog" aria-controls="support-dialog"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-3 2V11.5a9.5 9.5 0 0 1 19 0Z"/><path d="M9 9a3 3 0 1 1 5 2.2c-1 .6-2 1-2 2.3M12 16v.5"/></svg><span>Помощь</span></a><dialog id="support-dialog" class="support-dialog" aria-labelledby="support-dialog-title"><div class="support-dialog-head"><div><span class="support-eyebrow">Мы рядом</span><h2 id="support-dialog-title">Техническая поддержка</h2></div><button type="button" class="support-close" data-support-close aria-label="Закрыть форму">×</button></div><p class="support-lead">Не открывается видео, материал или нужный раздел? Расскажите нам — поможем разобраться.</p>${newForm}</dialog>`;
   document.body.append(widget);
   const dialog = document.getElementById('support-dialog');
-  const query = new URL(location.href).searchParams;
-  const operator = query.get('mode') === 'staff';
   let enabled = localStorage.getItem('vesh-support-demo-permission') === 'true';
   let current;
   let previousTicket = null;
@@ -58,10 +60,20 @@
       newSaving=true;
       const now=new Date().toISOString();
       const id=await action('readwrite',store=>store.add({parentId:previousTicket?.id||null,subject,category:values.get('category'),status:'new',created:now,origin:previousTicket?.origin||location.pathname,originTitle:previousTicket?.originTitle||document.title,messages:[{body,attachments,staff:false,created:now}]}));
-      location.href=pageUrl('?ticket='+id+'&sent=1');
+      location.href=pageUrl('?ticket='+id+'&sent=1'+ownContext);
     }catch(error){form.querySelector('[data-demo-error]').textContent=error.message||'Не удалось сохранить. Разрешите хранение данных в браузере и повторите.';newSaving=false;button.disabled=false;button.textContent='Отправить обращение';}
   });
   const main=document.getElementById('support-demo-page');
+  if (main && inWorkspace) {
+    document.body.classList.add('support-admin-demo');
+    main.classList.add('support-workspace-page');
+    document.querySelector('.brand').href=url('admin.html');
+    document.querySelector('.brand span').textContent='Управление обучением';
+    document.querySelector('.top-nav').innerHTML='<a href="'+url('courses.html')+'">Моё обучение</a><a href="'+url('admin.html')+'">Панель администратора</a>';
+    const nav=document.createElement('nav');nav.className='support-admin-navigation';nav.setAttribute('aria-label','Разделы управления');
+    nav.innerHTML=[['Заявки','admin.html?panel=requests'],['Группы','admin.html?panel=groups'],['Программы','admin.html?panel=programs'],['Слушатели','admin.html?panel=students'],['Бесплатные курсы','free-courses/'],['Техподдержка','support.html?mode=staff']].map(([label,target])=>'<a href="'+url(target)+'"'+(label==='Техподдержка'?' aria-current="page"':'')+'>'+label+'</a>').join('');
+    main.before(nav);
+  }
   async function render() {
     const records=(await action('readonly',store=>store.getAll())).sort((a,b)=>b.id-a.id);
     syncNotices(records);
@@ -72,13 +84,13 @@
     const toolbar=`<div class="support-panel" style="padding:14px 18px;margin-bottom:24px"><p class="support-hint">${demoNotice}</p><div class="support-actions" style="margin-top:8px"><a class="support-text-link" href="${pageUrl()}">Вид слушателя</a><a class="support-text-link" href="${pageUrl('?mode=staff')}">Вид сотрудника</a><label style="font-size:12px"><input type="checkbox" id="demo-support-permission" ${enabled?'checked':''}> Выдана функция техподдержки</label></div></div>`;
     if(operator&&!enabled){main.innerHTML=toolbar+`<div class="support-empty"><h1>Нет доступа к техподдержке</h1><p>Старший администратор должен включить сотруднику функцию «Обрабатывает обращения в техподдержку».</p><p class="support-hint">В демонстрации это можно проверить переключателем выше.</p></div>`;bind();return;}
     if(!current){
-      main.innerHTML=toolbar+`<a class="support-back" href="${url('courses.html')}">← Моё обучение</a><div class="support-page-heading"><div><span class="support-eyebrow">Помощь в личном кабинете</span><h1>${operator?'Техподдержка':'Мои обращения'}</h1><p>${operator?'Общая очередь технических обращений':'Здесь сохраняются ваши вопросы и ответы техподдержки.'}</p></div><button class="support-primary" id="demo-new-button">Новое обращение</button></div><div class="support-ticket-list">${records.length?records.map(t=>`<a class="support-ticket-card" href="${pageUrl('?ticket='+t.id+(operator?'&mode=staff':''))}"><div><span class="support-ticket-meta">№${t.id} — ${date(t.created)}</span><h2>${escape(t.subject)}</h2><span class="support-hint">${categories[t.category]}</span>${operator?`<span class="support-ticket-assignment">${t.takenAt?'Взял в работу: '+escape(t.takenBy)+'<br>'+takenTime(t.takenAt):'Пока никто не взял в работу'}</span>`:''}</div>${stamp(t)}</a>`).join(''):`<div class="support-empty"><span class="support-empty-icon" aria-hidden="true">?</span><h2>Пока нет обращений</h2><p>Если возникнут сложности с личным кабинетом,<br>напишите нам через кнопку «Помощь».</p></div>`}</div>`;
+      main.innerHTML=toolbar+`<a class="support-back" href="${url('courses.html')}">← Моё обучение</a><div class="support-page-heading"><div><span class="support-eyebrow">Помощь в личном кабинете</span><h1>${operator?'Техподдержка':'Мои обращения'}</h1><p>${operator?'Общая очередь технических обращений':'Здесь сохраняются ваши вопросы и ответы техподдержки.'}</p></div><button class="support-primary" id="demo-new-button">Новое обращение</button></div><div class="support-ticket-list">${records.length?records.map(t=>`<a class="support-ticket-card" href="${pageUrl('?ticket='+t.id+(operator?'&mode=staff':ownContext))}"><div><span class="support-ticket-meta">№${t.id} — ${date(t.created)}</span><h2>${escape(t.subject)}</h2><span class="support-hint">${categories[t.category]}</span>${operator?`<span class="support-ticket-assignment">${t.takenAt?'Взял в работу: '+escape(t.takenBy)+'<br>'+takenTime(t.takenAt):'Пока никто не взял в работу'}</span>`:''}</div>${stamp(t)}</a>`).join(''):`<div class="support-empty"><span class="support-empty-icon" aria-hidden="true">?</span><h2>Пока нет обращений</h2><p>Если возникнут сложности с личным кабинетом,<br>напишите нам через кнопку «Помощь».</p></div>`}</div>`;
       bind();document.getElementById('demo-new-button').addEventListener('click',()=>openNew());return;
     }
     main.classList.add('support-page-narrow');
-    const linkTo = id => pageUrl('?ticket='+id+(operator?'&mode=staff':''));
+    const linkTo = id => pageUrl('?ticket='+id+(operator?'&mode=staff':ownContext));
     const relations = (current.parentId ? `<p class="support-related">Повторное обращение по <a class="support-text-link" href="${linkTo(current.parentId)}">обращению №${current.parentId}</a></p>` : '') + records.filter(t=>t.parentId===current.id).map(t=>`<p class="support-related">Продолжение: <a class="support-text-link" href="${linkTo(t.id)}">обращение №${t.id}</a></p>`).join('');
-    main.innerHTML=toolbar+`<a class="support-back" href="${pageUrl(operator?'?mode=staff':'')}">← ${operator?'Очередь техподдержки':'Мои обращения'}</a>${query.has('sent')?'<div class="support-success" role="status">✓ Обращение сохранено в демонстрации</div>':''}
+    main.innerHTML=toolbar+`<a class="support-back" href="${pageUrl(operator?'?mode=staff':(inWorkspace?'?workspace=admin':''))}">← ${operator?'Очередь техподдержки':'Мои обращения'}</a>${query.has('sent')?'<div class="support-success" role="status">✓ Обращение сохранено в демонстрации</div>':''}
       <div class="support-thread-heading"><div class="support-thread-meta"><span>Обращение №${current.id}</span>${stamp(current)}</div><h1>${escape(current.subject)}</h1><p class="support-hint">${categories[current.category]} — ${date(current.created)}</p><p class="support-hint">Страница обращения: ${escape(current.originTitle)}</p>${relations}</div>
       ${current.takenAt?`<aside class="support-assignment" aria-label="Принятие обращения в работу"><span class="support-assignment-icon" aria-hidden="true">✓</span><div><strong>Обращение взято в работу</strong><p>${operator?'Ответственный: '+escape(current.takenBy):'Техподдержка приняла ваше обращение'}</p><time>${takenTime(current.takenAt)}</time></div></aside>`:operator&&!isClosed(current)?'<p class="support-assignment-pending">Обращение пока никто не взял в работу</p>':''}
       ${!isClosed(current)?`<div class="support-status-form">${operator&&!current.takenAt?'<button class="support-secondary" data-set-status="in_progress">Взять в работу</button>':''}<button class="support-secondary" data-set-status="resolved">Проблема решена</button><button class="support-secondary" data-set-status="closed">Закрыть обращение</button><span class="support-hint">Переписка сохранится в истории</span></div>`:''}
@@ -105,7 +117,7 @@
     form.reset();form.elements.subject.value=parent?.subject||'';form.elements.category.value=parent?.category||'other';
     form.querySelector('[data-demo-error]').textContent='';
     const ref=form.querySelector('[data-repeat-reference]');ref.hidden=!parent;
-    ref.innerHTML=parent?`Повторное обращение по <a class="support-text-link" href="${pageUrl('?ticket='+parent.id)}">обращению №${parent.id}</a><br>Опишите, какая сложность осталась`:'';
+    ref.innerHTML=parent?`Повторное обращение по <a class="support-text-link" href="${pageUrl('?ticket='+parent.id+ownContext)}">обращению №${parent.id}</a><br>Опишите, какая сложность осталась`:'';
     dialog.showModal();
   }
   document.querySelector('[data-support-open]').addEventListener('click',()=>{previousTicket=null;document.querySelector('[data-repeat-reference]').hidden=true;});
