@@ -26,3 +26,21 @@
 .notifications-heading>button{margin-left:auto;flex-shrink:0}
 
 .notification-actions .text-button{border:0;background:none;color:#226f8c;padding:0;font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+
+/* Compact student inbox, 2026-11-27. */
+.notifications-heading{gap:16px;margin-bottom:16px}
+.notifications-heading h1{font-size:28px;line-height:1.2;margin:0 0 5px}
+.notifications-heading h2{font-size:24px;line-height:1.2;margin:0 0 5px}
+.notifications-heading p{font-size:13px;line-height:1.45}
+.notifications-heading .btn{min-height:36px;padding:7px 12px;font-size:12px}
+.notification-item:has(>.notification-meta){display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;row-gap:4px;padding:10px 14px;margin:8px 0;border-radius:4px}
+.notification-item>.notification-meta{grid-column:2;grid-row:1;align-self:start;gap:6px;font-size:11px;line-height:1.5}
+.notification-item:has(>.notification-meta)>h2{grid-column:1;grid-row:1;margin:0;font-size:15px;line-height:1.35;overflow-wrap:anywhere}
+.notification-item>.notification-meta .notification-new{margin:0;padding:1px 5px;font-size:11px;line-height:1.4}
+.notification-item>.notification-body{grid-column:1/-1;margin:0;font-size:13px;line-height:1.45}
+.notification-item>.notification-sender{grid-column:1/-1;margin:0;font-size:11px;line-height:1.45}
+.notification-item>.notification-actions{grid-column:1/-1;gap:4px 16px;margin:2px 0 0;font-size:12px;line-height:1.4}
+.notification-item>.notification-actions a,.notification-item>.notification-actions button{display:inline-flex;align-items:center;min-height:24px}
+.notification-item:has(>.notification-meta)>.text-link{grid-column:1/-1;margin-top:2px;font-size:12px;line-height:1.4;min-height:24px;display:inline-flex;align-items:center}
+@media(max-width:700px){.notifications-heading{gap:12px;margin-bottom:14px}.notifications-heading h1{font-size:26px}.notification-item:has(>.notification-meta){grid-template-columns:minmax(0,1fr);padding:9px 12px}.notification-item>.notification-meta{grid-column:1;grid-row:1}.notification-item:has(>.notification-meta)>h2{grid-column:1;grid-row:2;font-size:14px}}
+@media(pointer:coarse){.notification-item>.notification-actions a,.notification-item>.notification-actions button,.notification-item:has(>.notification-meta)>.text-link,.notifications-heading .btn{min-height:44px}}
