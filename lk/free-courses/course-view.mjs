@@ -1,3 +1,4 @@
+import {materialCards,sampleMaterials} from './material-cards.mjs?v=20261127-materials-1';
 export const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const h = escapeHtml;
 const external = (url, label, className='') => `<a class="${className}" href="${h(url)}" target="_blank" rel="noopener">${h(label)} ↗</a>`;
@@ -19,10 +20,11 @@ export function lessonMedia(course, index) {
 
 export function courseMaterials(course) {
   const content = course.content;
-  if(course.kind==='paid-recorded')return '<section class="card practice"><h3>Материалы и задание к уроку</h3><p class="muted">В рабочем кабинете здесь будут презентация, файлы и задание выбранного урока. Они хранятся в новой системе и выдаются после проверки доступа.</p></section>';
-  if (!content) return `<div class="card practice"><h3>Попробуйте на практике</h3><p>${h(course.practice)}</p><p class="small muted">Пример задания для концепта. Без отправки на проверку.</p></div>`;
+  if(course.kind==='paid-recorded')return sampleMaterials();
+  if (!content) return materialCards(course.practice || '', []);
   if (!content.practice) return '';
-  return `<section class="card practice" aria-labelledby="practice-title"><p class="eyebrow">Самостоятельная работа</p><h2 id="practice-title">Практическое задание</h2><p>${h(content.practice.intro)}</p><div class="resource-files">${content.materials.map(file=>external(file.url,file.name,'resource-file')).join('')}</div>${external(content.materialsFolder,'Открыть папку со всеми файлами','small')}<ol class="practice-steps">${content.practice.steps.map(step=>`<li><strong>${h(step.title)}</strong><p>${h(step.text)}</p></li>`).join('')}</ol></section>`;
+  const description=[content.practice.intro,...content.practice.steps.map((step,index)=>`${index+1}. ${step.title}\n${step.text}`)].join('\n\n');
+  return materialCards(description,content.materials.map(file=>({name:file.name,url:file.url,demoResource:true})));
 }
 
 export function courseAbout(course) {

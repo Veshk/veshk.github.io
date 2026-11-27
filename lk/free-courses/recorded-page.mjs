@@ -1,5 +1,5 @@
 import {feedbackMenu,feedbackForm} from './feedback.mjs?v=20261126-public-safe-1';
-import {escapeHtml as h} from './course-view.mjs?v=20261126-public-safe-1';
+import {escapeHtml as h,courseMaterials} from './course-view.mjs?v=20261127-materials-1';
 
 const duration = minutes => `${Math.floor(minutes / 60) ? Math.floor(minutes / 60) + ' ч ' : ''}${minutes % 60} мин`;
 
@@ -21,7 +21,7 @@ export function recordedPage({course:c,index,enrollment:e,preview,feedbackMode=f
     <div class="rc-video-empty"><span class="rc-video-symbol" aria-hidden="true">▷</span><strong>Видеоурок</strong><p>В рабочем кабинете запись открывается здесь</p><small>Платные видео не размещены в открытом прототипе</small></div>
     <div class="rc-completion">${preview?'<span class="muted">В режиме слушателя здесь появится отметка о прохождении</span>':`<button class="btn secondary" data-action="mark-lesson" data-id="${h(e.id)}" data-index="${index}">${e.done.includes(index)?'✓ Урок пройден — отменить':'Отметить урок пройденным'}</button><p class="muted" data-progress-hint hidden></p>`}</div>
     <div class="rc-lesson-navigation">${index?`<a class="rc-previous" href="${base}/${index-1}">← Предыдущий урок</a>`:'<span></span>'}${index<c.lessons.length-1?`<a class="btn" href="${base}/${index+1}">Следующий урок →</a>`:`<a class="btn" href="${base}/feedback">Перейти к анкете →</a>`}</div></section>
-    <section class="rc-panel" id="rc-materials"><p class="eyebrow">К этому уроку</p><h2>Материалы</h2><div class="rc-empty"><span aria-hidden="true">↓</span><div><strong>Материалы появятся после переноса</strong><p>Здесь будут файлы и практическое задание выбранного урока</p></div></div></section>
+    <section class="rc-panel" id="rc-materials">${courseMaterials(c)}</section>
     <section class="rc-panel rc-help" id="rc-help"><div><p class="eyebrow">Мы рядом</p><h2>Нужна помощь?</h2><p>С вопросами по доступу, видео и продлению поможет команда ВЭШ</p></div><a class="btn secondary" href="mailto:info@veshk.ru">Написать в школу ↗</a></section>
     `}</div></div></div>`;
 }
