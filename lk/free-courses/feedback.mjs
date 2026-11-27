@@ -1,3 +1,4 @@
+import {feedbackDashboard} from './feedback-summary.mjs?v=20261127-feedback-1';
 import {active, getCourse} from './domain.mjs?v=20261126-student-access-1';
 import {escapeHtml as h} from './course-view.mjs?v=20261126-public-safe-1';
 
@@ -29,7 +30,4 @@ export function feedbackForm({enrollment, preview = false, backUrl, homeUrl}) {
     </form><div class="aos-navigation"><a href="${backUrl}">← К последнему уроку</a><a href="${homeUrl}">${preview ? 'К управлению курсами' : 'К моему обучению'} →</a></div></section>`;
 }
 
-export function feedbackResponses(state, paid) {
-  const answers = state.enrollments.filter(item => item.feedback && (getCourse(item.courseId).kind === 'paid-recorded') === paid);
-  return `<section class="wrap section aos-responses"><div class="page-title"><p class="eyebrow">Анкеты после обучения</p><h2>Обратная связь по курсам</h2><p class="muted">${answers.length ? 'Получено ответов: ' + answers.length : 'Пока нет ответов. Здесь появятся оценки и комментарии слушателей.'}</p></div>${answers.length ? `<div class="table-scroll"><table><thead><tr><th>Слушатель и курс</th><th>Оценка</th><th>Что понравилось</th><th>Что улучшить</th></tr></thead><tbody>${answers.map(item => `<tr><td><strong>${h(state.people.find(person => person.id === item.userId)?.name)}</strong><br>${h(getCourse(item.courseId).short)}</td><td>${item.feedback.rating} из 5</td><td class="aos-answer">${h(item.feedback.liked) || '—'}</td><td class="aos-answer">${h(item.feedback.improvements) || '—'}</td></tr>`).join('')}</tbody></table></div>` : ''}</section>`;
-}
+export function feedbackResponses(state, paid) { return feedbackDashboard(state, paid); }

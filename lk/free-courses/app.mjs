@@ -1,5 +1,5 @@
 import {enhanceLessonMaterials} from './lesson-materials.mjs?v=20261127-materials-1';
-import {feedbackMenu,feedbackForm,feedbackResponses,submitCourseFeedback} from './feedback.mjs?v=20261126-student-access-1';
+import {feedbackMenu,feedbackForm,feedbackResponses,submitCourseFeedback} from './feedback.mjs?v=20261127-feedback-1';
 import {recordedPage,setupRecordedPage,refreshRecordedModules} from './recorded-page.mjs?v=20261127-materials-1';
 import {managementHub,peoplePage,peopleTable} from './management.mjs?v=20261126-student-access-1';
 import {ensurePaidDemo,isPaidCourse} from './paid-catalog.mjs?v=20261126-public-safe-1';
@@ -35,7 +35,7 @@ const routeLink=(path,label,selected)=>`<a href="#${path}" ${selected?'aria-curr
 
 function shell(content,section='overview') {
   const person=user();
-  return `<div class="review-bar"><div class="wrap review-inner"><div class="review-label"><b>ПРОТОТИП</b><span>Версия 8 — ${shortDate(state.now)} ${new Date(state.now).getUTCFullYear()}</span></div><nav class="review-nav" aria-label="Разделы прототипа">${routeLink('/overview','Обзор',section==='overview')}${routeLink('/manage','Управление',section==='manage')}${routeLink('/admin','Бесплатные курсы',section==='admin')}${routeLink('/paid','Курсы в записи',section==='paid')}${routeLink('/intake/feedback','Связь с Tilda',section==='intake')}${routeLink('/learn','Кабинет',section==='learn')}${routeLink('/logic','Логика',section==='logic')}</nav></div></div>
+  return `<div class="review-bar"><div class="wrap review-inner"><div class="review-label"><b>ПРОТОТИП</b><span>Версия 8 — ${shortDate(state.now)} ${new Date(state.now).getUTCFullYear()}</span></div><nav class="review-nav" aria-label="Разделы прототипа">${routeLink('/overview','Обзор',section==='overview')}${routeLink('/manage','Управление',section==='manage')}${routeLink('/admin','Бесплатные курсы',section==='admin')}${routeLink('/paid','Курсы в записи',section==='paid')}${routeLink('/feedback','ОС по курсам',route()==='/feedback')}${routeLink('/intake/feedback','Связь с Tilda',section==='intake')}${routeLink('/learn','Кабинет',section==='learn')}${routeLink('/logic','Логика',section==='logic')}</nav></div></div>
   <header class="site-header ${section==='learn'?'portal-header':''}"><div class="wrap site-head"><a class="brand" href="#/overview"><img src="../brand/vesh-logo.svg" alt="ВЭШ"><span>${section==='learn'?'Пространство<br>вашего обучения':'Высшая<br>экономическая школа'}</span></a>${['admin','paid','manage'].includes(section)?'<div class="row"><span class="chip">Администратор</span><a class="btn secondary sm" href="../admin.html">Основные группы ↗</a></div>':section==='intake'?'<div class="row"><a class="btn secondary" href="#/learn">Мой кабинет</a></div>':`<a class="profile-link" href="#/learn"><span class="avatar">${h(initials(person.name))}</span><span class="name">${h(person.name.split(' ')[0])}<small class="muted" style="display:block">Учебный кабинет</small></span></a>`}</div></header>
   <main id="main" class="${section==='learn'?'portal-view':['paid','manage','admin'].includes(section)?'paid-admin':''}" tabindex="-1">${content}</main><footer class="footer"><div class="wrap row between"><p>ВЭШ — Концепт общего кабинета. Все слушатели вымышлены. Действия сохраняются только в этом браузере. Оплата и отправка писем не выполняются.</p><div class="row flex-wrap"><a href="#/logic">Что уже работает в прототипе</a><button class="text-button" data-action="reset">Сбросить демо</button></div></div></footer>`;
 }
@@ -122,6 +122,7 @@ async function render() {
   if(path==='/manage'){content=managementHub(state);section='manage';}
   else if(path==='/people'){content=peoplePage(state);section='manage';}
   else if(path==='/paid'){content=paidAdmin(state,paidFilters)+feedbackResponses(state,true);section='paid';}
+  else if(path==='/feedback'){content=feedbackResponses(state);section='manage';}
   else if(path==='/paid-logic'){content=paidLogic();section='paid';}
   else if(parts[1]==='order'){const order=state.orders.find(o=>o.id===parts[2]&&o.userId===state.userId);content=order?learnerOrder(state,order):learning();section='learn';}
   else if(path==='/admin'){content=adminPage()+feedbackResponses(state,false);section='admin';}
