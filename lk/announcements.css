@@ -44,3 +44,21 @@
 .notification-item:has(>.notification-meta)>.text-link{grid-column:1/-1;margin-top:2px;font-size:12px;line-height:1.4;min-height:24px;display:inline-flex;align-items:center}
 @media(max-width:700px){.notifications-heading{gap:12px;margin-bottom:14px}.notifications-heading h1{font-size:26px}.notification-item:has(>.notification-meta){grid-template-columns:minmax(0,1fr);padding:9px 12px}.notification-item>.notification-meta{grid-column:1;grid-row:1}.notification-item:has(>.notification-meta)>h2{grid-column:1;grid-row:2;font-size:14px}}
 @media(pointer:coarse){.notification-item>.notification-actions a,.notification-item>.notification-actions button,.notification-item:has(>.notification-meta)>.text-link,.notifications-heading .btn{min-height:44px}}
+
+/* Approved thin notification strip and compact learning-page spacing. */
+.unread-notifications{display:flex;align-items:center;flex-wrap:nowrap;gap:10px;min-height:40px;margin:0 0 20px;padding:5px 0;background:transparent;border:0;border-top:1px solid #dce3e6;border-bottom:1px solid #dce3e6;border-radius:0;color:#18252a;font-size:13px;line-height:1.4}
+.unread-notifications-icon{width:17px;height:17px;flex:0 0 17px;color:#226d8d}
+.unread-notifications-summary{min-width:0;flex:1;font-weight:400}
+.unread-notifications .unread-notifications-count{display:inline;min-width:0;height:auto;padding:0;margin-right:4px;border-radius:0;background:none;color:#226d8d;font-size:inherit;font-weight:500;font-variant-numeric:tabular-nums}
+.unread-notifications .unread-notifications-link{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-height:28px;margin-left:auto;padding:0;border:0;background:none;color:#226d8d;font:inherit;font-size:12px;text-decoration:underline;text-underline-offset:3px;white-space:nowrap;cursor:pointer}
+.learning-home{padding-top:26px}
+.learning-home>.page-heading{align-items:center;gap:20px;margin-bottom:18px}
+.learning-home>.page-heading h1{font-size:34px;line-height:1.15;margin:7px 0 9px}
+.learning-home>.page-heading p{font-size:13px;line-height:1.5}
+.learning-home>.page-heading .btn{min-height:38px;padding:8px 13px;font-size:12px}
+.learning-home>.learning-category-nav{margin-bottom:20px}
+.learning-home>.learning-category>.section-title{margin-bottom:16px}
+.learning-home .course-tile .tile-cover{min-height:180px;padding:22px}
+.learning-home .course-tile .tile-bottom{padding:18px 20px}
+@media(max-width:700px){.learning-home{padding-top:22px}.learning-home>.page-heading h1{font-size:30px}.learning-home>.page-heading .btn{margin-top:12px}.unread-notifications{gap:8px;margin-bottom:18px;font-size:12px}.unread-notifications .unread-notifications-link{font-size:12px}.learning-home .course-tile .tile-cover{min-height:160px;padding:20px}.learning-home .course-tile .tile-bottom{padding:16px 18px}}
+@media(pointer:coarse){.unread-notifications .unread-notifications-link{min-height:44px}}
